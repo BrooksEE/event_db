@@ -2,6 +2,13 @@ class Amount {
   int amt;
   String currency;
   Amount(this.amt, this.currency);
+  Amount.create(dynamic x, String defaultCurrency) {
+    try{
+      Amount.fromDouble(x, defaultCurrency);
+    } catch(e) {
+      Amount.fromJson(x);
+    }
+  }
   Amount.fromJson(Map<String, dynamic> json) {
     currency = json['currency'];
     amt = json['amt'];
@@ -49,6 +56,9 @@ class Participant{
 class Race {
   bool get isOYO => status == STATUS_OYO;
   String get getName => "${series?.name}${name.isEmpty ? '' : ' ' + name}";
+}
+class RaceEvent {
+  DateTime get getDate => date == null ? race.date : date;
 }
 
 class MyUser {

@@ -14,14 +14,12 @@ class MyUser {
 
   MyUser.fromJson(Map<String, dynamic> j) {
     id = j['id'];
-    last_login = j['last_login'] == null ? null : DateTime.parse(j['last_login']);
-    username = j['username'];
+    try { last_login = DateTime.parse(j['last_login']); } catch(e) { last_login = null; }     username = j['username'];
     first_name = j['first_name'];
     last_name = j['last_name'];
     email = j['email'];
     is_active = j['is_active'];
-    date_joined = j['date_joined'] == null ? null : DateTime.parse(j['date_joined']);
-  }
+    try { date_joined = DateTime.parse(j['date_joined']); } catch(e) { date_joined = null; }   }
 
   Map<String, dynamic> toJson() {
     return {
@@ -1462,19 +1460,11 @@ class Race {
     short_name = j['short_name'];
     full_name = j['full_name'];
     desc = j['desc'];
-    date = j['date'] == null ? null : DateTime.parse(j['date']);
-    status = j['status'];
+    try { date = DateTime.parse(j['date']); } catch(e) { date = null; }     status = j['status'];
     hide_date = j['hide_date'];
     time = j['time'];
     tagline = j['tagline'];
-    registration_opens = j['registration_opens'] == null ? null : DateTime.parse(j['registration_opens']);
-    cost_change1 = j['cost_change1'] == null ? null : DateTime.parse(j['cost_change1']);
-    cost_change2 = j['cost_change2'] == null ? null : DateTime.parse(j['cost_change2']);
-    cost_change3 = j['cost_change3'] == null ? null : DateTime.parse(j['cost_change3']);
-    cost_change4 = j['cost_change4'] == null ? null : DateTime.parse(j['cost_change4']);
-    cost_change5 = j['cost_change5'] == null ? null : DateTime.parse(j['cost_change5']);
-    registration_closes = j['registration_closes'] == null ? null : DateTime.parse(j['registration_closes']);
-    waiver = j['waiver'];
+    try { registration_opens = DateTime.parse(j['registration_opens']); } catch(e) { registration_opens = null; }     try { cost_change1 = DateTime.parse(j['cost_change1']); } catch(e) { cost_change1 = null; }     try { cost_change2 = DateTime.parse(j['cost_change2']); } catch(e) { cost_change2 = null; }     try { cost_change3 = DateTime.parse(j['cost_change3']); } catch(e) { cost_change3 = null; }     try { cost_change4 = DateTime.parse(j['cost_change4']); } catch(e) { cost_change4 = null; }     try { cost_change5 = DateTime.parse(j['cost_change5']); } catch(e) { cost_change5 = null; }     try { registration_closes = DateTime.parse(j['registration_closes']); } catch(e) { registration_closes = null; }     waiver = j['waiver'];
     volunteer_closed = j['volunteer_closed'];
     volunteer_closed_message = j['volunteer_closed_message'];
     volunteer_waiver = j['volunteer_waiver'];
@@ -1653,19 +1643,19 @@ class RaceEvent {
     bib_max = j['bib_max'];
     sold_out = j['sold_out'];
     waitlist_when_soldout = j['waitlist_when_soldout'];
-    cost0 = Amount.fromDouble(j['cost0'], 'USD');
-    cost1 = Amount.fromDouble(j['cost1'], 'USD');
-    cost2 = Amount.fromDouble(j['cost2'], 'USD');
-    cost3 = Amount.fromDouble(j['cost3'], 'USD');
-    cost4 = Amount.fromDouble(j['cost4'], 'USD');
-    cost5 = Amount.fromDouble(j['cost5'], 'USD');
+    cost0 = Amount.create(j['cost0'], 'USD');
+    cost1 = Amount.create(j['cost1'], 'USD');
+    cost2 = Amount.create(j['cost2'], 'USD');
+    cost3 = Amount.create(j['cost3'], 'USD');
+    cost4 = Amount.create(j['cost4'], 'USD');
+    cost5 = Amount.create(j['cost5'], 'USD');
     youth_age = j['youth_age'];
-    youth_cost0 = Amount.fromDouble(j['youth_cost0'], 'USD');
-    youth_cost1 = Amount.fromDouble(j['youth_cost1'], 'USD');
-    youth_cost2 = Amount.fromDouble(j['youth_cost2'], 'USD');
-    youth_cost3 = Amount.fromDouble(j['youth_cost3'], 'USD');
-    youth_cost4 = Amount.fromDouble(j['youth_cost4'], 'USD');
-    youth_cost5 = Amount.fromDouble(j['youth_cost5'], 'USD');
+    youth_cost0 = Amount.create(j['youth_cost0'], 'USD');
+    youth_cost1 = Amount.create(j['youth_cost1'], 'USD');
+    youth_cost2 = Amount.create(j['youth_cost2'], 'USD');
+    youth_cost3 = Amount.create(j['youth_cost3'], 'USD');
+    youth_cost4 = Amount.create(j['youth_cost4'], 'USD');
+    youth_cost5 = Amount.create(j['youth_cost5'], 'USD');
     waiver = j['waiver'];
     cert_number = j['cert_number'];
     finish_count = j['finish_count'];
@@ -1678,8 +1668,7 @@ class RaceEvent {
     help_text = j['help_text'];
     parking_address = j['parking_address'];
     path_id = j['path_id'];
-    date = j['date'] == null ? null : DateTime.parse(j['date']);
-  }
+    try { date = DateTime.parse(j['date']); } catch(e) { date = null; }   }
 
   Map<String, dynamic> toJson() {
     return {
@@ -1728,6 +1717,8 @@ class RaceEvent {
     };
   }
 
+
+DateTime get getDate => date == null ? race.date : date;
 }
 
 // <class 'event.models.Wave'>
@@ -1846,8 +1837,7 @@ class Participant {
     country = j['country'];
     zip = j['zip'];
     gender = j['gender'];
-    birthday = j['birthday'] == null ? null : DateTime.parse(j['birthday']);
-    lat = j['lat'];
+    try { birthday = DateTime.parse(j['birthday']); } catch(e) { birthday = null; }     lat = j['lat'];
     lon = j['lon'];
     age = j['age'];
     bib = j['bib'];
@@ -1857,14 +1847,12 @@ class Participant {
     wave = (j['wave'] == null) ? null : Wave.fromJson(j['wave']);
     withdrawn = j['withdrawn'];
     checkedin = j['checkedin'];
-    checkedin_date = j['checkedin_date'] == null ? null : DateTime.parse(j['checkedin_date']);
-    withdrawn_line_item_id = j['withdrawn_line_item_id'];
+    try { checkedin_date = DateTime.parse(j['checkedin_date']); } catch(e) { checkedin_date = null; }     withdrawn_line_item_id = j['withdrawn_line_item_id'];
     external_id = j['external_id'];
     user_id = j['user_id'];
     user = (j['user'] == null) ? null : MyUser.fromJson(j['user']);
     slug = j['slug'];
-    timestamp = j['timestamp'] == null ? null : DateTime.parse(j['timestamp']);
-    referer = j['referer'];
+    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }     referer = j['referer'];
     hide_results = j['hide_results'];
     tag = j['tag'];
     status = j['status'];
@@ -1921,6 +1909,13 @@ class Amount {
 int amt;
   String currency;
   Amount(this.amt, this.currency);
+  Amount.create(dynamic x, String defaultCurrency) {
+    try{
+      Amount.fromDouble(x, defaultCurrency);
+    } catch(e) {
+      Amount.fromJson(x);
+    }
+  }
   Amount.fromJson(Map<String, dynamic> json) {
     currency = json['currency'];
     amt = json['amt'];
