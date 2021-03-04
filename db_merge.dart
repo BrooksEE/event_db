@@ -47,6 +47,7 @@ class Amount {
   }
 }
 
+
 class Participant{
   int tagt;
   String get name => "${firstname} ${lastname}";
@@ -62,6 +63,7 @@ class RaceEvent {
 }
 
 class MyUser {
+  bool isHostStaff = false;
   String get name => "$first_name $last_name";
   
   String toString() {

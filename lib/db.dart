@@ -35,7 +35,8 @@ class MyUser {
   }
 
 
-String get name => "$first_name $last_name";
+bool isHostStaff = false;
+  String get name => "$first_name $last_name";
   
   String toString() {
     return "${id}: ${email}";
