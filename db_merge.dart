@@ -1,6 +1,6 @@
 class Amount {
-  int amt;
-  String currency;
+  late int amt;
+  String? currency;
   Amount(this.amt, this.currency);
   Amount.create(dynamic x, String defaultCurrency) {
     try{
@@ -29,7 +29,7 @@ class Amount {
   }
 
   String display({int qty: 1, bool bare: false}) {
-    int amt_ = amt * qty;
+    int amt_ = (amt ?? 0) * qty;
     if('USD' == this.currency) {
       double x = amt_/100.0;
       if(bare) {
@@ -49,7 +49,7 @@ class Amount {
 
 
 class Participant{
-  int tagt;
+  int? tagt;
   String get name => "${firstname} ${lastname}";
 
 }
@@ -59,7 +59,7 @@ class Race {
   String get getName => "${series?.name}${name.isEmpty ? '' : ' ' + name}";
 }
 class RaceEvent {
-  DateTime get getDate => date == null ? race.date : date;
+  DateTime? get getDate => date == null ? race?.date : date;
 }
 
 class MyUser {
