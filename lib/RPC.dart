@@ -155,7 +155,7 @@ class RPC {
         }
       } else if (result["status"] == "OK") {
         if (showProgress) dlg.closeBusy();
-        return result["result"];
+        return result["result"] ?? {};
       } else {
         if (showProgress) dlg.closeBusy();
         throw Exception("Unkonwn response");
