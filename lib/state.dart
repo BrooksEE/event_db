@@ -5,6 +5,7 @@ import 'dialogs.dart' as dlg;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_udid/flutter_udid.dart';
 
 GlobalKey<NavigatorState>? navKey;
 
@@ -22,7 +23,7 @@ class MyUserProvider with ChangeNotifier {
   String _tmpEmail  = "";
   String _tmpPasswd = "";
   bool initialized = false;
-
+  String udid = "Unknown";
   MyUser? get user => _user;
 
   set tmpEmail(String x) {
@@ -41,6 +42,10 @@ class MyUserProvider with ChangeNotifier {
     navKey = nKey;
     RPC().registerNotLoggedInHandler(() async {
       _user = null;
+      notifyListeners();
+    });
+    FlutterUdid.udid.then((x) {
+      udid = x;
       notifyListeners();
     });
   }

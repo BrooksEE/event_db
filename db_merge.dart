@@ -1,17 +1,22 @@
 class Amount {
   late int amt;
   String? currency;
-  Amount(this.amt, this.currency);
-  Amount.create(dynamic x, String defaultCurrency) {
-    try{
-      Amount.fromDouble(x, defaultCurrency);
-    } catch(e) {
-      Amount.fromJson(x);
+  Amount(this.amt, this.currency) {
+    if(amt == null) {
+      amt = 0;
     }
   }
+  static Amount create(dynamic x, String defaultCurrency) {
+    if(x is double) {
+      return Amount.fromDouble(x, defaultCurrency);
+    } else {
+      return Amount.fromJson(x);
+    }
+    return Amount(0,"USD");
+  }
   Amount.fromJson(Map<String, dynamic> json) {
-    currency = json['currency'];
-    amt = json['amt'];
+    currency = json['currency'] ?? "USD";
+    amt = json['amt'] ?? 0;
   }
   Amount.fromDouble(double x, String currency) {
     this.currency = currency;
@@ -25,11 +30,11 @@ class Amount {
   }
 
   Map<String, dynamic> toJson() {
-    return { "amt": amt, "currency": currency };
+    return { "amt": amt, "currency": currency ?? "USD"};
   }
 
   String display({int qty: 1, bool bare: false}) {
-    int amt_ = (amt ?? 0) * qty;
+    int amt_ = amt * qty;
     if('USD' == this.currency) {
       double x = amt_/100.0;
       if(bare) {

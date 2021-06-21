@@ -68,7 +68,7 @@ class Entity {
 // <class 'host.models.Host'>
 class Host {
   late int id;
-  late int entity_id;
+  int? entity_id;
   Entity? entity;
   late String key;
   late String name;
@@ -79,7 +79,7 @@ class Host {
   late String email_support;
   late String http;
   late String https;
-  late String redirect_domain;
+  String? redirect_domain;
   late String google_analytics;
   late String facebook_app_secret;
   late String facebook_page;
@@ -1275,15 +1275,15 @@ class Host {
   }
 
   late String timezone;
-  late int parent_id;
+  int? parent_id;
   Host? parent;
-  late int admin_group_id;
+  int? admin_group_id;
   // Group admin_group;
-  late String location;
-  late String location_short;
+  String? location;
+  String? location_short;
   late bool recaptcha;
   late bool active;
-  late String languages;
+  String? languages;
   late String site_suffix;
 
   Host.fromJson(Map<String, dynamic> j) {
@@ -1361,11 +1361,11 @@ class RaceSeries {
   Host? host;
   late String name;
   late String short;
-  late int current_id;
+  int? current_id;
   Race? current;
-  late int last_id;
+  int? last_id;
   Race? last;
-  late String cart_icon;
+  String? cart_icon;
 
   RaceSeries.fromJson(Map<String, dynamic> j) {
     id = j['id'];
@@ -1432,26 +1432,26 @@ class Race {
   DateTime? cost_change4;
   DateTime? cost_change5;
   DateTime? registration_closes;
-  late String waiver;
+  String? waiver;
   late bool volunteer_closed;
-  late String volunteer_closed_message;
-  late String volunteer_waiver;
+  String? volunteer_closed_message;
+  String? volunteer_waiver;
   late double sales_tax_rate;
-  late String facebook_eventid;
+  String? facebook_eventid;
   late double facebook_discount;
-  late int lookup_id;
+  int? lookup_id;
   late double reg_fee;
-  late String reg_fee_name;
-  late String reg_fee_desc;
+  String? reg_fee_name;
+  String? reg_fee_desc;
   late double reg_fees_percent;
-  late String medical_email;
-  late String vendor_waiver;
-  late int mapp_id;
+  String? medical_email;
+  String? vendor_waiver;
+  int? mapp_id;
   // Mapp mapp;
   late bool confirm_email;
-  late int klass_id;
+  int? klass_id;
   // Klass klass;
-  late String url_app_data;
+  String? url_app_data;
 
   Race.fromJson(Map<String, dynamic> j) {
     id = j['id'];
@@ -1580,7 +1580,7 @@ class RaceEvent {
   late int cap;
   late int num_reg;
   late int bib_start;
-  late int bib_max;
+  int? bib_max;
   late bool sold_out;
   late bool waitlist_when_soldout;
   Amount? cost0;
@@ -1589,18 +1589,18 @@ class RaceEvent {
   Amount? cost3;
   Amount? cost4;
   Amount? cost5;
-  late int youth_age;
+  int? youth_age;
   Amount? youth_cost0;
   Amount? youth_cost1;
   Amount? youth_cost2;
   Amount? youth_cost3;
   Amount? youth_cost4;
   Amount? youth_cost5;
-  late String waiver;
-  late String cert_number;
-  late int finish_count;
-  late int finish_count_male;
-  late int finish_count_female;
+  String? waiver;
+  String? cert_number;
+  int? finish_count;
+  int? finish_count_male;
+  int? finish_count_female;
   late bool no_facebook_discount;
   final  int DIST_UNITS_MILES = 0;
   final  int DIST_UNITS_KM = 1;
@@ -1621,9 +1621,9 @@ class RaceEvent {
 
   late int pace_units;
   late int group_number;
-  late String help_text;
-  late String parking_address;
-  late int path_id;
+  String? help_text;
+  String? parking_address;
+  int? path_id;
   // Path path;
   DateTime? date;
 
@@ -1644,19 +1644,19 @@ class RaceEvent {
     bib_max = j['bib_max'];
     sold_out = j['sold_out'];
     waitlist_when_soldout = j['waitlist_when_soldout'];
-    cost0 = Amount.create(j['cost0'], 'USD');
-    cost1 = Amount.create(j['cost1'], 'USD');
-    cost2 = Amount.create(j['cost2'], 'USD');
-    cost3 = Amount.create(j['cost3'], 'USD');
-    cost4 = Amount.create(j['cost4'], 'USD');
-    cost5 = Amount.create(j['cost5'], 'USD');
+    cost0 = (j['cost0'] == null) ? null : Amount.create(j['cost0'], 'USD');
+    cost1 = (j['cost1'] == null) ? null : Amount.create(j['cost1'], 'USD');
+    cost2 = (j['cost2'] == null) ? null : Amount.create(j['cost2'], 'USD');
+    cost3 = (j['cost3'] == null) ? null : Amount.create(j['cost3'], 'USD');
+    cost4 = (j['cost4'] == null) ? null : Amount.create(j['cost4'], 'USD');
+    cost5 = (j['cost5'] == null) ? null : Amount.create(j['cost5'], 'USD');
     youth_age = j['youth_age'];
-    youth_cost0 = Amount.create(j['youth_cost0'], 'USD');
-    youth_cost1 = Amount.create(j['youth_cost1'], 'USD');
-    youth_cost2 = Amount.create(j['youth_cost2'], 'USD');
-    youth_cost3 = Amount.create(j['youth_cost3'], 'USD');
-    youth_cost4 = Amount.create(j['youth_cost4'], 'USD');
-    youth_cost5 = Amount.create(j['youth_cost5'], 'USD');
+    youth_cost0 = (j['youth_cost0'] == null) ? null : Amount.create(j['youth_cost0'], 'USD');
+    youth_cost1 = (j['youth_cost1'] == null) ? null : Amount.create(j['youth_cost1'], 'USD');
+    youth_cost2 = (j['youth_cost2'] == null) ? null : Amount.create(j['youth_cost2'], 'USD');
+    youth_cost3 = (j['youth_cost3'] == null) ? null : Amount.create(j['youth_cost3'], 'USD');
+    youth_cost4 = (j['youth_cost4'] == null) ? null : Amount.create(j['youth_cost4'], 'USD');
+    youth_cost5 = (j['youth_cost5'] == null) ? null : Amount.create(j['youth_cost5'], 'USD');
     waiver = j['waiver'];
     cert_number = j['cert_number'];
     finish_count = j['finish_count'];
@@ -1689,19 +1689,19 @@ class RaceEvent {
       'bib_max' : bib_max,
       'sold_out' : sold_out,
       'waitlist_when_soldout' : waitlist_when_soldout,
-      'cost0' : cost0,
-      'cost1' : cost1,
-      'cost2' : cost2,
-      'cost3' : cost3,
-      'cost4' : cost4,
-      'cost5' : cost5,
+      'cost0' : cost0?.toJson(),
+      'cost1' : cost1?.toJson(),
+      'cost2' : cost2?.toJson(),
+      'cost3' : cost3?.toJson(),
+      'cost4' : cost4?.toJson(),
+      'cost5' : cost5?.toJson(),
       'youth_age' : youth_age,
-      'youth_cost0' : youth_cost0,
-      'youth_cost1' : youth_cost1,
-      'youth_cost2' : youth_cost2,
-      'youth_cost3' : youth_cost3,
-      'youth_cost4' : youth_cost4,
-      'youth_cost5' : youth_cost5,
+      'youth_cost0' : youth_cost0?.toJson(),
+      'youth_cost1' : youth_cost1?.toJson(),
+      'youth_cost2' : youth_cost2?.toJson(),
+      'youth_cost3' : youth_cost3?.toJson(),
+      'youth_cost4' : youth_cost4?.toJson(),
+      'youth_cost5' : youth_cost5?.toJson(),
       'waiver' : waiver,
       'cert_number' : cert_number,
       'finish_count' : finish_count,
@@ -1730,8 +1730,8 @@ class Wave {
   late String name;
   late int max_number;
   late int order;
-  late String bus_instructions;
-  late String notes;
+  String? bus_instructions;
+  String? notes;
   late double start_time;
 
   Wave.fromJson(Map<String, dynamic> j) {
@@ -1765,7 +1765,7 @@ class Wave {
 // <class 'event.models.Participant'>
 class Participant {
   late int id;
-  late int line_item_id;
+  int? line_item_id;
   // LineItem line_item;
   late int race_event_id;
   RaceEvent? race_event;
@@ -1786,21 +1786,23 @@ class Participant {
   late int bib;
   late String emergencyname;
   late String emergencyphone;
-  late int wave_id;
+  int? wave_id;
   Wave? wave;
   late bool withdrawn;
   late bool checkedin;
   DateTime? checkedin_date;
-  late int withdrawn_line_item_id;
+  int? withdrawn_line_item_id;
   // LineItem withdrawn_line_item;
-  late String external_id;
-  late int user_id;
+  String? external_id;
+  int? user_id;
   MyUser? user;
-  late String slug;
+  String? slug;
   DateTime? timestamp;
-  late String referer;
+  String? referer;
   late bool hide_results;
-  late String tag;
+  String? tag;
+  int? division_id;
+  // Division division;
   final  int STATUS_SIGNED_UP = 0;
   final  int STATUS_BIB_CHECKED = 1;
   final  int STATUS_RUNNING = 2;
@@ -1856,6 +1858,7 @@ class Participant {
     try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }     referer = j['referer'];
     hide_results = j['hide_results'];
     tag = j['tag'];
+    division_id = j['division_id'];
     status = j['status'];
   }
 
@@ -1896,6 +1899,7 @@ class Participant {
       'referer' : referer,
       'hide_results' : hide_results,
       'tag' : tag,
+      'division_id' : division_id,
       'status' : status,
     };
   }
@@ -1909,17 +1913,22 @@ int? tagt;
 class Amount {
 late int amt;
   String? currency;
-  Amount(this.amt, this.currency);
-  Amount.create(dynamic x, String defaultCurrency) {
-    try{
-      Amount.fromDouble(x, defaultCurrency);
-    } catch(e) {
-      Amount.fromJson(x);
+  Amount(this.amt, this.currency) {
+    if(amt == null) {
+      amt = 0;
     }
   }
+  static Amount create(dynamic x, String defaultCurrency) {
+    if(x is double) {
+      return Amount.fromDouble(x, defaultCurrency);
+    } else {
+      return Amount.fromJson(x);
+    }
+    return Amount(0,"USD");
+  }
   Amount.fromJson(Map<String, dynamic> json) {
-    currency = json['currency'];
-    amt = json['amt'];
+    currency = json['currency'] ?? "USD";
+    amt = json['amt'] ?? 0;
   }
   Amount.fromDouble(double x, String currency) {
     this.currency = currency;
@@ -1933,7 +1942,7 @@ late int amt;
   }
 
   Map<String, dynamic> toJson() {
-    return { "amt": amt, "currency": currency };
+    return { "amt": amt, "currency": currency ?? "USD"};
   }
 
   String display({int qty: 1, bool bare: false}) {
