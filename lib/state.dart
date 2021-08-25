@@ -1,4 +1,5 @@
 library db;
+import 'dart:io';
 import 'db.dart';
 import 'RPC.dart';
 import 'dialogs.dart' as dlg;
@@ -6,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_udid/flutter_udid.dart';
+import 'package:uuid/uuid.dart';
 
 GlobalKey<NavigatorState>? navKey;
 
@@ -44,8 +46,13 @@ class MyUserProvider with ChangeNotifier {
       _user = null;
       notifyListeners();
     });
+
     FlutterUdid.udid.then((x) {
       udid = x;
+      notifyListeners();
+    }, onError: (e) {
+      var uuid = Uuid();
+      udid = uuid.v4(); // -> '110ec58a-a0f2-4ac4-8393-c866d813b8d1'
       notifyListeners();
     });
   }
@@ -107,6 +114,8 @@ class Login extends StatefulWidget {
 
 
 class LoginState extends State<Login> {
+  final _formKey = GlobalKey<FormState>();
+
   @override
   void initState() {
     super.initState();
@@ -132,42 +141,56 @@ class LoginState extends State<Login> {
         return widget.scaffoldBuilder(
           context,
           appBarTitle: "Login",
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget> [
-              Expanded(child: Container()),
-              Text("Login", style: Theme.of(context).textTheme.headline4),
-              Container(width: loginWidth, child: TextFormField(
-                  initialValue: myUserProvider.tmpEmail,
+          body: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget> [
+                Expanded(child: Container()),
+                Text("Login", style: Theme.of(context).textTheme.headline4),
+                Container(width: loginWidth, child: TextFormField(
+                    initialValue: myUserProvider.tmpEmail,
+                    decoration: InputDecoration(
+                      labelText: "Email",
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                    onChanged: (newValue) {
+                      myUserProvider.tmpEmail = newValue.trim();
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a valid email address';
+                      }
+                      return null;
+                    },
+                )),
+                Container(width: loginWidth, child: TextFormField(
                   decoration: InputDecoration(
-                    labelText: "Email",
+                    labelText: "Password",
                   ),
-                  keyboardType: TextInputType.emailAddress,
+                  initialValue: myUserProvider.tmpPasswd,
+                  obscureText: true,
                   onChanged: (newValue) {
-                    myUserProvider.tmpEmail = newValue;
-                  }
-              )),
-              Container(width: loginWidth, child: TextFormField(
-                decoration: InputDecoration(
-                  labelText: "Password",
+                    myUserProvider.tmpPasswd = newValue;
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a password';
+                    }
+                    return null;
+                  },                )),
+                Container(height: 10),
+                ElevatedButton(
+                    child: Text("Login"),
+                    onPressed: (myUserProvider.tmpEmail.isEmpty || myUserProvider.tmpPasswd.isEmpty || !_formKey.currentState!.validate()) ? null : () {
+                      myUserProvider.login(myUserProvider.tmpEmail, myUserProvider.tmpPasswd);
+                    }
                 ),
-                initialValue: myUserProvider.tmpPasswd,
-                obscureText: true,
-                onChanged: (newValue) {
-                  myUserProvider.tmpPasswd = newValue;
-                },
-              )),
-              Container(height: 10),
-              ElevatedButton(
-                  child: Text("Login"),
-                  onPressed: (myUserProvider.tmpEmail.isEmpty || myUserProvider.tmpPasswd.isEmpty) ? null : () {
-                    myUserProvider.login(myUserProvider.tmpEmail, myUserProvider.tmpPasswd);
-                  }
-              ),
-              Expanded(child: Container()),
-            ],
+                Expanded(child: Container()),
+              ],
+            ),
           ),
         );
       } else {

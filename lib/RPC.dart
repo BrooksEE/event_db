@@ -3,8 +3,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:dio_cookie_manager/dio_cookie_manager.dart';
-import 'package:cookie_jar/cookie_jar.dart';
+//import 'package:dio/adapter_browser.dart';
+//import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+//import 'package:cookie_jar/cookie_jar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dialogs.dart' as dlg;
+import 'state.dart';
+import 'package:flutter/material.dart';
 //import 'main.dart' as mn;
 //import 'package:connectivity/connectivity.dart';
 
@@ -34,10 +37,11 @@ class RPC {
 //  static final server = "http://192.168.75.157:8080";
 //  static final server = "http://192.168.75.5:8080";
   static final server = "https://backend.brooksee.com";
-  PersistCookieJar? cookieJar;
+//  PersistCookieJar? cookieJar;
   Timer? retryTimer;
   final Dio dio = Dio();
   Function? notLoggedInHandler;
+  String? session;
 
   void registerNotLoggedInHandler(Function f) {
     notLoggedInHandler = f;
@@ -76,95 +80,137 @@ class RPC {
     }
   }
 
-  Future<Map> rpc(String mod, String view, String func, Map args, String? msg, {bool retryLogin : true}) async {
+  Future<Map> rpc(String mod, String view, String func, Map args, String? msg, {bool retryLogin : true, useSnackBarMsg: false }) async {
     final String path = '/rest/$mod/$view/$func';
     final String url = '$server$path';
 
     final bool showProgress = msg != null;
-    if (showProgress) dlg.showBusy(msg);
-
-    print("rpc: $url");
-    final Map body = {
-      'args': (args == null) ? {} : args,
-      'context': {},
-    };
-
-    print(" body:" + body.toString());
-
-
-/*    var connectivityResult = await (Connectivity().checkConnectivity());
-   if(connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
-      // we're good
-    } else {
-      if(showProgress) {
-        if (showProgress) dlg.doneBusy(context);
-        dlg.showError(context, "No Internet Connection Detected. Please enable Internet and try again");
-      }
-      throw Exception("No Internet");
-    }
-*/
-
-    // perform the post to the server
-    if(cookieJar == null) {
-      Directory appDocDir = await getApplicationDocumentsDirectory();
-      String appDocPath = appDocDir.path;
-      CookieJar cj = cookieJar = PersistCookieJar(storage: FileStorage(appDocPath + "/.cookies/"));;
-      dio.interceptors.add(CookieManager(cj));
-    }
-    var response;
-    try {
-      response = await dio.post(url, data: body);
-    } on DioError catch(e) {
-      if(e.message.startsWith("SocketException: Failed host lookup")) {
-        if (showProgress) dlg.closeBusy();
-        throw ConnectionException();
+    useSnackBarMsg = useSnackBarMsg && gContext != null;
+    if (showProgress) {
+      if(useSnackBarMsg) {
+        ScaffoldMessenger.of(gContext).showSnackBar(SnackBar(
+          content: Text(msg),
+          backgroundColor: Theme.of(gContext).primaryColor,
+          duration: Duration(days: 100),
+        ));
       } else {
-        if (showProgress) dlg.closeBusy();
-        throw e;
+        dlg.showBusy(msg);
       }
     }
-    print(" body: ${response.data}");
-    if (response.statusCode == 200) {
-      // If the server did return a 200 OK response, then parse the JSON.
-      final result = response.data;
-      if (result["status"] == "ERROR") {
-        if (showProgress) dlg.closeBusy();
-        if(retryLogin) {
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          String email = prefs.getString("email") ?? "";
-          String password = prefs.getString("password") ?? "";
-          print("email=${email} password=${password}");
-          if (email.isNotEmpty && password.isNotEmpty) {
-            bool failed = true;
-            try {
-              await RPC().rpc("rest", "User", "login",  {"username": email, "password": password}, null);
-              failed = false;
-            } catch(e) {
-              failed = true;
-            }
-            if(!failed) {
-              return await rpc(mod, view, func, args, null, retryLogin: false);
-            }
+    try {
+
+      print("rpc: $url");
+      final Map body = {
+        'args': (args == null) ? {} : args,
+        'context': {},
+      };
+
+      print(" body:" + body.toString());
+
+
+  /*    var connectivityResult = await (Connectivity().checkConnectivity());
+     if(connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+        // we're good
+      } else {
+        if(showProgress) {
+          if (showProgress) dlg.doneBusy(context);
+          dlg.showError(context, "No Internet Connection Detected. Please enable Internet and try again");
+        }
+        throw Exception("No Internet");
+      }
+  */
+
+      // perform the post to the server
+  /*    if(cookieJar == null) {
+        if(kIsWeb) {
+          var adapter = BrowserHttpClientAdapter();
+          adapter.withCredentials = true;
+          dio.httpClientAdapter = adapter;
+          cookieJar = PersistCookieJar();
+        } else {
+          Directory appDocDir = await getApplicationDocumentsDirectory();
+          String appDocPath = appDocDir.path;
+          cookieJar = PersistCookieJar(storage: FileStorage(appDocPath + "/.cookies/"));
+          if(cookieJar != null) {
+            dio.interceptors.add(CookieManager(cookieJar!));
           }
         }
-        if (result["result"] == "Not Logged In") {
-          notLoggedInHandler?.call();
-          throw NotLoggedInException();
-        } else {
-          throw Exception(result["result"]);
-        }
-      } else if (result["status"] == "OK") {
-        if (showProgress) dlg.closeBusy();
-        return result["result"] ?? {};
-      } else {
-        if (showProgress) dlg.closeBusy();
-        throw Exception("Unkonwn response");
       }
-    } else {
-      if (showProgress) dlg.closeBusy();
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
-      throw Exception('Failed with statusCode=$response.statusCode');
+  */
+      if(session == null) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        session = prefs.getString("SESSION");
+        print("SESSION=${session}");
+      }
+      var response;
+      try {
+        Map<String, dynamic> headers = {};
+        if(session != null) {
+          headers["x-session"] = session;
+        }
+        response = await dio.post(url, data: body, options: Options(headers: headers));
+      } on DioError catch(e) {
+        if(e.message.startsWith("SocketException: Failed host lookup")) {
+          throw ConnectionException();
+        } else {
+          throw e;
+        }
+      }
+      print(" body: ${response.data}");
+      if (response.statusCode == 200) {
+        // If the server did return a 200 OK response, then parse the JSON.
+        final result = response.data;
+        if(result["session"] != null) {
+          if(session != result["session"]) {
+            session = result["session"];
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            prefs.setString("SESSION", session!);
+            print("Set SESSION=${session}");
+          }
+        }
+        if (result["status"] == "ERROR") {
+          if(retryLogin) {
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            String email = prefs.getString("email") ?? "";
+            String password = prefs.getString("password") ?? "";
+            print("email=${email} password=${password}");
+            if (email.isNotEmpty && password.isNotEmpty) {
+              bool failed = true;
+              try {
+                await RPC().rpc("rest", "User", "login",  {"username": email, "password": password}, null);
+                failed = false;
+              } catch(e) {
+                failed = true;
+              }
+              if(!failed) {
+                return await rpc(mod, view, func, args, null, retryLogin: false);
+              }
+            }
+          }
+          if (result["result"] == "Not Logged In") {
+            notLoggedInHandler?.call();
+            throw NotLoggedInException();
+          } else {
+            throw Exception(result["result"]);
+          }
+        } else if (result["status"] == "OK") {
+          return result["result"] ?? {};
+        } else {
+          throw Exception("Unkonwn response");
+        }
+      } else {
+        // If the server did not return a 200 OK response,
+        // then throw an exception.
+        throw Exception('Failed with statusCode=$response.statusCode');
+      }
+    } finally {
+      if (showProgress) {
+        if(useSnackBarMsg) {
+          ScaffoldMessenger.of(gContext).hideCurrentSnackBar();
+        } else {
+          dlg.closeBusy();
+        }
+      }
     }
     return {};
   }
