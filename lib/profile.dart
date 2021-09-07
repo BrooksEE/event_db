@@ -7,18 +7,24 @@ import 'dialogs.dart' as dlg;
 import 'state.dart';
 
 class Profile extends StatefulWidget {
-  Function scaffoldBuilder;
 
-  Profile(this.scaffoldBuilder, {Key? key}) : super(key:key);
+  Profile({Key? key}) : super(key:key);
 
   @override
   ProfileState createState() => ProfileState();
 
-  static void navPush(BuildContext context, Function scaffoldBuilder) {
+  static void navPush(BuildContext context, MyUserProvider myUserProvider) {
     Navigator.of(context).push(
       MaterialPageRoute(
         settings: RouteSettings(name:"profile"),
-        builder: (BuildContext context) => Profile(scaffoldBuilder),
+        builder: (BuildContext context) {
+          return ChangeNotifierProvider<MyUserProvider>.value(
+            value : myUserProvider,
+            builder: (context, widget1) {
+              return Profile();
+            },
+          );
+        },
       ),
     );    
   }
@@ -51,59 +57,62 @@ class ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
-    return widget.scaffoldBuilder(
-      appBarTitle: "Update Profile",
-      body: Stack(
-        children: <Widget>[
-          Container(
-            padding: EdgeInsets.only(left: 40, right: 40),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Container(
-                    child: TextFormField(
-                        decoration: InputDecoration(
-                          labelText: "First Name",
-                        ),
-                        controller: fname,
-                        validator: (value) {
-                          if (value?.trim().isEmpty ?? true)
-                            return 'First Name';
-                          else
-                            return null;
-                        }),
-                  ),
-                  Container(
-                    child: TextFormField(
-                        decoration: InputDecoration(
-                          labelText: "Last Name",
-                        ),
-                        controller: lname,
-                        validator: (value) {
-                          if (value?.trim().isEmpty ?? true)
-                            return 'Last Name';
-                          else
-                            return null;
-                        }),
-                  ),
-                  Container(height: 20),
-                  RaisedButton(
-                    padding: const EdgeInsets.only(bottom: 8.0, top: 8.0),
-                    onPressed: () {
-                      if (_formKey.currentState?.validate() ?? false) {
-                        _save_profile();
-                      }
-                    },
-                    child: Text("Update Profile"),
-                  ),
-                ],
+    return Consumer<MyUserProvider>(builder: (context, myUserProvider, child) {
+      return myUserProvider.scaffoldBuilder(
+        context,
+        appBarTitle: "Update Profile",
+        body: Stack(
+          children: <Widget>[
+            Container(
+              padding: EdgeInsets.only(left: 40, right: 40),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Container(
+                      child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: "First Name",
+                          ),
+                          controller: fname,
+                          validator: (value) {
+                            if (value?.trim().isEmpty ?? true)
+                              return 'First Name';
+                            else
+                              return null;
+                          }),
+                    ),
+                    Container(
+                      child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: "Last Name",
+                          ),
+                          controller: lname,
+                          validator: (value) {
+                            if (value?.trim().isEmpty ?? true)
+                              return 'Last Name';
+                            else
+                              return null;
+                          }),
+                    ),
+                    Container(height: 20),
+                    RaisedButton(
+                      padding: const EdgeInsets.only(bottom: 8.0, top: 8.0),
+                      onPressed: () {
+                        if (_formKey.currentState?.validate() ?? false) {
+                          _save_profile();
+                        }
+                      },
+                      child: Text("Update Profile"),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 }
