@@ -228,7 +228,7 @@ abstract class Field<T> {
 }
 
 class TextField extends Field<String> {
-  late int maxLen;
+  int? maxLen;
   late FocusNode focusNode;
   late TextEditingController controller;
   late List<String> autofillHints;
@@ -301,7 +301,7 @@ class TextField extends Field<String> {
           value = controller.text.trim();
         },
         focusNode: focusNode,
-        inputFormatters: [ LengthLimitingTextInputFormatter(maxLen),],
+        inputFormatters: maxLen == null ? const [] : [ LengthLimitingTextInputFormatter(maxLen),],
         keyboardType: keyboardType,
         textCapitalization: textCapitalization ?? TextCapitalization.none,
         maxLines: multiline ? null : 1,
