@@ -24,7 +24,7 @@ class RegForm  {
   String? origLabel;
   //Map inventory;
 
-  Future<void> init(int race_id, Map setup, State<StatefulWidget> state) async {
+  Future<void> init(int race_id, Map? setup, State<StatefulWidget> state) async {
     myFormController = MyFormController(_formKey,
       setCartItemName: (Field f) {
         if(f.key=='event') {
