@@ -303,7 +303,7 @@ class Invoice {
     email=json["email"];
     shipping = Address();
     shipping.update(json['shipping_name'], json['shipping_address'], json['shipping_city'], json['shipping_state'], json["shipping_country"], json['shipping_zip']);
-    notes = json['notes'];
+    notes = json['notes'] ?? "";
     currency = json['currency'];
     items = [];
     for(int idx=0; idx<json['items'].length; idx++) {
@@ -402,6 +402,10 @@ class Cart {
 
   static addItem(CartItem item) {
     cartItems.add(item);
+  }
+  static setHostKey(String h) {
+    _host_key = h.toUpperCase();
+    invoiceNumber = genInvoiceNumber(_host_key);
   }
 
   static removeItem(CartItem item) {
@@ -557,7 +561,9 @@ class _CartState extends State<CartView> {
           Cart.cartItems[idx].complete(invoice!);
         }
       });
-    } catch(e) {
+    } catch(e, stacktrace) {
+      print(e);
+      print(stacktrace);
       dlg.showError(e.toString());
     }
     return invoice;
@@ -579,6 +585,7 @@ class _CartState extends State<CartView> {
   }
 
   void showError() {
+    print("showError called");
   }
 
   void showReceipt() {
@@ -601,6 +608,7 @@ class _CartState extends State<CartView> {
           onApplePayNonceRequestFailure: _onGooglePayNonceRequestFailure,
           onApplePayComplete: showReceipt);
     } on PlatformException catch (ex) {
+      print("_onStartApplePay: $ex");
       dlg.showError(ex.toString());
     }
   }
@@ -626,13 +634,16 @@ class _CartState extends State<CartView> {
           onGooglePayNonceRequestFailure: _onGooglePayNonceRequestFailure,
           onGooglePayCanceled:            _onGooglePayCancel);
     } on InAppPaymentsException catch(ex) {
+      print("_onStartGooglePay $ex");
       dlg.showError(ex.toString());
     }
   }
   void _onGooglePayNonceRequestSuccess(CardDetails cardDetails) async {
     try {
       await checkout({"which":"squareweb", "nonce": cardDetails.nonce});
-    } catch (ex) {
+    } catch (ex, stacktrace) {
+      print("_onGooglePayNonceRequestSuccess $ex");
+      print(stacktrace);
       dlg.showError(ex.toString());
     }
   }
@@ -650,6 +661,7 @@ class _CartState extends State<CartView> {
    * google pay sheet has been closed when this callback is invoked
    */
   void _onGooglePayNonceRequestFailure(ErrorInfo errorInfo) {
+    print("_onGooglePayNonceRequestFailure $errorInfo");
     dlg.showError(errorInfo.toString());
     // handle google pay failure
   }
@@ -682,6 +694,11 @@ class _CartState extends State<CartView> {
                         });
                         Navigator.pop(context);
                     },
+                  ),
+                  Expanded(child: Container(width: 0)),
+                  ListTile(
+                    leading: Icon(Icons.confirmation_number),
+                    title: Text("${Cart.invoiceNumber}"),
                   ),
                 ],
             ),
@@ -967,12 +984,12 @@ class _CartState extends State<CartView> {
                               ),
                             ),
                             actions: <Widget>[
-                              FlatButton(
+                              TextButton(
                                   child: Text("Cancel"),
                                   onPressed: () {
                                     Navigator.pop(context);
                                   }),
-                              FlatButton(
+                              TextButton(
                                   child: Text("Apply"),
                                   onPressed: () async {
                                     Map result;

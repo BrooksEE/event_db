@@ -602,6 +602,9 @@ abstract class ChoiceField extends Field<String> {
     return idx < 0 ? null : choices[idx];
   }
   ChoiceField.fromJSON(Map j) {
+    if(j["initial"] != null) {
+      j["initial"] = j["initiail"].toString();
+    }
     _fromJSON(j);
     j["choices"].forEach((c) {
       Choice choice = Choice.fromJSON(c);
@@ -614,7 +617,6 @@ abstract class ChoiceField extends Field<String> {
     Choice? c = choice;
     print("ADDTOCART: ${label} ${c} cart_info=${cart_info} choice.amt=${c != null ? c.amt : ""}  parent=${parent}");
     if(cart_info != null && c != null && c.amt != null && (c.amt?.amt ?? 0) > 0) {
-
       CartItem item = CartItem(
               cart_info!["type"], //type
               controller.setCartItemName?.call(this) ?? c.label ?? "?", // name
@@ -623,7 +625,7 @@ abstract class ChoiceField extends Field<String> {
               1, //qty,
               data: {"key" : this.key, "value": value },
               parent: parent,
-              thumb: cart_info!["thumb"],
+              thumb: cart_info!["thumb"] ?? "",
               shippingRequired: cart_info!["shippingRequired"],
               onComplete: null,
               deletable: parent == null, // can't delete children because it will effect the form choices and not sure how to resolve that.
@@ -671,6 +673,7 @@ class SelectField extends ChoiceField {
   SelectField.fromJSON(Map j) : super.fromJSON(j);
 
   @override Widget getWidget(State state, BuildContext context) {
+    print("$choices");
     return DropdownButtonFormField<String>(
           key : _choicekey,
           decoration: InputDecoration(

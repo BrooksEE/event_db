@@ -17,7 +17,7 @@ import 'html_view.dart';
 
 class RegForm  {
   final _formKey = GlobalKey<FormState>();
-  late MyFormController myFormController;
+  MyFormController? myFormController;
   Race? race;
   Map? info;
   Amount? origAmt;
@@ -35,8 +35,8 @@ class RegForm  {
       },
       setCartItemDesc: (Field f) {
         if(f.key == 'event') {
-          Field? firstname = myFormController.getField('firstname');
-          Field? lastname  = myFormController.getField('lastname');
+          Field? firstname = myFormController!.getField('firstname');
+          Field? lastname  = myFormController!.getField('lastname');
           return "${firstname == null ? "" : firstname.value} ${lastname == null ? "" : lastname.value}";
         }
         return null;
@@ -81,11 +81,11 @@ class RegForm  {
           }
         }
       }
-      myFormController.fromJSON(form_data["form"]);
+      myFormController!.fromJSON(form_data["form"]);
       if(form_data["team_rules"] != null && (setup == null || setup["fields"] == null || setup["fields"].indexOf("team") >= 0)) {
-        myFormController.insertField(0, TeamField.fromJSON(race!, form_data["team_rules"], state));
+        myFormController!.insertField(0, TeamField.fromJSON(race!, form_data["team_rules"], state));
       }
-      myFormController.fields.forEach((Field field) {
+      myFormController!.fields.forEach((Field field) {
         String key = field.key;
         if(key.startsWith("option")) {
           field.listen((value) {
@@ -97,7 +97,7 @@ class RegForm  {
         print("DATA: ${setup}");
         if(setup["race_event_id"] != null) {
           print("DATA TYPE: ${setup["race_event_id"].runtimeType}");
-          RadioField? event = myFormController.getField("event") as RadioField?;
+          RadioField? event = myFormController!.getField("event") as RadioField?;
           if(event != null) {
             String reid = setup["race_event_id"].toString();
             event.value = event.initial = reid;
