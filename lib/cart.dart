@@ -769,7 +769,7 @@ class _CartState extends State<CartView> {
                           RaisedButton(
                             child: Text("Done"),
                             onPressed: () {
-                                Navigator.pushNamedAndRemoveUntil(context, "/home", (r) => false);
+                                Navigator.pop(context);
                             },
                           ),
                           Container(height: 20),
@@ -817,12 +817,12 @@ class _CartState extends State<CartView> {
                                         content: Text(
                                             "Are you sure you want to delete this item from your cart?"),
                                         actions: <Widget>[
-                                          FlatButton(
+                                          TextButton(
                                               child: Text("Cancel"),
                                               onPressed: () {
                                                 Navigator.pop(context);
                                               }),
-                                          FlatButton(
+                                          TextButton(
                                               child: Text("Delete"),
                                               onPressed: () {
                                                 setState(() {

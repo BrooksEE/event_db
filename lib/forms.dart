@@ -589,7 +589,7 @@ class Choice {
     }
   }
   String toString() {
-    return "CHOICE: ${label}";
+    return "CHOICE: '${key}' '${label}' ${key.runtimeType}";
   }
 }
 
@@ -603,10 +603,11 @@ abstract class ChoiceField extends Field<String> {
   }
   ChoiceField.fromJSON(Map j) {
     if(j["initial"] != null) {
-      j["initial"] = j["initiail"].toString();
+      j["initial"] = j["initial"].toString();
     }
     _fromJSON(j);
     j["choices"].forEach((c) {
+
       Choice choice = Choice.fromJSON(c);
       choices.add(choice);
       //print(choice);
@@ -673,7 +674,11 @@ class SelectField extends ChoiceField {
   SelectField.fromJSON(Map j) : super.fromJSON(j);
 
   @override Widget getWidget(State state, BuildContext context) {
-    print("$choices");
+    print("CHOICES: $choices");
+    print("VALUE: '${value}' ${value.runtimeType} ${value==null}");
+    if(choices.where((item) {return item.key == value;}).length != 1) {
+      value = null;
+    }
     return DropdownButtonFormField<String>(
           key : _choicekey,
           decoration: InputDecoration(
@@ -684,7 +689,7 @@ class SelectField extends ChoiceField {
             return DropdownMenuItem<String>(
                 value: s.key, child: Text("${s.label}${s.amt != null && s.amt!.amt > 0 ? " (Add ${s.amt!.display()})" : ""}"));
           }).toList(),
-          validator: (value) {
+          validator: (String? value) {
             if(value == "") {
               value = null;
             }
