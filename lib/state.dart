@@ -9,8 +9,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:uuid/uuid.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 GlobalKey<NavigatorState>? navKey;
+MyUserProvider? gMyUserProvider;
 
 BuildContext get gContext {
   BuildContext? context = navKey?.currentContext;
@@ -21,6 +23,7 @@ BuildContext get gContext {
   }
 }
 
+
 class MyUserProvider with ChangeNotifier {
   MyUser? _user;
   String _tmpEmail  = "";
@@ -29,9 +32,15 @@ class MyUserProvider with ChangeNotifier {
   String udid = "Unknown";
   MyUser? get user => _user;
   String hostKey;
-  ScaffoldBuilder scaffoldBuilder;
-  ChildBuilder childBuilder;
   bool mounted = true;
+  String version = "?.?.?";
+
+  static MyUserProvider? get instance {
+    //BuildContext? context = navKey?.currentContext;
+    //if(context == null) return null;
+    //return Provider.of<MyUserProvider>(context, listen: false);
+    return gMyUserProvider;
+  }
 
   @override void dispose() {
     mounted = false;
@@ -49,7 +58,7 @@ class MyUserProvider with ChangeNotifier {
   String get tmpEmail => _tmpEmail;
   String get tmpPasswd => _tmpPasswd;
 
-  MyUserProvider(GlobalKey<NavigatorState> nKey,this.hostKey, this.scaffoldBuilder, this.childBuilder) {
+  MyUserProvider(GlobalKey<NavigatorState> nKey, this.hostKey) {
     print("MyUserProvider Constructor");
     navKey = nKey;
     RPC().registerNotLoggedInHandler(() async {
@@ -65,12 +74,19 @@ class MyUserProvider with ChangeNotifier {
       udid = uuid.v4(); // -> '110ec58a-a0f2-4ac4-8393-c866d813b8d1'
       notifyListeners();
     });
+
+    PackageInfo.fromPlatform().then((packageInfo) {
+      version = packageInfo.version + "." + packageInfo.buildNumber;
+    });
+    init();
+
+    gMyUserProvider = this;
   }
 
   Future<void> init() async {
     initialized = false;
     try {
-      userFromJson(await RPC().rpc("rest", "User", "whoami", {}, null));
+      userFromJson(await RPC().rpc("rest", "User", "whoami", {}, null, forceLogin: false));
     } on NotLoggedInException {
 
     } catch(e) {
@@ -107,6 +123,19 @@ class MyUserProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  static Future navTo(BuildContext context0, WidgetBuilder builder, {MyUserProvider? myUserProvider=null}) {
+    return Navigator.of(context0).push(MaterialPageRoute(
+        builder: (context) {
+          return ChangeNotifierProvider<MyUserProvider>.value(
+              value: myUserProvider != null ? myUserProvider : Provider.of<MyUserProvider>(context0, listen: false),
+              builder: (context, widget) {
+                return builder(context);
+              }
+          );
+        }
+    ));
+  }
+
   void processLink(String link) {
     if (link == null || !mounted) {
       return;
@@ -117,35 +146,20 @@ class MyUserProvider with ChangeNotifier {
       String rId = m[7];
       print("EMAIL=$email rId=$rId");
 
-      navKey?.currentState?.pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) {
-          return ChangeNotifierProvider<MyUserProvider>.value(
-              value : this,
-              builder: (context, widget1) {
-                return PasswordReset2(email, rId);
-              });
-        }),
-        (route) => true,
-      );
+      if(navKey?.currentContext != null) {
+        navTo(navKey!.currentContext!, (context) => PasswordReset2(email, rId), myUserProvider: this);
+      } else {
+        print("Password reset error: ${navKey} ${navKey?.currentContext}");
+      }
     }
   }
-
-  void goToLogin() {
-    navKey?.currentState?.pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) {
-          return ChangeNotifierProvider<MyUserProvider>.value(
-              value : this,
-              builder: (context, widget1) {
-                return Login();
-              });
-        },
-        settings: RouteSettings(name: "Login"),
-        ),
-        (r) {
-          print(r);
-          return true;
-        },
-    );
+  Future<void> goToLogin() async {
+    BuildContext? context = navKey?.currentState?.context;
+    if(context == null) {
+      return;
+    }
+    await navTo(context, (context) => Login(), myUserProvider: this);
+    print("goToLogin done");
   }
 
   void userFromJson(Map user) {
@@ -158,7 +172,7 @@ class MyUserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> login(String email, String passwd) async {
+  Future<void> login(String email, String passwd, {bool raise=false}) async {
     print("Login $email");
     try {
       userFromJson(await RPC().rpc("rest", "User", "login",  {"username": email, "password": passwd}, "Logging In"));
@@ -166,9 +180,14 @@ class MyUserProvider with ChangeNotifier {
       await prefs.setString("email", email);
       await prefs.setString("password", passwd);
     } catch(e) {
-      dlg.showError("$e");
+      if(raise) {
+        throw(e);
+      } else {
+        dlg.showError("$e");
+      }
     }
   }
+
   Future<void> logout() async {
     await RPC().rpc("rest", "User", "logout",  {}, "Logging Out");
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -179,112 +198,105 @@ class MyUserProvider with ChangeNotifier {
   }
 }
 
-typedef ChildBuilder = Widget Function(BuildContext context);
-typedef ScaffoldBuilder = Widget Function(BuildContext context, {required String appBarTitle, required Widget body});
 
 class Login extends StatefulWidget {
-  Login({Key? key}) : super(key: key);
+  Login();
   @override LoginState createState() => LoginState();
 }
 
 class LoginState extends State<Login> {
-  final _formKey = GlobalKey<FormState>();
+  final _loginFormKey = GlobalKey<FormState>();
+  String? err;
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance?.addPostFrameCallback((_) async {
-      Provider.of<MyUserProvider>(context, listen: false).init();
-    });
-  }
-
-
-  @override Widget build(BuildContext context) {
-    return Consumer<MyUserProvider>(builder: (context, myUserProvider, child) {
-      if(!myUserProvider.initialized) {
-        return myUserProvider.scaffoldBuilder (
-          context,
-          appBarTitle: ("Initializing"),
-          body: Center(child: CircularProgressIndicator()),
-        );
-      } else if(myUserProvider._user == null) {
-        String email = "";
-        String passwd = "";
-        double width = MediaQuery.of(context).size.width;
-        double loginWidth = width < 300 ? width - 10: 300;
-        return myUserProvider.scaffoldBuilder(
-          context,
-          appBarTitle: "Login",
-          body: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget> [
-                Expanded(child: Container()),
-                Text("Login", style: Theme.of(context).textTheme.headline4),
-                Container(width: loginWidth, child: TextFormField(
-                    initialValue: myUserProvider.tmpEmail,
-                    decoration: InputDecoration(
-                      labelText: "Email",
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    onChanged: (newValue) {
-                      myUserProvider.tmpEmail = newValue.trim();
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty || !value.contains("@")) {
-                        return 'Please enter a valid email address';
-                      }
-                      return null;
-                    },
-                )),
-                Container(width: loginWidth, child: TextFormField(
-                  decoration: InputDecoration(
-                    labelText: "Password",
-                  ),
-                  initialValue: myUserProvider.tmpPasswd,
-                  obscureText: true,
-                  onChanged: (newValue) {
-                    myUserProvider.tmpPasswd = newValue;
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a password';
-                    }
-                    return null;
-                  },                )),
-                Container(height: 10),
-                ElevatedButton(
-                    child: Text("Login"),
-                    onPressed: (myUserProvider.tmpEmail.isEmpty || myUserProvider.tmpPasswd.isEmpty || !_formKey.currentState!.validate()) ? null : () {
-                      myUserProvider.login(myUserProvider.tmpEmail, myUserProvider.tmpPasswd);
-                    }
+  Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    double loginWidth = width < 300 ? width - 10: 300;
+    return Consumer<MyUserProvider>(builder: (context, myUser, widget)
+    {
+      return Scaffold(
+        appBar: AppBar(title: Text("Login")),
+        body: Form(
+          key: _loginFormKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Expanded(child: Container(width: 0)),
+              Text("Login", style: Theme
+                  .of(context)
+                  .textTheme
+                  .headline5),
+              Container(height: 10),
+              err == null ? Container(height: 0) : Text(
+                  "$err", style: TextStyle(color: Theme
+                  .of(context)
+                  .errorColor)),
+              Container(height: 10),
+              Container(width: loginWidth, child: TextFormField(
+                initialValue: myUser.tmpEmail,
+                decoration: InputDecoration(
+                  labelText: "Email",
                 ),
-                Expanded(child: Container()),
-                FlatButton(
-                  child: Text("Setup/Forgot Password", style: TextStyle(color: Theme.of(context).primaryColor)),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return ChangeNotifierProvider<MyUserProvider>.value(
-                          value : myUserProvider,
-                          builder: (context, widget1) {
-                            return PasswordReset1();
-                        });
-                      }),
-                    );
-                  },
+                keyboardType: TextInputType.emailAddress,
+                onChanged: (newValue) {
+                  myUser.tmpEmail = newValue.trim();
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty || !value.contains("@")) {
+                    return 'Please enter a valid email address';
+                  }
+                  return null;
+                },
+              )),
+              Container(width: loginWidth, child: TextFormField(
+                decoration: InputDecoration(
+                  labelText: "Password",
                 ),
-              ],
-            ),
+                initialValue: myUser.tmpPasswd,
+                obscureText: true,
+                onChanged: (newValue) {
+                  myUser.tmpPasswd = newValue;
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a password';
+                  }
+                  return null;
+                },
+              )),
+              Container(height: 10),
+              ElevatedButton(
+                onPressed: () async {
+                  setState(() {
+                    err = null;
+                  });
+                  if (!(_loginFormKey.currentState?.validate() ?? false)) {
+                    return;
+                  }
+                  try {
+                    await myUser.login(myUser.tmpEmail, myUser.tmpPasswd, raise: true);
+                    Navigator.pop(context, 'Login');
+                  } catch (e) {
+                    print(e);
+                    setState(() {
+                      err = "$e";
+                    });
+                  }
+                },
+                child: const Text('Login'),
+              ),
+              Expanded(child: Container(width: 0)),
+              TextButton(
+                onPressed: () async {
+                  await MyUserProvider.navTo(context, (context) => PasswordReset1(), myUserProvider: myUser);
+                },
+                child: const Text("Setup/Forgot Password"),
+              ),
+            ],
           ),
-        );
-      } else {
-        return myUserProvider.childBuilder.call(context);
-      }
+        ),
+      );
     });
   }
 }
@@ -310,9 +322,8 @@ class PasswordReset1State extends State<PasswordReset1> {
     return Consumer<MyUserProvider>(builder: (context, myUserProvider, child) {
         double width = MediaQuery.of(context).size.width;
         double loginWidth = width < 300 ? width - 10: 300;
-        return myUserProvider.scaffoldBuilder(
-          context,
-          appBarTitle: "Password",
+        return Scaffold(
+          appBar: AppBar(title: Text("Password")),
           body: Form(
             key: _formKey,
             child: Column(
@@ -395,9 +406,8 @@ class PasswordReset2State extends State<PasswordReset2> {
     return Consumer<MyUserProvider>(builder: (context, myUserProvider, child) {
       double width = MediaQuery.of(context).size.width;
       double loginWidth = width < 300 ? width - 10: 300;
-      return myUserProvider.scaffoldBuilder(
-        context,
-        appBarTitle: "Password",
+      return Scaffold(
+        appBar: AppBar(title: Text("Password")),
         body: Form(
           key: _formKey,
           child: Column(

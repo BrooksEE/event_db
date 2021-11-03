@@ -80,7 +80,9 @@ class RPC {
     }
   }
 
-  Future<Map> rpc(String mod, String view, String func, Map args, String? msg, {bool retryLogin : true, useSnackBarMsg: false }) async {
+  Future<Map> rpc(String mod, String view, String func, Map args, String? msg, {bool retryLogin : true, forceLogin : true, useSnackBarMsg: false }) async {
+    // retryLogin: when true, will try cached login credentials behind the scenes to log back in for the user
+    // forceLogin: when true, will launch a login screen for the user to login
     final String path = '/rest/$mod/$view/$func';
     final String url = '$server$path';
 
@@ -177,7 +179,7 @@ class RPC {
             if (email.isNotEmpty && password.isNotEmpty) {
               bool failed = true;
               try {
-                await RPC().rpc("rest", "User", "login",  {"username": email, "password": password}, null);
+                await RPC().rpc("rest", "User", "login",  {"username": email, "password": password}, null, retryLogin: false, forceLogin: forceLogin, useSnackBarMsg: useSnackBarMsg);
                 failed = false;
               } catch(e) {
                 failed = true;
@@ -188,6 +190,14 @@ class RPC {
             }
           }
           if (result["result"] == "Not Logged In") {
+            if(forceLogin) {
+              print("FETCHING LOGIN PAGE $mod $view $func");
+              try {
+                await MyUserProvider.instance?.goToLogin();
+              } catch (e) {
+                print(e);
+              }
+            }
             notLoggedInHandler?.call();
             throw NotLoggedInException();
           } else {

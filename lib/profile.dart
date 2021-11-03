@@ -57,7 +57,8 @@ class ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<MyUserProvider>(builder: (context, myUserProvider, child) {
+    return Scaffold(body: Text("HERE"));
+/*    return Consumer<MyUserProvider>(builder: (context, myUserProvider, child) {
       return myUserProvider.scaffoldBuilder(
         context,
         appBarTitle: "Update Profile",
@@ -114,5 +115,7 @@ class ProfileState extends State<Profile> {
         ),
       );
     });
+
+ */
   }
 }

@@ -8,12 +8,12 @@ import 'package:photo_view/photo_view.dart';
 import 'package:provider/provider.dart';
 import 'state.dart';
 
-void showError(String msg, [VoidCallback? cb=null]) {
-  showMsg("Error", msg, cb);
+Future<void> showError(String msg, [VoidCallback? cb=null]) async {
+  await showMsg("Error", msg, cb);
 }
 
-void show(String title, String msg, Function builder) {
-  showDialog(
+Future<void> show(String title, String msg, Function builder) async {
+  await showDialog(
     context: gContext,
     builder: (BuildContext context) {
       return AlertDialog(
@@ -25,8 +25,8 @@ void show(String title, String msg, Function builder) {
   );
 }
 
-void confirm(String title, String msg, Function cbConfirm, Function cbCancel) {
-  show(title, msg, (context) {
+Future<void> confirm(String title, String msg, Function cbConfirm, Function cbCancel) async {
+  await show(title, msg, (context) {
     return <Widget>[
       TextButton(
         child: Text("Cancel"),
@@ -46,8 +46,8 @@ void confirm(String title, String msg, Function cbConfirm, Function cbCancel) {
   });
 }
 
-void showMsg(String title, String msg, [VoidCallback? cb=null]) {
-  return show(title, msg, (context) {
+Future<void> showMsg(String title, String msg, [VoidCallback? cb=null]) async {
+  return await show(title, msg, (context) {
     return <Widget>[
             TextButton(
               child: Text('Ok'),
@@ -62,8 +62,8 @@ void showMsg(String title, String msg, [VoidCallback? cb=null]) {
   });
 }
 
-void showBusy(String msg) {
-  showDialog(
+Future<void> showBusy(String msg) async {
+  await showDialog(
     context: gContext,
     barrierDismissible: false, // user can't dismiss
     builder: (BuildContext context) {
