@@ -47,7 +47,7 @@ class RegForm  {
       if(setup != null && setup["initialize"] != null) {
         args["initialize"] = setup["initialize"];
       }
-      Map form_data = await RPC().rpc("event","Participant","get_reg_form", args, null);
+      Map form_data = await RPC().rpc("event", "Info", "get_reg_form", args, null);
       race = Race.fromJson(form_data["race"]);
       print("FORM: ${form_data["form"]}");
       print("INVENTORY: ${form_data["inventory"]}");
