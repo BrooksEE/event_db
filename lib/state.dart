@@ -2,6 +2,7 @@ library db;
 import 'dart:io';
 import 'db.dart';
 import 'RPC.dart';
+import 'cart.dart';
 import 'dialogs.dart' as dlg;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -179,6 +180,7 @@ class MyUserProvider with ChangeNotifier {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString("email", email);
       await prefs.setString("password", passwd);
+      Cart.email = email;
     } catch(e) {
       if(raise) {
         throw(e);
@@ -194,6 +196,7 @@ class MyUserProvider with ChangeNotifier {
     await prefs.remove("email");
     await prefs.remove("password");
     _user = null;
+    Cart.email = "";
     notifyListeners();
   }
 }

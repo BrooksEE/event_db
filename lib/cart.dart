@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'RPC.dart';
+import 'state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart' as mt;
 import 'package:flutter/widgets.dart';
@@ -399,6 +400,7 @@ class Cart {
   static Address shippingAddress = Address();
   static List<CartItem> cartItems = [];
   static String invoiceNumber = genInvoiceNumber(_host_key);
+  static String email = "";
 
   static addItem(CartItem item) {
     cartItems.add(item);
@@ -552,6 +554,7 @@ class _CartState extends State<CartView> {
     args["cart_items"]     = Cart.toMap();
     args["shipping"]       = Cart.shippingAddress.toJSON();
     args["host_key"]       = widget.host_key;
+    args["email"]          = Cart.email;
     invoice = null;
     try {
       Map inv = await RPC().rpc("shop","AppStore","payment", args, "Completing Transaction");
@@ -853,7 +856,23 @@ class _CartState extends State<CartView> {
                     trailing: Text(tot.display(), style:TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
-                Container(height: 20),
+                Container(padding: EdgeInsets.all(20),
+                  child: TextFormField(
+                  initialValue: Cart.email,
+                  decoration: InputDecoration(
+                    labelText: "Email",
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  onChanged: (newValue) {
+                    Cart.email = newValue.trim().toLowerCase();
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty || !value.contains("@")) {
+                      return 'Please enter a valid email address';
+                    }
+                    return null;
+                  },
+                )),
                 Cart.shippingRequired() ?
                     mt.Card(child: Padding(padding: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
                         child: Column(
