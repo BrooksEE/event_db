@@ -80,12 +80,35 @@ class RPC {
     }
   }
 
-  Future<Map> rpc(String mod, String view, String func, Map args, String? msg, {bool retryLogin : true, forceLogin : true, useSnackBarMsg: false }) async {
-    // retryLogin: when true, will try cached login credentials behind the scenes to log back in for the user
-    // forceLogin: when true, will launch a login screen for the user to login
+  String getCacheKey(String mod, String view, String func, Map args) {
     final String path = '/rest/$mod/$view/$func';
     final String url = '$server$path';
+    String key = "$url";
+    key = "${MyUserProvider.instance?.user?.id}/$key/${jsonEncode(args)}";
+    print("OFFLINE KEY: $key");
+    return key;
+  }
 
+  Future<Map?> fromCache(String mod, String view, String func, Map args) async {
+    String key = getCacheKey(mod, view, func, args);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if(prefs.containsKey(key)) {
+      print("Cache hit.");
+      String? cache = prefs.getString(key);
+      if (cache != null) {
+        return jsonDecode(cache);
+      }
+    }
+    return null;
+  }
+
+  Future<Map> rpc(String mod, String view, String func, Map args, String? msg, {bool retryLogin : true, bool forceLogin : true, bool useSnackBarMsg: false, bool cache: false }) async {
+    // retryLogin: when true, will try cached login credentials behind the scenes to log back in for the user
+    // forceLogin: when true, will launch a login screen for the user to login
+    // cache: when true, result is saved off and can be restored with the fromCache() method
+    final String path = '/rest/$mod/$view/$func';
+    final String url = '$server$path';
+    String key = getCacheKey(mod, view, func, args);
     final bool showProgress = msg != null;
     useSnackBarMsg = useSnackBarMsg && gContext != null;
     if (showProgress) {
@@ -100,7 +123,6 @@ class RPC {
       }
     }
     try {
-
       print("rpc: $url");
       final Map body = {
         'args': (args == null) ? {} : args,
@@ -152,6 +174,19 @@ class RPC {
         }
         response = await dio.post(url, data: body, options: Options(headers: headers));
       } on DioError catch(e) {
+        print("$e");
+        /* if(cache) {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          if(prefs.containsKey(key)) {
+            print("Cache hit.");
+            String? cache = prefs.getString(key);
+            if(cache != null) {
+              return jsonDecode(cache);
+            }
+          } else {
+            print("Cache miss.");
+          }
+        } */
         if(e.message.startsWith("SocketException: Failed host lookup")) {
           throw ConnectionException();
         } else {
@@ -204,6 +239,11 @@ class RPC {
             throw Exception(result["result"]);
           }
         } else if (result["status"] == "OK") {
+          if(cache) {
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            prefs.setString(key, jsonEncode(result["result"] ?? {}));
+            print("OFFILE KEY: $key");
+          }
           return result["result"] ?? {};
         } else {
           throw Exception("Unkonwn response");

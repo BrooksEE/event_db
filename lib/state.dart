@@ -1,6 +1,7 @@
 library db;
 import 'dart:io';
 import 'db.dart';
+import 'dart:convert';
 import 'RPC.dart';
 import 'cart.dart';
 import 'dialogs.dart' as dlg;
@@ -80,18 +81,30 @@ class MyUserProvider with ChangeNotifier {
       version = packageInfo.version + "." + packageInfo.buildNumber;
     });
     init();
-
     gMyUserProvider = this;
   }
 
   Future<void> init() async {
     initialized = false;
+
+    // restore last user as a place holder in case they are offline
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if(prefs.containsKey("lastUser")) {
+      String? user = prefs.getString("lastUser");
+      if(user != null) {
+        print("Found lastUser. Restoring $user");
+        userFromJson(jsonDecode(user));
+      }
+    }
+
+    // try to connect to establish last user
     try {
       userFromJson(await RPC().rpc("rest", "User", "whoami", {}, null, forceLogin: false));
     } on NotLoggedInException {
 
     } catch(e) {
-      dlg.showError(e.toString());
+      print(e);
+      //dlg.showError(e.toString());
     }
 
     /* handle uni_links */
@@ -170,6 +183,9 @@ class MyUserProvider with ChangeNotifier {
       m[k.toString()] = v;
     });
     _user = MyUser.fromJson(m);
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString("lastUser", jsonEncode(m));
+    });
     notifyListeners();
   }
 
