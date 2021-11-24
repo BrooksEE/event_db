@@ -1601,6 +1601,8 @@ class RaceEvent {
   int? finish_count;
   int? finish_count_male;
   int? finish_count_female;
+  int? finish_count_unspecified;
+  String? finish_count_genders;
   late bool no_facebook_discount;
   final  int DIST_UNITS_MILES = 0;
   final  int DIST_UNITS_KM = 1;
@@ -1662,6 +1664,8 @@ class RaceEvent {
     finish_count = j['finish_count'];
     finish_count_male = j['finish_count_male'];
     finish_count_female = j['finish_count_female'];
+    finish_count_unspecified = j['finish_count_unspecified'];
+    finish_count_genders = j['finish_count_genders'];
     no_facebook_discount = j['no_facebook_discount'];
     dist_units = j['dist_units'];
     pace_units = j['pace_units'];
@@ -1707,6 +1711,8 @@ class RaceEvent {
       'finish_count' : finish_count,
       'finish_count_male' : finish_count_male,
       'finish_count_female' : finish_count_female,
+      'finish_count_unspecified' : finish_count_unspecified,
+      'finish_count_genders' : finish_count_genders,
       'no_facebook_discount' : no_facebook_discount,
       'dist_units' : dist_units,
       'pace_units' : pace_units,
@@ -1779,6 +1785,8 @@ class Participant {
   late String country;
   late String zip;
   late String gender;
+  int? gendet_id;
+  // Gender gendet;
   DateTime? birthday;
   late double lat;
   late double lon;
@@ -1803,6 +1811,8 @@ class Participant {
   String? tag;
   int? division_id;
   // Division division;
+  int? bracket_id;
+  // Bracket bracket;
   final  int STATUS_SIGNED_UP = 0;
   final  int STATUS_BIB_CHECKED = 1;
   final  int STATUS_RUNNING = 2;
@@ -1840,6 +1850,7 @@ class Participant {
     country = j['country'];
     zip = j['zip'];
     gender = j['gender'];
+    gendet_id = j['gendet_id'];
     try { birthday = DateTime.parse(j['birthday']); } catch(e) { birthday = null; }     lat = j['lat'];
     lon = j['lon'];
     age = j['age'];
@@ -1859,6 +1870,7 @@ class Participant {
     hide_results = j['hide_results'];
     tag = j['tag'];
     division_id = j['division_id'];
+    bracket_id = j['bracket_id'];
     status = j['status'];
   }
 
@@ -1878,6 +1890,7 @@ class Participant {
       'country' : country,
       'zip' : zip,
       'gender' : gender,
+      'gendet_id' : gendet_id,
       'birthday' : birthday.toString(),
       'lat' : lat,
       'lon' : lon,
@@ -1900,6 +1913,7 @@ class Participant {
       'hide_results' : hide_results,
       'tag' : tag,
       'division_id' : division_id,
+      'bracket_id' : bracket_id,
       'status' : status,
     };
   }
@@ -1907,6 +1921,1280 @@ class Participant {
 
 int? tagt;
   String get name => "${firstname} ${lastname}";
+
+}
+
+// <class 'training.models.Coach'>
+class TrainingCoach {
+  late int id;
+  late int user_id;
+  MyUser? user;
+  late String phone;
+  late bool is_admin;
+
+  TrainingCoach.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    user_id = j['user_id'];
+    user = (j['user'] == null) ? null : MyUser.fromJson(j['user']);
+    phone = j['phone'];
+    is_admin = j['is_admin'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'user_id' : user_id,
+      'user' : user == null ? null : user?.toJson(),
+      'phone' : phone,
+      'is_admin' : is_admin,
+    };
+  }
+
+}
+
+// <class 'training.models.Profile'>
+class TrainingProfile {
+  late int id;
+  late int user_id;
+  MyUser? user;
+  late String bio;
+  int? photo_id;
+  // Photo photo;
+  final  int WEEK_STARTS_DEFAULT = -1;
+  final  int WEEK_STARTS_SUN = 0;
+  final  int WEEK_STARTS_MON = 1;
+  final  int WEEK_STARTS_TUE = 2;
+  final  int WEEK_STARTS_WED = 3;
+  final  int WEEK_STARTS_THU = 4;
+  final  int WEEK_STARTS_FRI = 5;
+  final  int WEEK_STARTS_SAT = 6;
+  String get week_startsString {
+    if(week_starts == WEEK_STARTS_DEFAULT) return 'Default';
+    if(week_starts == WEEK_STARTS_SUN) return 'Sun';
+    if(week_starts == WEEK_STARTS_MON) return 'Mon';
+    if(week_starts == WEEK_STARTS_TUE) return 'Tue';
+    if(week_starts == WEEK_STARTS_WED) return 'Wed';
+    if(week_starts == WEEK_STARTS_THU) return 'Thu';
+    if(week_starts == WEEK_STARTS_FRI) return 'Fri';
+    if(week_starts == WEEK_STARTS_SAT) return 'Sat';
+    return '?';
+  }
+
+  late int week_starts;
+  final  int UNITS_MILES = 0;
+  final  int UNITS_KM = 1;
+  String get unitsString {
+    if(units == UNITS_MILES) return 'miles';
+    if(units == UNITS_KM) return 'km';
+    return '?';
+  }
+
+  late int units;
+
+  TrainingProfile.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    user_id = j['user_id'];
+    user = (j['user'] == null) ? null : MyUser.fromJson(j['user']);
+    bio = j['bio'];
+    photo_id = j['photo_id'];
+    week_starts = j['week_starts'];
+    units = j['units'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'user_id' : user_id,
+      'user' : user == null ? null : user?.toJson(),
+      'bio' : bio,
+      'photo_id' : photo_id,
+      'week_starts' : week_starts,
+      'units' : units,
+    };
+  }
+
+}
+
+// <class 'training.models.Program'>
+class TrainingProgram {
+  late int id;
+  late int host_id;
+  Host? host;
+  int? alt_host_id;
+  Host? alt_host;
+  late String name;
+  String? desc;
+  int? default_coach_id;
+  TrainingCoach? default_coach;
+  String? waiver;
+  late String email;
+  final  int WEEK_STARTS_SUN = 0;
+  final  int WEEK_STARTS_MON = 1;
+  final  int WEEK_STARTS_TUE = 2;
+  final  int WEEK_STARTS_WED = 3;
+  final  int WEEK_STARTS_THU = 4;
+  final  int WEEK_STARTS_FRI = 5;
+  final  int WEEK_STARTS_SAT = 6;
+  String get week_startsString {
+    if(week_starts == WEEK_STARTS_SUN) return 'Sun';
+    if(week_starts == WEEK_STARTS_MON) return 'Mon';
+    if(week_starts == WEEK_STARTS_TUE) return 'Tue';
+    if(week_starts == WEEK_STARTS_WED) return 'Wed';
+    if(week_starts == WEEK_STARTS_THU) return 'Thu';
+    if(week_starts == WEEK_STARTS_FRI) return 'Fri';
+    if(week_starts == WEEK_STARTS_SAT) return 'Sat';
+    return '?';
+  }
+
+  late int week_starts;
+  final  int TYPE_FIXED_PLANS = 0;
+  final  int TYPE_ROAMING = 1;
+  String get typeString {
+    if(type == TYPE_FIXED_PLANS) return 'Fixed Plans';
+    if(type == TYPE_ROAMING) return 'Roaming';
+    return '?';
+  }
+
+  late int type;
+
+  TrainingProgram.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    host_id = j['host_id'];
+    host = (j['host'] == null) ? null : Host.fromJson(j['host']);
+    alt_host_id = j['alt_host_id'];
+    alt_host = (j['alt_host'] == null) ? null : Host.fromJson(j['alt_host']);
+    name = j['name'];
+    desc = j['desc'];
+    default_coach_id = j['default_coach_id'];
+    default_coach = (j['default_coach'] == null) ? null : TrainingCoach.fromJson(j['default_coach']);
+    waiver = j['waiver'];
+    email = j['email'];
+    week_starts = j['week_starts'];
+    type = j['type'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'host_id' : host_id,
+      'host' : host == null ? null : host?.toJson(),
+      'alt_host_id' : alt_host_id,
+      'alt_host' : alt_host == null ? null : alt_host?.toJson(),
+      'name' : name,
+      'desc' : desc,
+      'default_coach_id' : default_coach_id,
+      'default_coach' : default_coach == null ? null : default_coach?.toJson(),
+      'waiver' : waiver,
+      'email' : email,
+      'week_starts' : week_starts,
+      'type' : type,
+    };
+  }
+
+}
+
+// <class 'training.models.PaymentPlan'>
+class TrainingPaymentPlan {
+  late int id;
+  late int program_id;
+  TrainingProgram? program;
+  late String name;
+  String? desc;
+  late double activation_fee;
+  late bool active;
+
+  TrainingPaymentPlan.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    program_id = j['program_id'];
+    program = (j['program'] == null) ? null : TrainingProgram.fromJson(j['program']);
+    name = j['name'];
+    desc = j['desc'];
+    activation_fee = j['activation_fee'];
+    active = j['active'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'program_id' : program_id,
+      'program' : program == null ? null : program?.toJson(),
+      'name' : name,
+      'desc' : desc,
+      'activation_fee' : activation_fee,
+      'active' : active,
+    };
+  }
+
+}
+
+// <class 'training.models.Payment'>
+class TrainingPayment {
+  late int id;
+  late int payment_plan_id;
+  TrainingPaymentPlan? payment_plan;
+  late int days;
+  late double amount;
+
+  TrainingPayment.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    payment_plan_id = j['payment_plan_id'];
+    payment_plan = (j['payment_plan'] == null) ? null : TrainingPaymentPlan.fromJson(j['payment_plan']);
+    days = j['days'];
+    amount = j['amount'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'payment_plan_id' : payment_plan_id,
+      'payment_plan' : payment_plan == null ? null : payment_plan?.toJson(),
+      'days' : days,
+      'amount' : amount,
+    };
+  }
+
+}
+
+// <class 'training.models.Group'>
+class TrainingGroup {
+  late int id;
+  late int program_id;
+  TrainingProgram? program;
+  late String name;
+  late int race_id;
+  Race? race;
+  late bool hidden;
+  late bool selectable_during_checkout;
+  String? desc;
+
+  TrainingGroup.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    program_id = j['program_id'];
+    program = (j['program'] == null) ? null : TrainingProgram.fromJson(j['program']);
+    name = j['name'];
+    race_id = j['race_id'];
+    race = (j['race'] == null) ? null : Race.fromJson(j['race']);
+    hidden = j['hidden'];
+    selectable_during_checkout = j['selectable_during_checkout'];
+    desc = j['desc'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'program_id' : program_id,
+      'program' : program == null ? null : program?.toJson(),
+      'name' : name,
+      'race_id' : race_id,
+      'race' : race == null ? null : race?.toJson(),
+      'hidden' : hidden,
+      'selectable_during_checkout' : selectable_during_checkout,
+      'desc' : desc,
+    };
+  }
+
+}
+
+// <class 'training.models.Thread'>
+class TrainingThread {
+  late int id;
+  late int thread_id;
+  // Thread thread;
+  late int program_id;
+  TrainingProgram? program;
+
+  TrainingThread.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    thread_id = j['thread_id'];
+    program_id = j['program_id'];
+    program = (j['program'] == null) ? null : TrainingProgram.fromJson(j['program']);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'thread_id' : thread_id,
+      'program_id' : program_id,
+      'program' : program == null ? null : program?.toJson(),
+    };
+  }
+
+}
+
+// <class 'training.models.Questionnaire'>
+class TrainingQuestionnaire {
+  late int id;
+  late int program_id;
+  TrainingProgram? program;
+  late String name;
+  String? notes;
+
+  TrainingQuestionnaire.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    program_id = j['program_id'];
+    program = (j['program'] == null) ? null : TrainingProgram.fromJson(j['program']);
+    name = j['name'];
+    notes = j['notes'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'program_id' : program_id,
+      'program' : program == null ? null : program?.toJson(),
+      'name' : name,
+      'notes' : notes,
+    };
+  }
+
+}
+
+// <class 'training.models.Product'>
+class TrainingProduct {
+  late int id;
+  late int program_id;
+  TrainingProgram? program;
+  late int default_race_id;
+  Race? default_race;
+  late String name;
+  late int order;
+  int? questionnaire_id;
+  TrainingQuestionnaire? questionnaire;
+  int? event_id;
+  Event? event;
+  String? desc;
+  late double cost;
+  int? payment_plan_id;
+  TrainingPaymentPlan? payment_plan;
+  late bool active;
+
+  TrainingProduct.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    program_id = j['program_id'];
+    program = (j['program'] == null) ? null : TrainingProgram.fromJson(j['program']);
+    default_race_id = j['default_race_id'];
+    default_race = (j['default_race'] == null) ? null : Race.fromJson(j['default_race']);
+    name = j['name'];
+    order = j['order'];
+    questionnaire_id = j['questionnaire_id'];
+    questionnaire = (j['questionnaire'] == null) ? null : TrainingQuestionnaire.fromJson(j['questionnaire']);
+    event_id = j['event_id'];
+    event = (j['event'] == null) ? null : Event.fromJson(j['event']);
+    desc = j['desc'];
+    cost = j['cost'];
+    payment_plan_id = j['payment_plan_id'];
+    payment_plan = (j['payment_plan'] == null) ? null : TrainingPaymentPlan.fromJson(j['payment_plan']);
+    active = j['active'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'program_id' : program_id,
+      'program' : program == null ? null : program?.toJson(),
+      'default_race_id' : default_race_id,
+      'default_race' : default_race == null ? null : default_race?.toJson(),
+      'name' : name,
+      'order' : order,
+      'questionnaire_id' : questionnaire_id,
+      'questionnaire' : questionnaire == null ? null : questionnaire?.toJson(),
+      'event_id' : event_id,
+      'event' : event == null ? null : event?.toJson(),
+      'desc' : desc,
+      'cost' : cost,
+      'payment_plan_id' : payment_plan_id,
+      'payment_plan' : payment_plan == null ? null : payment_plan?.toJson(),
+      'active' : active,
+    };
+  }
+
+}
+
+// <class 'training.models.Plan'>
+class TrainingPlan {
+  late int id;
+  late int program_id;
+  TrainingProgram? program;
+  int? questionnaire_id;
+  TrainingQuestionnaire? questionnaire;
+  int? race_event_id;
+  RaceEvent? race_event;
+  late String name;
+  String? desc;
+  late int duration_weeks;
+  late double cost;
+  DateTime? expires;
+  late bool purchasable;
+  late bool hidden;
+  late int order;
+
+  TrainingPlan.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    program_id = j['program_id'];
+    program = (j['program'] == null) ? null : TrainingProgram.fromJson(j['program']);
+    questionnaire_id = j['questionnaire_id'];
+    questionnaire = (j['questionnaire'] == null) ? null : TrainingQuestionnaire.fromJson(j['questionnaire']);
+    race_event_id = j['race_event_id'];
+    race_event = (j['race_event'] == null) ? null : RaceEvent.fromJson(j['race_event']);
+    name = j['name'];
+    desc = j['desc'];
+    duration_weeks = j['duration_weeks'];
+    cost = j['cost'];
+    try { expires = DateTime.parse(j['expires']); } catch(e) { expires = null; }     purchasable = j['purchasable'];
+    hidden = j['hidden'];
+    order = j['order'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'program_id' : program_id,
+      'program' : program == null ? null : program?.toJson(),
+      'questionnaire_id' : questionnaire_id,
+      'questionnaire' : questionnaire == null ? null : questionnaire?.toJson(),
+      'race_event_id' : race_event_id,
+      'race_event' : race_event == null ? null : race_event?.toJson(),
+      'name' : name,
+      'desc' : desc,
+      'duration_weeks' : duration_weeks,
+      'cost' : cost,
+      'expires' : expires.toString(),
+      'purchasable' : purchasable,
+      'hidden' : hidden,
+      'order' : order,
+    };
+  }
+
+}
+
+// <class 'training.models.PlanOption'>
+class TrainingPlanOption {
+  late int id;
+  late int plan_id;
+  TrainingPlan? plan;
+  late String name;
+  late double cost;
+
+  TrainingPlanOption.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    plan_id = j['plan_id'];
+    plan = (j['plan'] == null) ? null : TrainingPlan.fromJson(j['plan']);
+    name = j['name'];
+    cost = j['cost'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'plan_id' : plan_id,
+      'plan' : plan == null ? null : plan?.toJson(),
+      'name' : name,
+      'cost' : cost,
+    };
+  }
+
+}
+
+// <class 'training.models.Question'>
+class TrainingQuestion {
+  late int id;
+  late int questionnaire_id;
+  TrainingQuestionnaire? questionnaire;
+  late String question;
+  late String name;
+  final  int TYPE_NUMBER = 0;
+  final  int TYPE_SHORT_TEXT_ANSWER = 1;
+  final  int TYPE_LONG_TEXT_ANSWER = 4;
+  final  int TYPE_MULTIPLE_CHOICE___SINGLE_ANSWER = 2;
+  final  int TYPE_MULTIPLE_CHOICE___MULTIPLE_ANSWERS = 3;
+  String get typeString {
+    if(type == TYPE_NUMBER) return 'Number';
+    if(type == TYPE_SHORT_TEXT_ANSWER) return 'Short Text Answer';
+    if(type == TYPE_LONG_TEXT_ANSWER) return 'Long Text Answer';
+    if(type == TYPE_MULTIPLE_CHOICE___SINGLE_ANSWER) return 'Multiple Choice - Single Answer';
+    if(type == TYPE_MULTIPLE_CHOICE___MULTIPLE_ANSWERS) return 'Multiple Choice - Multiple Answers';
+    return '?';
+  }
+
+  late int type;
+  late String choices;
+  late bool required;
+  late bool allow_comment;
+  late String comment_text;
+
+  TrainingQuestion.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    questionnaire_id = j['questionnaire_id'];
+    questionnaire = (j['questionnaire'] == null) ? null : TrainingQuestionnaire.fromJson(j['questionnaire']);
+    question = j['question'];
+    name = j['name'];
+    type = j['type'];
+    choices = j['choices'];
+    required = j['required'];
+    allow_comment = j['allow_comment'];
+    comment_text = j['comment_text'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'questionnaire_id' : questionnaire_id,
+      'questionnaire' : questionnaire == null ? null : questionnaire?.toJson(),
+      'question' : question,
+      'name' : name,
+      'type' : type,
+      'choices' : choices,
+      'required' : required,
+      'allow_comment' : allow_comment,
+      'comment_text' : comment_text,
+    };
+  }
+
+}
+
+// <class 'training.models.Participant'>
+class TrainingParticipant {
+  late int id;
+  late int user_id;
+  MyUser? user;
+  int? program_id;
+  TrainingProgram? program;
+  int? plan_id;
+  TrainingPlan? plan;
+  int? product_id;
+  TrainingProduct? product;
+  int? coach_id;
+  TrainingCoach? coach;
+  int? group_id;
+  TrainingGroup? group;
+  late String firstname;
+  late String lastname;
+  late String email;
+  DateTime? birthday;
+  late String phone;
+  int? line_item_id;
+  // LineItem line_item;
+  DateTime? timestamp;
+  late String notes;
+  DateTime? end_date;
+  int? pace_spm;
+
+  TrainingParticipant.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    user_id = j['user_id'];
+    user = (j['user'] == null) ? null : MyUser.fromJson(j['user']);
+    program_id = j['program_id'];
+    program = (j['program'] == null) ? null : TrainingProgram.fromJson(j['program']);
+    plan_id = j['plan_id'];
+    plan = (j['plan'] == null) ? null : TrainingPlan.fromJson(j['plan']);
+    product_id = j['product_id'];
+    product = (j['product'] == null) ? null : TrainingProduct.fromJson(j['product']);
+    coach_id = j['coach_id'];
+    coach = (j['coach'] == null) ? null : TrainingCoach.fromJson(j['coach']);
+    group_id = j['group_id'];
+    group = (j['group'] == null) ? null : TrainingGroup.fromJson(j['group']);
+    firstname = j['firstname'];
+    lastname = j['lastname'];
+    email = j['email'];
+    try { birthday = DateTime.parse(j['birthday']); } catch(e) { birthday = null; }     phone = j['phone'];
+    line_item_id = j['line_item_id'];
+    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }     notes = j['notes'];
+    try { end_date = DateTime.parse(j['end_date']); } catch(e) { end_date = null; }     pace_spm = j['pace_spm'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'user_id' : user_id,
+      'user' : user == null ? null : user?.toJson(),
+      'program_id' : program_id,
+      'program' : program == null ? null : program?.toJson(),
+      'plan_id' : plan_id,
+      'plan' : plan == null ? null : plan?.toJson(),
+      'product_id' : product_id,
+      'product' : product == null ? null : product?.toJson(),
+      'coach_id' : coach_id,
+      'coach' : coach == null ? null : coach?.toJson(),
+      'group_id' : group_id,
+      'group' : group == null ? null : group?.toJson(),
+      'firstname' : firstname,
+      'lastname' : lastname,
+      'email' : email,
+      'birthday' : birthday.toString(),
+      'phone' : phone,
+      'line_item_id' : line_item_id,
+      'timestamp' : timestamp.toString(),
+      'notes' : notes,
+      'end_date' : end_date.toString(),
+      'pace_spm' : pace_spm,
+    };
+  }
+
+}
+
+// <class 'training.models.ParticipantPayment'>
+class TrainingParticipantPayment {
+  late int id;
+  late int participant_id;
+  TrainingParticipant? participant;
+  int? payment_id;
+  // RecurringPayment payment;
+  late int days;
+  late double amount;
+  late String name;
+  late int parent_id;
+  // LineItem parent;
+
+  TrainingParticipantPayment.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    participant_id = j['participant_id'];
+    participant = (j['participant'] == null) ? null : TrainingParticipant.fromJson(j['participant']);
+    payment_id = j['payment_id'];
+    days = j['days'];
+    amount = j['amount'];
+    name = j['name'];
+    parent_id = j['parent_id'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'participant_id' : participant_id,
+      'participant' : participant == null ? null : participant?.toJson(),
+      'payment_id' : payment_id,
+      'days' : days,
+      'amount' : amount,
+      'name' : name,
+      'parent_id' : parent_id,
+    };
+  }
+
+}
+
+// <class 'training.models.Answer'>
+class TrainingAnswer {
+  late int id;
+  late int question_id;
+  TrainingQuestion? question;
+  late int participant_id;
+  TrainingParticipant? participant;
+  late String answer;
+  String? comment;
+
+  TrainingAnswer.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    question_id = j['question_id'];
+    question = (j['question'] == null) ? null : TrainingQuestion.fromJson(j['question']);
+    participant_id = j['participant_id'];
+    participant = (j['participant'] == null) ? null : TrainingParticipant.fromJson(j['participant']);
+    answer = j['answer'];
+    comment = j['comment'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'question_id' : question_id,
+      'question' : question == null ? null : question?.toJson(),
+      'participant_id' : participant_id,
+      'participant' : participant == null ? null : participant?.toJson(),
+      'answer' : answer,
+      'comment' : comment,
+    };
+  }
+
+}
+
+// <class 'training.models.WorkoutReorder'>
+class TrainingWorkoutReorder {
+  late int id;
+  late int participant_id;
+  TrainingParticipant? participant;
+  late int day_orig;
+  late int day_new;
+
+  TrainingWorkoutReorder.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    participant_id = j['participant_id'];
+    participant = (j['participant'] == null) ? null : TrainingParticipant.fromJson(j['participant']);
+    day_orig = j['day_orig'];
+    day_new = j['day_new'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'participant_id' : participant_id,
+      'participant' : participant == null ? null : participant?.toJson(),
+      'day_orig' : day_orig,
+      'day_new' : day_new,
+    };
+  }
+
+}
+
+// <class 'training.models.WorkoutType'>
+class TrainingWorkoutType {
+  late int id;
+  late int program_id;
+  TrainingProgram? program;
+  late String name;
+  String? desc;
+
+  TrainingWorkoutType.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    program_id = j['program_id'];
+    program = (j['program'] == null) ? null : TrainingProgram.fromJson(j['program']);
+    name = j['name'];
+    desc = j['desc'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'program_id' : program_id,
+      'program' : program == null ? null : program?.toJson(),
+      'name' : name,
+      'desc' : desc,
+    };
+  }
+
+}
+
+// <class 'training.models.Workout'>
+class TrainingWorkout {
+  late int id;
+  late int plan_id;
+  TrainingPlan? plan;
+  int? type_id;
+  TrainingWorkoutType? type;
+  late int day;
+  String? notes;
+
+  TrainingWorkout.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    plan_id = j['plan_id'];
+    plan = (j['plan'] == null) ? null : TrainingPlan.fromJson(j['plan']);
+    type_id = j['type_id'];
+    type = (j['type'] == null) ? null : TrainingWorkoutType.fromJson(j['type']);
+    day = j['day'];
+    notes = j['notes'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'plan_id' : plan_id,
+      'plan' : plan == null ? null : plan?.toJson(),
+      'type_id' : type_id,
+      'type' : type == null ? null : type?.toJson(),
+      'day' : day,
+      'notes' : notes,
+    };
+  }
+
+}
+
+// <class 'training.models.Location'>
+class TrainingLocation {
+  late int id;
+  late int group_id;
+  TrainingGroup? group;
+  late String name;
+  late String address;
+  late String city;
+  final  String STATE_NONE = "__";
+  final  String STATE_AB = "AB";
+  final  String STATE_AK = "AK";
+  final  String STATE_AL = "AL";
+  final  String STATE_AR = "AR";
+  final  String STATE_AZ = "AZ";
+  final  String STATE_BC = "BC";
+  final  String STATE_CA = "CA";
+  final  String STATE_CO = "CO";
+  final  String STATE_CT = "CT";
+  final  String STATE_DC = "DC";
+  final  String STATE_DE = "DE";
+  final  String STATE_FL = "FL";
+  final  String STATE_GA = "GA";
+  final  String STATE_HI = "HI";
+  final  String STATE_IA = "IA";
+  final  String STATE_ID = "ID";
+  final  String STATE_IL = "IL";
+  final  String STATE_IN = "IN";
+  final  String STATE_KS = "KS";
+  final  String STATE_KY = "KY";
+  final  String STATE_LA = "LA";
+  final  String STATE_MA = "MA";
+  final  String STATE_MB = "MB";
+  final  String STATE_MD = "MD";
+  final  String STATE_ME = "ME";
+  final  String STATE_MI = "MI";
+  final  String STATE_MN = "MN";
+  final  String STATE_MO = "MO";
+  final  String STATE_MS = "MS";
+  final  String STATE_MT = "MT";
+  final  String STATE_NB = "NB";
+  final  String STATE_NC = "NC";
+  final  String STATE_ND = "ND";
+  final  String STATE_NE = "NE";
+  final  String STATE_NH = "NH";
+  final  String STATE_NJ = "NJ";
+  final  String STATE_NL = "NL";
+  final  String STATE_NM = "NM";
+  final  String STATE_NS = "NS";
+  final  String STATE_NT = "NT";
+  final  String STATE_NU = "NU";
+  final  String STATE_NV = "NV";
+  final  String STATE_NY = "NY";
+  final  String STATE_OH = "OH";
+  final  String STATE_OK = "OK";
+  final  String STATE_ON = "ON";
+  final  String STATE_OR = "OR";
+  final  String STATE_PA = "PA";
+  final  String STATE_PE = "PE";
+  final  String STATE_QC = "QC";
+  final  String STATE_RI = "RI";
+  final  String STATE_SC = "SC";
+  final  String STATE_SD = "SD";
+  final  String STATE_SK = "SK";
+  final  String STATE_TN = "TN";
+  final  String STATE_TX = "TX";
+  final  String STATE_UT = "UT";
+  final  String STATE_VT = "VT";
+  final  String STATE_VA = "VA";
+  final  String STATE_WA = "WA";
+  final  String STATE_WI = "WI";
+  final  String STATE_WV = "WV";
+  final  String STATE_WY = "WY";
+  final  String STATE_YT = "YT";
+  String get stateString {
+    if(state == STATE_NONE) return 'None';
+    if(state == STATE_AB) return 'AB';
+    if(state == STATE_AK) return 'AK';
+    if(state == STATE_AL) return 'AL';
+    if(state == STATE_AR) return 'AR';
+    if(state == STATE_AZ) return 'AZ';
+    if(state == STATE_BC) return 'BC';
+    if(state == STATE_CA) return 'CA';
+    if(state == STATE_CO) return 'CO';
+    if(state == STATE_CT) return 'CT';
+    if(state == STATE_DC) return 'DC';
+    if(state == STATE_DE) return 'DE';
+    if(state == STATE_FL) return 'FL';
+    if(state == STATE_GA) return 'GA';
+    if(state == STATE_HI) return 'HI';
+    if(state == STATE_IA) return 'IA';
+    if(state == STATE_ID) return 'ID';
+    if(state == STATE_IL) return 'IL';
+    if(state == STATE_IN) return 'IN';
+    if(state == STATE_KS) return 'KS';
+    if(state == STATE_KY) return 'KY';
+    if(state == STATE_LA) return 'LA';
+    if(state == STATE_MA) return 'MA';
+    if(state == STATE_MB) return 'MB';
+    if(state == STATE_MD) return 'MD';
+    if(state == STATE_ME) return 'ME';
+    if(state == STATE_MI) return 'MI';
+    if(state == STATE_MN) return 'MN';
+    if(state == STATE_MO) return 'MO';
+    if(state == STATE_MS) return 'MS';
+    if(state == STATE_MT) return 'MT';
+    if(state == STATE_NB) return 'NB';
+    if(state == STATE_NC) return 'NC';
+    if(state == STATE_ND) return 'ND';
+    if(state == STATE_NE) return 'NE';
+    if(state == STATE_NH) return 'NH';
+    if(state == STATE_NJ) return 'NJ';
+    if(state == STATE_NL) return 'NL';
+    if(state == STATE_NM) return 'NM';
+    if(state == STATE_NS) return 'NS';
+    if(state == STATE_NT) return 'NT';
+    if(state == STATE_NU) return 'NU';
+    if(state == STATE_NV) return 'NV';
+    if(state == STATE_NY) return 'NY';
+    if(state == STATE_OH) return 'OH';
+    if(state == STATE_OK) return 'OK';
+    if(state == STATE_ON) return 'ON';
+    if(state == STATE_OR) return 'OR';
+    if(state == STATE_PA) return 'PA';
+    if(state == STATE_PE) return 'PE';
+    if(state == STATE_QC) return 'QC';
+    if(state == STATE_RI) return 'RI';
+    if(state == STATE_SC) return 'SC';
+    if(state == STATE_SD) return 'SD';
+    if(state == STATE_SK) return 'SK';
+    if(state == STATE_TN) return 'TN';
+    if(state == STATE_TX) return 'TX';
+    if(state == STATE_UT) return 'UT';
+    if(state == STATE_VT) return 'VT';
+    if(state == STATE_VA) return 'VA';
+    if(state == STATE_WA) return 'WA';
+    if(state == STATE_WI) return 'WI';
+    if(state == STATE_WV) return 'WV';
+    if(state == STATE_WY) return 'WY';
+    if(state == STATE_YT) return 'YT';
+    return '?';
+  }
+
+  late String state;
+  late String zip;
+  String? notes;
+
+  TrainingLocation.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    group_id = j['group_id'];
+    group = (j['group'] == null) ? null : TrainingGroup.fromJson(j['group']);
+    name = j['name'];
+    address = j['address'];
+    city = j['city'];
+    state = j['state'];
+    zip = j['zip'];
+    notes = j['notes'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'group_id' : group_id,
+      'group' : group == null ? null : group?.toJson(),
+      'name' : name,
+      'address' : address,
+      'city' : city,
+      'state' : state,
+      'zip' : zip,
+      'notes' : notes,
+    };
+  }
+
+}
+
+// <class 'training.models.WorkoutLocation'>
+class TrainingWorkoutLocation {
+  late int id;
+  late int location_id;
+  TrainingLocation? location;
+  DateTime? when;
+  String? notes;
+
+  TrainingWorkoutLocation.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    location_id = j['location_id'];
+    location = (j['location'] == null) ? null : TrainingLocation.fromJson(j['location']);
+    try { when = DateTime.parse(j['when']); } catch(e) { when = null; }     notes = j['notes'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'location_id' : location_id,
+      'location' : location == null ? null : location?.toJson(),
+      'when' : when.toString(),
+      'notes' : notes,
+    };
+  }
+
+}
+
+// <class 'training.models.WorkoutRecord'>
+class  TrainingWorkoutRecord {
+  late int id;
+  late int user_id;
+  MyUser? user;
+  DateTime? date;
+  late double distance;
+  final  String UNITS_MILES = "mi";
+  final  String UNITS_METERS = "m";
+  final  String UNITS_KM = "km";
+  String get unitsString {
+    if(units == UNITS_MILES) return 'miles';
+    if(units == UNITS_METERS) return 'meters';
+    if(units == UNITS_KM) return 'km';
+    return '?';
+  }
+
+  late String units;
+  late int duration;
+  String? notes;
+
+   TrainingWorkoutRecord.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    user_id = j['user_id'];
+    user = (j['user'] == null) ? null : MyUser.fromJson(j['user']);
+    try { date = DateTime.parse(j['date']); } catch(e) { date = null; }     distance = j['distance'];
+    units = j['units'];
+    duration = j['duration'];
+    notes = j['notes'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'user_id' : user_id,
+      'user' : user == null ? null : user?.toJson(),
+      'date' : date.toString(),
+      'distance' : distance,
+      'units' : units,
+      'duration' : duration,
+      'notes' : notes,
+    };
+  }
+
+}
+
+// <class 'training.models.WorkoutComment'>
+class TrainingWorkoutComment {
+  late int id;
+  late int user_id;
+  MyUser? user;
+  late int who_id;
+  MyUser? who;
+  String? notes;
+  DateTime? date;
+  DateTime? timestamp;
+
+  TrainingWorkoutComment.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    user_id = j['user_id'];
+    user = (j['user'] == null) ? null : MyUser.fromJson(j['user']);
+    who_id = j['who_id'];
+    who = (j['who'] == null) ? null : MyUser.fromJson(j['who']);
+    notes = j['notes'];
+    try { date = DateTime.parse(j['date']); } catch(e) { date = null; }     try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'user_id' : user_id,
+      'user' : user == null ? null : user?.toJson(),
+      'who_id' : who_id,
+      'who' : who == null ? null : who?.toJson(),
+      'notes' : notes,
+      'date' : date.toString(),
+      'timestamp' : timestamp.toString(),
+    };
+  }
+
+}
+
+// <class 'training.models.WorkoutThumbsUp'>
+class TrainingWorkoutThumbsUp {
+  late int id;
+  late int user_id;
+  MyUser? user;
+  late int who_id;
+  MyUser? who;
+  DateTime? date;
+  DateTime? timestamp;
+
+  TrainingWorkoutThumbsUp.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    user_id = j['user_id'];
+    user = (j['user'] == null) ? null : MyUser.fromJson(j['user']);
+    who_id = j['who_id'];
+    who = (j['who'] == null) ? null : MyUser.fromJson(j['who']);
+    try { date = DateTime.parse(j['date']); } catch(e) { date = null; }     try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'user_id' : user_id,
+      'user' : user == null ? null : user?.toJson(),
+      'who_id' : who_id,
+      'who' : who == null ? null : who?.toJson(),
+      'date' : date.toString(),
+      'timestamp' : timestamp.toString(),
+    };
+  }
+
+}
+
+// <class 'training.models.Log'>
+class TrainingLog {
+  late int id;
+  int? program_id;
+  TrainingProgram? program;
+  int? participant_id;
+  TrainingParticipant? participant;
+  late String subject;
+  late String message;
+  DateTime? timestamp;
+
+  TrainingLog.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    program_id = j['program_id'];
+    program = (j['program'] == null) ? null : TrainingProgram.fromJson(j['program']);
+    participant_id = j['participant_id'];
+    participant = (j['participant'] == null) ? null : TrainingParticipant.fromJson(j['participant']);
+    subject = j['subject'];
+    message = j['message'];
+    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'program_id' : program_id,
+      'program' : program == null ? null : program?.toJson(),
+      'participant_id' : participant_id,
+      'participant' : participant == null ? null : participant?.toJson(),
+      'subject' : subject,
+      'message' : message,
+      'timestamp' : timestamp.toString(),
+    };
+  }
+
+}
+
+// <class 'training.models.ResourceCategory'>
+class TrainingResourceCategory {
+  late int id;
+  late int program_id;
+  TrainingProgram? program;
+  late String name;
+  late bool visible_in_library;
+
+  TrainingResourceCategory.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    program_id = j['program_id'];
+    program = (j['program'] == null) ? null : TrainingProgram.fromJson(j['program']);
+    name = j['name'];
+    visible_in_library = j['visible_in_library'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'program_id' : program_id,
+      'program' : program == null ? null : program?.toJson(),
+      'name' : name,
+      'visible_in_library' : visible_in_library,
+    };
+  }
+
+}
+
+// <class 'training.models.Resource'>
+class TrainingResource {
+  late int id;
+  late int category_id;
+  TrainingResourceCategory? category;
+  final  int TYPE_VIDEO = 0;
+  final  int TYPE_IMAGE = 1;
+  final  int TYPE_DOWNLOAD = 2;
+  String get typeString {
+    if(type == TYPE_VIDEO) return 'Video';
+    if(type == TYPE_IMAGE) return 'Image';
+    if(type == TYPE_DOWNLOAD) return 'Download';
+    return '?';
+  }
+
+  late int type;
+  late String name;
+  late bool visible_in_library;
+  String? desc;
+  int? photo_id;
+  // Photo photo;
+  int? file_id;
+  // File file;
+  String? url;
+
+  TrainingResource.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    category_id = j['category_id'];
+    category = (j['category'] == null) ? null : TrainingResourceCategory.fromJson(j['category']);
+    type = j['type'];
+    name = j['name'];
+    visible_in_library = j['visible_in_library'];
+    desc = j['desc'];
+    photo_id = j['photo_id'];
+    file_id = j['file_id'];
+    url = j['url'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'category_id' : category_id,
+      'category' : category == null ? null : category?.toJson(),
+      'type' : type,
+      'name' : name,
+      'visible_in_library' : visible_in_library,
+      'desc' : desc,
+      'photo_id' : photo_id,
+      'file_id' : file_id,
+      'url' : url,
+    };
+  }
+
+}
+
+// <class 'training.models.ResourceAssignment'>
+class TrainingResourceAssignment {
+  late int id;
+  late int resource_id;
+  TrainingResource? resource;
+  late int plan_id;
+  TrainingPlan? plan;
+  late int day;
+  late int order;
+
+  TrainingResourceAssignment.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    resource_id = j['resource_id'];
+    resource = (j['resource'] == null) ? null : TrainingResource.fromJson(j['resource']);
+    plan_id = j['plan_id'];
+    plan = (j['plan'] == null) ? null : TrainingPlan.fromJson(j['plan']);
+    day = j['day'];
+    order = j['order'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'resource_id' : resource_id,
+      'resource' : resource == null ? null : resource?.toJson(),
+      'plan_id' : plan_id,
+      'plan' : plan == null ? null : plan?.toJson(),
+      'day' : day,
+      'order' : order,
+    };
+  }
+
+}
+
+// <class 'training.models.Email'>
+class TrainingEmail {
+  late int id;
+  late int plan_id;
+  TrainingPlan? plan;
+  late String subject;
+  late String msg;
+  late int day;
+  DateTime? sent;
+  String? recipients;
+
+  TrainingEmail.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    plan_id = j['plan_id'];
+    plan = (j['plan'] == null) ? null : TrainingPlan.fromJson(j['plan']);
+    subject = j['subject'];
+    msg = j['msg'];
+    day = j['day'];
+    try { sent = DateTime.parse(j['sent']); } catch(e) { sent = null; }     recipients = j['recipients'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'plan_id' : plan_id,
+      'plan' : plan == null ? null : plan?.toJson(),
+      'subject' : subject,
+      'msg' : msg,
+      'day' : day,
+      'sent' : sent.toString(),
+      'recipients' : recipients,
+    };
+  }
 
 }
 
