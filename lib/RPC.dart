@@ -211,31 +211,34 @@ class RPC {
           }
         }
         if (result["status"] == "ERROR") {
-          if(retryLogin) {
-            SharedPreferences prefs = await SharedPreferences.getInstance();
-            String email = prefs.getString("email") ?? "";
-            String password = prefs.getString("password") ?? "";
-            print("email=${email} password=${password}");
-            if (email.isNotEmpty && password.isNotEmpty) {
-              bool failed = true;
-              try {
-                await RPC().rpc("rest", "User", "login",  {"username": email, "password": password}, null, retryLogin: false, forceLogin: forceLogin, useSnackBarMsg: useSnackBarMsg);
-                failed = false;
-              } catch(e) {
-                failed = true;
-              }
-              if(!failed) {
-                return await rpc(mod, view, func, args, null, retryLogin: false);
+          if (result["result"] == "Not Logged In") {
+            if(retryLogin) {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              String email = prefs.getString("email") ?? "";
+              String password = prefs.getString("password") ?? "";
+              print("email=${email} password=${password}");
+              if (email.isNotEmpty && password.isNotEmpty) {
+                bool failed = true;
+                try {
+                  await RPC().rpc("rest", "User", "login",  {"username": email, "password": password}, null, retryLogin: false, forceLogin: forceLogin, useSnackBarMsg: useSnackBarMsg);
+                  failed = false;
+                } catch(e) {
+                  failed = true;
+                }
+                if(!failed) {
+                  return await rpc(mod, view, func, args, null, retryLogin: false, forceLogin: forceLogin, useSnackBarMsg: useSnackBarMsg);
+                }
               }
             }
-          }
-          if (result["result"] == "Not Logged In") {
             if(forceLogin) {
               print("FETCHING LOGIN PAGE $mod $view $func");
               try {
                 await MyUserProvider.instance?.goToLogin();
               } catch (e) {
                 print(e);
+              }
+              if(MyUserProvider.instance?.user != null) {
+                return await rpc(mod, view, func, args, null, retryLogin: false, forceLogin: forceLogin, useSnackBarMsg: useSnackBarMsg);
               }
             }
             notLoggedInHandler?.call();
