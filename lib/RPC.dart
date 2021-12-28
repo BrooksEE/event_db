@@ -101,6 +101,11 @@ class RPC {
     }
     return null;
   }
+  String getWebPageUrl(String mod, String view, String func) {
+    final String path = '/rest/$mod/$view/$func';
+    final String url = '$server$path';
+    return url;
+  }
 
   Future<Map> rpc(String mod, String view, String func, Map args, String? msg, {bool retryLogin : true, bool forceLogin : true, bool useSnackBarMsg: false, bool cache: false }) async {
     // retryLogin: when true, will try cached login credentials behind the scenes to log back in for the user
