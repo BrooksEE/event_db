@@ -1,6 +1,74 @@
 library db;
 import 'package:intl/intl.dart';
 
+// <class 'photos.models.Photo'>
+class Photo {
+  late int id;
+  int? race_id;
+  Race? race;
+  String? name;
+  int? photographer_id;
+  // Photographer photographer;
+  int? number;
+  String? caption;
+  String? url_orig;
+  String? url_thumb;
+  String? url_web;
+  String? url_mid;
+  DateTime? timestamp;
+  double? lat;
+  double? lon;
+  bool? needsTagged;
+  int? location_id;
+  // Location location;
+  bool? has_untagged_participants;
+  bool? is_participant_photo;
+
+  Photo.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    race_id = j['race_id'];
+    race = (j['race'] == null) ? null : Race.fromJson(j['race']);
+    name = j['name'];
+    photographer_id = j['photographer_id'];
+    number = j['number'];
+    caption = j['caption'];
+    url_orig = j['url_orig'];
+    url_thumb = j['url_thumb'];
+    url_web = j['url_web'];
+    url_mid = j['url_mid'];
+    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }     lat = j['lat'];
+    lon = j['lon'];
+    needsTagged = j['needsTagged'];
+    location_id = j['location_id'];
+    has_untagged_participants = j['has_untagged_participants'];
+    is_participant_photo = j['is_participant_photo'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'race_id' : race_id,
+      'race' : race == null ? null : race?.toJson(),
+      'name' : name,
+      'photographer_id' : photographer_id,
+      'number' : number,
+      'caption' : caption,
+      'url_orig' : url_orig,
+      'url_thumb' : url_thumb,
+      'url_web' : url_web,
+      'url_mid' : url_mid,
+      'timestamp' : timestamp.toString(),
+      'lat' : lat,
+      'lon' : lon,
+      'needsTagged' : needsTagged,
+      'location_id' : location_id,
+      'has_untagged_participants' : has_untagged_participants,
+      'is_participant_photo' : is_participant_photo,
+    };
+  }
+
+}
+
 // <class 'django.contrib.auth.models.User'>
 class MyUser {
   late int id;
@@ -37,6 +105,7 @@ class MyUser {
 
 bool isHostStaff = false;
   String get name => "$first_name $last_name";
+  TrainingProfile? profile;
   
   String toString() {
     return "${id}: ${email}";
@@ -261,6 +330,7 @@ class Host {
   final  String TIMEZONE_AMERICA_NORTH_DAKOTA_BEULAH = "America/North_Dakota/Beulah";
   final  String TIMEZONE_AMERICA_NORTH_DAKOTA_CENTER = "America/North_Dakota/Center";
   final  String TIMEZONE_AMERICA_NORTH_DAKOTA_NEW_SALEM = "America/North_Dakota/New_Salem";
+  final  String TIMEZONE_AMERICA_NUUK = "America/Nuuk";
   final  String TIMEZONE_AMERICA_OJINAGA = "America/Ojinaga";
   final  String TIMEZONE_AMERICA_PANAMA = "America/Panama";
   final  String TIMEZONE_AMERICA_PANGNIRTUNG = "America/Pangnirtung";
@@ -628,6 +698,7 @@ class Host {
   final  String TIMEZONE_PACIFIC_GUAM = "Pacific/Guam";
   final  String TIMEZONE_PACIFIC_HONOLULU = "Pacific/Honolulu";
   final  String TIMEZONE_PACIFIC_JOHNSTON = "Pacific/Johnston";
+  final  String TIMEZONE_PACIFIC_KANTON = "Pacific/Kanton";
   final  String TIMEZONE_PACIFIC_KIRITIMATI = "Pacific/Kiritimati";
   final  String TIMEZONE_PACIFIC_KOSRAE = "Pacific/Kosrae";
   final  String TIMEZONE_PACIFIC_KWAJALEIN = "Pacific/Kwajalein";
@@ -854,6 +925,7 @@ class Host {
     if(timezone == TIMEZONE_AMERICA_NORTH_DAKOTA_BEULAH) return 'America/North_Dakota/Beulah';
     if(timezone == TIMEZONE_AMERICA_NORTH_DAKOTA_CENTER) return 'America/North_Dakota/Center';
     if(timezone == TIMEZONE_AMERICA_NORTH_DAKOTA_NEW_SALEM) return 'America/North_Dakota/New_Salem';
+    if(timezone == TIMEZONE_AMERICA_NUUK) return 'America/Nuuk';
     if(timezone == TIMEZONE_AMERICA_OJINAGA) return 'America/Ojinaga';
     if(timezone == TIMEZONE_AMERICA_PANAMA) return 'America/Panama';
     if(timezone == TIMEZONE_AMERICA_PANGNIRTUNG) return 'America/Pangnirtung';
@@ -1221,6 +1293,7 @@ class Host {
     if(timezone == TIMEZONE_PACIFIC_GUAM) return 'Pacific/Guam';
     if(timezone == TIMEZONE_PACIFIC_HONOLULU) return 'Pacific/Honolulu';
     if(timezone == TIMEZONE_PACIFIC_JOHNSTON) return 'Pacific/Johnston';
+    if(timezone == TIMEZONE_PACIFIC_KANTON) return 'Pacific/Kanton';
     if(timezone == TIMEZONE_PACIFIC_KIRITIMATI) return 'Pacific/Kiritimati';
     if(timezone == TIMEZONE_PACIFIC_KOSRAE) return 'Pacific/Kosrae';
     if(timezone == TIMEZONE_PACIFIC_KWAJALEIN) return 'Pacific/Kwajalein';
@@ -1436,9 +1509,9 @@ class Race {
   late bool volunteer_closed;
   String? volunteer_closed_message;
   String? volunteer_waiver;
-  late double sales_tax_rate;
+  double? sales_tax_rate;
   String? facebook_eventid;
-  late double facebook_discount;
+  double? facebook_discount;
   int? lookup_id;
   late double reg_fee;
   String? reg_fee_name;
@@ -1738,7 +1811,7 @@ class Wave {
   late int order;
   String? bus_instructions;
   String? notes;
-  late double start_time;
+  double? start_time;
 
   Wave.fromJson(Map<String, dynamic> j) {
     id = j['id'];
@@ -1788,8 +1861,8 @@ class Participant {
   int? gendet_id;
   // Gender gendet;
   DateTime? birthday;
-  late double lat;
-  late double lon;
+  double? lat;
+  double? lon;
   late int age;
   late int bib;
   late String emergencyname;
@@ -1959,7 +2032,7 @@ class TrainingProfile {
   MyUser? user;
   late String bio;
   int? photo_id;
-  // Photo photo;
+  Photo? photo;
   final  int WEEK_STARTS_DEFAULT = -1;
   final  int WEEK_STARTS_SUN = 0;
   final  int WEEK_STARTS_MON = 1;
@@ -1997,6 +2070,7 @@ class TrainingProfile {
     user = (j['user'] == null) ? null : MyUser.fromJson(j['user']);
     bio = j['bio'];
     photo_id = j['photo_id'];
+    photo = (j['photo'] == null) ? null : Photo.fromJson(j['photo']);
     week_starts = j['week_starts'];
     units = j['units'];
   }
@@ -2008,6 +2082,7 @@ class TrainingProfile {
       'user' : user == null ? null : user?.toJson(),
       'bio' : bio,
       'photo_id' : photo_id,
+      'photo' : photo == null ? null : photo?.toJson(),
       'week_starts' : week_starts,
       'units' : units,
     };
@@ -3093,10 +3168,11 @@ class TrainingResource {
   late bool visible_in_library;
   String? desc;
   int? photo_id;
-  // Photo photo;
+  Photo? photo;
   int? file_id;
   // File file;
   String? url;
+  String? userdata;
 
   TrainingResource.fromJson(Map<String, dynamic> j) {
     id = j['id'];
@@ -3107,8 +3183,10 @@ class TrainingResource {
     visible_in_library = j['visible_in_library'];
     desc = j['desc'];
     photo_id = j['photo_id'];
+    photo = (j['photo'] == null) ? null : Photo.fromJson(j['photo']);
     file_id = j['file_id'];
     url = j['url'];
+    userdata = j['userdata'];
   }
 
   Map<String, dynamic> toJson() {
@@ -3121,8 +3199,10 @@ class TrainingResource {
       'visible_in_library' : visible_in_library,
       'desc' : desc,
       'photo_id' : photo_id,
+      'photo' : photo == null ? null : photo?.toJson(),
       'file_id' : file_id,
       'url' : url,
+      'userdata' : userdata,
     };
   }
 

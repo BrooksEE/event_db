@@ -183,6 +183,10 @@ class MyUserProvider with ChangeNotifier {
       m[k.toString()] = v;
     });
     _user = MyUser.fromJson(m);
+    if(_user != null && m["profile"] != null) {
+      _user!.profile = TrainingProfile.fromJson(m["profile"]);
+      //_user!.profile!.user = _user;
+    }
     SharedPreferences.getInstance().then((prefs) {
       prefs.setString("lastUser", jsonEncode(m));
     });

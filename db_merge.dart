@@ -70,8 +70,10 @@ class RaceEvent {
 class MyUser {
   bool isHostStaff = false;
   String get name => "$first_name $last_name";
+  TrainingProfile? profile;
   
   String toString() {
     return "${id}: ${email}";
   }
 }
+
