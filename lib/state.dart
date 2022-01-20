@@ -137,17 +137,22 @@ class MyUserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  static Future navTo(BuildContext context0, WidgetBuilder builder, {MyUserProvider? myUserProvider=null}) {
-    return Navigator.of(context0).push(MaterialPageRoute(
+  static Future navTo(BuildContext? context0, WidgetBuilder builder, {MyUserProvider? myUserProvider=null, bool replace=false}) {
+    if(myUserProvider == null) {
+      //myUserProvider = Provider.of<MyUserProvider>(context0, listen: false);
+      myUserProvider = gMyUserProvider;
+    }
+    MaterialPageRoute route = MaterialPageRoute(
         builder: (context) {
           return ChangeNotifierProvider<MyUserProvider>.value(
-              value: myUserProvider != null ? myUserProvider : Provider.of<MyUserProvider>(context0, listen: false),
+              value: myUserProvider!,
               builder: (context, widget) {
                 return builder(context);
               }
           );
         }
-    ));
+    );
+    return replace ? Navigator.of(gContext).pushReplacement(route) : Navigator.of(gContext).push(route);
   }
 
   void processLink(String link) {
