@@ -137,8 +137,13 @@ class MyFormController {
       }
       switch(f["widget"]) {
         case "TextInput":
+        case "Textarea":
         case "EmailInput": {
           addField(TextField.fromJSON(f));
+          break;
+        }
+        case "CheckboxSelectMultiple": {
+          addField(SelectMultipleField.fromJSON(f));
           break;
         }
         case "RadioSelect": {
@@ -235,6 +240,7 @@ class TextField extends Field<String> {
   TextInputType? keyboardType;
   TextCapitalization? textCapitalization;
   late bool multiline = false;
+  String labelPosition = "inside";
 
   TextField.fromJSON(Map j) {
     _fromJSON(j);
@@ -265,6 +271,9 @@ class TextField extends Field<String> {
         print("NO AUOTFILL HINTS");
     }
 
+    if(j["labelPosition"] != null) {
+      labelPosition = j["labelPosition"];
+    }
     if(j["keyboardType"] != null) {
       switch(j["keyboardType"]) {
         case "name":         { keyboardType = TextInputType.name; break; }
@@ -291,29 +300,35 @@ class TextField extends Field<String> {
   }
 
   @override Widget getWidget(State state, BuildContext context) {
-    return TextFormField(
-        controller: controller,
-        autofillHints: autofillHints,
-        decoration: InputDecoration(
-          labelText: label,
-        ),
-        onChanged: (e) {
-          value = controller.text.trim();
-        },
-        focusNode: focusNode,
-        inputFormatters: maxLen == null ? const [] : [ LengthLimitingTextInputFormatter(maxLen),],
-        keyboardType: keyboardType,
-        textCapitalization: textCapitalization ?? TextCapitalization.none,
-        maxLines: multiline ? null : 1,
-        validator: (value) {
-          if (this.required && (value?.isEmpty ?? false)) {
-            focusNode.requestFocus();
-            return 'Required';
-          } else {
-            return null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget> [
+        labelPosition != "north" ? Container(width: 0) : Text(label),
+        TextFormField(
+          controller: controller,
+          autofillHints: autofillHints,
+          decoration: labelPosition == "inside" ? InputDecoration(
+            labelText: label,
+          ) : null,
+          onChanged: (e) {
+            value = controller.text.trim();
+          },
+          focusNode: focusNode,
+          inputFormatters: maxLen == null ? const [] : [ LengthLimitingTextInputFormatter(maxLen),],
+          keyboardType: keyboardType,
+          textCapitalization: textCapitalization ?? TextCapitalization.none,
+          maxLines: multiline || widget == 'Textarea'? null : 1,
+          validator: (value) {
+            if (this.required && (value?.isEmpty ?? false)) {
+              focusNode.requestFocus();
+              return 'Required';
+            } else {
+              return null;
+            }
           }
-        }
-    );
+        ),
+        Container(height: 20),
+      ]);
   }
 }
 
@@ -663,12 +678,60 @@ class RadioField extends ChoiceField {
         });
         //print("VALIDATOR: ${idx}");
         if(idx == -1) {
+          if(_choicekey.currentState?.context != null) {
+            Scrollable.ensureVisible(_choicekey.currentState!.context);
+          }
           return "Invalid Selection";
         }
       },
     );
   }
 }
+
+class SelectMultipleField extends Field<List> {
+  var _choicekey = GlobalKey();
+  final List<Choice> choices = [];
+  /*
+  Choice? get choice { int idx = choices.indexWhere((e) {
+    return e.key.toString() == this.value.toString();
+  });
+  return idx < 0 ? null : choices[idx];
+  }*/
+  SelectMultipleField.fromJSON(Map j) {
+/*    if(j["initial"] != null) {
+      j["initial"] = j["initial"].toString();
+    } */
+    _fromJSON(j);
+    j["choices"].forEach((c) {
+      Choice choice = Choice.fromJSON(c);
+      choices.add(choice);
+      //print(choice);
+    });
+  }
+  @override CartItem? addToCart(CartItem? parent, MyFormController controller) {
+    // NOT IMPLEMENTED
+    return null;
+  }
+
+  @override Widget getWidget(State state, BuildContext context) {
+    return choices.length == 0 ? Container(height: 0) : SelectMultipleFormField(
+      key: _choicekey,
+      selectMultipleField: this,
+      validator: (value) {
+        //print("VALIDATOR: ${value} ${this.key} ${this.value} ${this.required}");
+        if(this.required && (this.value == null || this.value.length == 0)) {
+          print("SCROLLING TO ${this.key}");
+          if(_choicekey.currentState?.context != null) {
+            Scrollable.ensureVisible(_choicekey.currentState!.context);
+          }
+          return "Required";
+        }
+        return null;
+      },
+    );
+  }
+}
+
 
 class SelectField extends ChoiceField {
   SelectField.fromJSON(Map j) : super.fromJSON(j);
@@ -847,6 +910,67 @@ class RadioFormField extends FormField<String> {
 class _RadioFormFieldState extends FormFieldState<String> {
 }
 
+class SelectMultipleFormField extends FormField<String> {
+  SelectMultipleField selectMultipleField;
+
+  SelectMultipleFormField({
+    required this.selectMultipleField,
+    Key? key,
+    FormFieldSetter<String>? onSaved,
+    required FormFieldValidator<String> validator,
+    ValueChanged<String>? onChanged,
+//    AutovalidateMode autovalidateMode,
+  }) : super(
+    key: key,
+    onSaved: onSaved,
+    validator: validator,
+    enabled: true,
+//    autovalidateMode: autovalidateMode ?? AutovalidateMode.always,
+    builder: (FormFieldState<String> field) {
+      final _SelectMultipleFormFieldState state = field as _SelectMultipleFormFieldState;
+      final SelectMultipleFormField widget = state.widget as SelectMultipleFormField;
+      //final InputDecoration effectiveDecoration = (decoration ?? const InputDecoration())
+      //    .applyDefaults(Theme.of(field.context).inputDecorationTheme);
+      void onChangedHandler(String value) {
+        field.didChange(state.value);
+        if (onChanged != null) {
+          onChanged(value);
+        }
+        state.setState(() {
+        });
+      }
+
+      return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget> [
+            Container(height: 20),
+            Text(widget.selectMultipleField.label, textAlign: TextAlign.left),
+            state.hasError ? Text("${state.errorText}", style: TextStyle(color: Colors.red)) : Container(height: 0),
+          ] +
+              widget.selectMultipleField.choices.map<Widget>((c) {
+                return CheckboxListTile(
+                  value: selectMultipleField.value.contains(c.key),
+                  title: Text("${c.label}${!c.disabled && c.amt != null && c.amt!.amt > 0 ? ' - ' + c.amt!.display() : ""}"),//Text("${e[2]} - ${e[1]}${e[3] ? " (SOLD OUT)" : ""}"),
+                  onChanged: c.disabled ? null : (value) {
+                    state.setState(() {
+                      if(value == true) {
+                        selectMultipleField.value.add(c.key);
+                      } else {
+                        selectMultipleField.value.removeWhere((e) => e == c.key);
+                      }
+                    });
+                  },
+                );
+              }).toList()
+      );
+    },
+  );
+
+  @override _SelectMultipleFormFieldState createState() => _SelectMultipleFormFieldState();
+}
+
+class _SelectMultipleFormFieldState extends FormFieldState<String> {
+}
 
 Function(Field, List, State, BuildContext)? formAddition;
 

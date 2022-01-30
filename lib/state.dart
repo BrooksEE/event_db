@@ -81,7 +81,9 @@ class MyUserProvider with ChangeNotifier {
       version = packageInfo.version + "." + packageInfo.buildNumber;
     });
     init();
-    gMyUserProvider = this;
+    if(gMyUserProvider == null) {
+      gMyUserProvider = this;
+    }
   }
 
   Future<void> init() async {
@@ -137,15 +139,11 @@ class MyUserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  static Future navTo(BuildContext? context0, WidgetBuilder builder, {MyUserProvider? myUserProvider=null, bool replace=false}) {
-    if(myUserProvider == null) {
-      //myUserProvider = Provider.of<MyUserProvider>(context0, listen: false);
-      myUserProvider = gMyUserProvider;
-    }
+  static Future navTo({required WidgetBuilder builder, bool replace=false}) {
     MaterialPageRoute route = MaterialPageRoute(
         builder: (context) {
           return ChangeNotifierProvider<MyUserProvider>.value(
-              value: myUserProvider!,
+              value: gMyUserProvider!,
               builder: (context, widget) {
                 return builder(context);
               }
@@ -166,7 +164,7 @@ class MyUserProvider with ChangeNotifier {
       print("EMAIL=$email rId=$rId");
 
       if(navKey?.currentContext != null) {
-        navTo(navKey!.currentContext!, (context) => PasswordReset2(email, rId), myUserProvider: this);
+        navTo(builder: (context) => PasswordReset2(email, rId));
       } else {
         print("Password reset error: ${navKey} ${navKey?.currentContext}");
       }
@@ -177,7 +175,7 @@ class MyUserProvider with ChangeNotifier {
     if(context == null) {
       return;
     }
-    await navTo(context, (context) => Login(), myUserProvider: this);
+    await navTo(builder: (context) => Login());
     print("goToLogin done");
   }
 
@@ -317,7 +315,7 @@ class LoginState extends State<Login> {
               Expanded(child: Container(width: 0)),
               TextButton(
                 onPressed: () async {
-                  await MyUserProvider.navTo(context, (context) => PasswordReset1(), myUserProvider: myUser);
+                  await MyUserProvider.navTo(builder: (context) => PasswordReset1());
                 },
                 child: const Text("Setup/Forgot Password"),
               ),
