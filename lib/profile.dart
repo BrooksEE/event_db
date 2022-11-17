@@ -314,8 +314,10 @@ class ProfileState extends State<Profile> {
                         maxLines: 6,
                     ),
                     Container(height: 20),
-                    RaisedButton(
+                    ElevatedButton(
+                    style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.only(bottom: 8.0, top: 8.0),
+                    ),
                       onPressed: () {
                         if (_formKey.currentState?.validate() ?? false) {
                           _save_profile();

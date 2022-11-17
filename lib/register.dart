@@ -180,19 +180,19 @@ class TeamField extends Field<int> {
         children: [
           Text("Team Registration", style: TextStyle(fontWeight: FontWeight.bold)),
           HtmlView(info["blurp"]),
-          RaisedButton(
+          ElevatedButton(
             child: Text("Tell Me More"),
             onPressed: () {
               Navigator.pushNamed(context, "/team/rules", arguments: info);
             },
           ),
-          RaisedButton(
+          ElevatedButton(
             child: Text("Create A Team"),
             onPressed: () {
               Navigator.pushNamed(context, "/team/create", arguments: {"info":info, "race": race, "setTeam": setTeam});
             },
           ),
-          RaisedButton(
+          ElevatedButton(
               child: Text("Join A Team"),
               onPressed: () {
                 showDialog(
@@ -207,12 +207,12 @@ class TeamField extends Field<int> {
                           ),
                         )),
                         actions: <Widget>[
-                          FlatButton(
+                          TextButton(
                               child: Text("Cancel"),
                               onPressed: () {
                                 Navigator.pop(context);
                               }),
-                          FlatButton(
+                          TextButton(
                               child: Text("Join"),
                               onPressed: () async {
                                 Map result;

@@ -126,8 +126,10 @@ class _ImageDialogState extends State<ImageDialog> {
       Row(mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget> [
 
-        FlatButton(child: Text("Dismiss", style:TextStyle(color: Colors.white)),
-          color: Theme.of(context).accentColor,
+        ElevatedButton(child: Text("Dismiss", style:TextStyle(color: Colors.white)),
+          style: ElevatedButton.styleFrom(
+            primary: Theme.of(context).accentColor,
+          ),
           onPressed: () {
             Navigator.of(context).pop();
           },

@@ -769,7 +769,7 @@ class _CartState extends State<CartView> {
                             subtitle: Text('Date: ${invoice!.timestamp}'),
                           ),
                           Container(height: 20),
-                          RaisedButton(
+                          ElevatedButton(
                             child: Text("Done"),
                             onPressed: () {
                                 Navigator.pop(context);
@@ -983,7 +983,7 @@ class _CartState extends State<CartView> {
                       ),
                     ))
                     : Container(),
-                Cart.has("promocode") ? Container() : FlatButton(
+                Cart.has("promocode") ? Container() : TextButton(
                   child: Row(
                       mainAxisSize: MainAxisSize.max,
                       children: [
@@ -1044,7 +1044,7 @@ class _CartState extends State<CartView> {
                     mainAxisSize: MainAxisSize.max,
                     children: <Widget> [
                   Expanded(child: Container(width: 0)),
-                  tot.amt == 0 ? RaisedButton(
+                  tot.amt == 0 ? ElevatedButton(
                     child: Text("Checkout"),
                     onPressed: () async {
                       if(_formKey.currentState?.validate() ?? false) {
@@ -1055,7 +1055,7 @@ class _CartState extends State<CartView> {
                       }
                     },
                   ) :
-                RaisedButton(
+                ElevatedButton(
                   child: Text("Pay With Credit Card"),
                   onPressed: () async {
                     if(_formKey.currentState?.validate() ?? false) {
@@ -1064,8 +1064,10 @@ class _CartState extends State<CartView> {
                   },
                 ),
                   Container(width: _googlePayEnabled && tot.amt > 0 ? 20 : 0),
-                  _googlePayEnabled && tot.amt > 0 ? RaisedButton(
-                    color: Color.fromARGB(0xFF, 0, 0, 0),
+                  _googlePayEnabled && tot.amt > 0 ? ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      primary: Color.fromARGB(0xFF, 0, 0, 0),
+                    ),
                     child: Image.asset("assets/google_pay.png", height: 20),
                     onPressed: () async {
                       if(_formKey.currentState?.validate() ?? false) {
@@ -1074,8 +1076,10 @@ class _CartState extends State<CartView> {
                     },
                   ) : Container(width: 0),
                       Container(width: _applePayEnabled && tot.amt > 0 ? 20 : 0),
-                      _applePayEnabled && tot.amt > 0 ? RaisedButton(
-                        color: Color.fromARGB(0xFF, 0, 0, 0),
+                      _applePayEnabled && tot.amt > 0 ? ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          primary: Color.fromARGB(0xFF, 0, 0, 0),
+                        ),
                         child: Image.asset("assets/apple_pay.png", height: 20),
                         onPressed: () async {
                           if(_formKey.currentState?.validate() ?? false) {

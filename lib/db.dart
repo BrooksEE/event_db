@@ -18,11 +18,11 @@ class Photo {
   DateTime? timestamp;
   double? lat;
   double? lon;
-  bool? needsTagged;
+  late bool needsTagged;
   int? location_id;
   // Location location;
-  bool? has_untagged_participants;
-  bool? is_participant_photo;
+  late bool has_untagged_participants;
+  late bool is_participant_photo;
 
   Photo.fromJson(Map<String, dynamic> j) {
     id = j['id'];
@@ -155,6 +155,7 @@ class Host {
   late String facebook_pageid;
   late String default_state;
   late String default_country;
+  // late String
   final  String TIMEZONE_AFRICA_ABIDJAN = "Africa/Abidjan";
   final  String TIMEZONE_AFRICA_ACCRA = "Africa/Accra";
   final  String TIMEZONE_AFRICA_ADDIS_ABABA = "Africa/Addis_Ababa";
@@ -1480,6 +1481,7 @@ class Race {
   late String full_name;
   late String desc;
   DateTime? date;
+  // late int
   final  int STATUS_ACTIVE = 0;
   final  int STATUS_TBA = 1;
   final  int STATUS_ARCHIVED = 2;
@@ -1523,7 +1525,7 @@ class Race {
   // Mapp mapp;
   late bool confirm_email;
   int? klass_id;
-  // Klass klass;
+  BooksKlass? klass;
   String? url_app_data;
 
   Race.fromJson(Map<String, dynamic> j) {
@@ -1555,6 +1557,7 @@ class Race {
     mapp_id = j['mapp_id'];
     confirm_email = j['confirm_email'];
     klass_id = j['klass_id'];
+    klass = (j['klass'] == null) ? null : BooksKlass.fromJson(j['klass']);
     url_app_data = j['url_app_data'];
   }
 
@@ -1596,6 +1599,7 @@ class Race {
       'mapp_id' : mapp_id,
       'confirm_email' : confirm_email,
       'klass_id' : klass_id,
+      'klass' : klass == null ? null : klass?.toJson(),
       'url_app_data' : url_app_data,
     };
   }
@@ -1637,9 +1641,19 @@ class RaceEvent {
   Race? race;
   late int event_id;
   Event? event;
+  // late int
+  final  int STATE_ACTIVE = 0;
+  final  int STATE_NOT_ACTIVE = 1;
+  String get stateString {
+    if(state == STATE_ACTIVE) return 'Active';
+    if(state == STATE_NOT_ACTIVE) return 'Not Active';
+    return '?';
+  }
+
   late int state;
   late String name;
   late int order;
+  // late int
   final  int TYPE_RUNNING = 1;
   final  int TYPE_CYCLING = 2;
   String get typeString {
@@ -1677,6 +1691,7 @@ class RaceEvent {
   int? finish_count_unspecified;
   String? finish_count_genders;
   late bool no_facebook_discount;
+  // late int
   final  int DIST_UNITS_MILES = 0;
   final  int DIST_UNITS_KM = 1;
   String get dist_unitsString {
@@ -1686,6 +1701,7 @@ class RaceEvent {
   }
 
   late int dist_units;
+  // late int
   final  int PACE_UNITS_MIN_MILE = 0;
   final  int PACE_UNITS_MPH = 1;
   String get pace_unitsString {
@@ -1811,6 +1827,7 @@ class Wave {
   late int order;
   String? bus_instructions;
   String? notes;
+  String? planned_start_time;
   double? start_time;
 
   Wave.fromJson(Map<String, dynamic> j) {
@@ -1822,6 +1839,7 @@ class Wave {
     order = j['order'];
     bus_instructions = j['bus_instructions'];
     notes = j['notes'];
+    planned_start_time = j['planned_start_time'];
     start_time = j['start_time'];
   }
 
@@ -1835,6 +1853,7 @@ class Wave {
       'order' : order,
       'bus_instructions' : bus_instructions,
       'notes' : notes,
+      'planned_start_time' : planned_start_time,
       'start_time' : start_time,
     };
   }
@@ -1886,6 +1905,9 @@ class Participant {
   // Division division;
   int? bracket_id;
   // Bracket bracket;
+  int? person_id;
+  // Person person;
+  // late int
   final  int STATUS_SIGNED_UP = 0;
   final  int STATUS_BIB_CHECKED = 1;
   final  int STATUS_RUNNING = 2;
@@ -1944,6 +1966,7 @@ class Participant {
     tag = j['tag'];
     division_id = j['division_id'];
     bracket_id = j['bracket_id'];
+    person_id = j['person_id'];
     status = j['status'];
   }
 
@@ -1987,6 +2010,7 @@ class Participant {
       'tag' : tag,
       'division_id' : division_id,
       'bracket_id' : bracket_id,
+      'person_id' : person_id,
       'status' : status,
     };
   }
@@ -2033,6 +2057,7 @@ class TrainingProfile {
   late String bio;
   int? photo_id;
   Photo? photo;
+  // late int
   final  int WEEK_STARTS_DEFAULT = -1;
   final  int WEEK_STARTS_SUN = 0;
   final  int WEEK_STARTS_MON = 1;
@@ -2054,6 +2079,7 @@ class TrainingProfile {
   }
 
   late int week_starts;
+  // late int
   final  int UNITS_MILES = 0;
   final  int UNITS_KM = 1;
   String get unitsString {
@@ -2103,6 +2129,7 @@ class TrainingProgram {
   TrainingCoach? default_coach;
   String? waiver;
   late String email;
+  // late int
   final  int WEEK_STARTS_SUN = 0;
   final  int WEEK_STARTS_MON = 1;
   final  int WEEK_STARTS_TUE = 2;
@@ -2122,6 +2149,7 @@ class TrainingProgram {
   }
 
   late int week_starts;
+  // late int
   final  int TYPE_FIXED_PLANS = 0;
   final  int TYPE_ROAMING = 1;
   String get typeString {
@@ -2477,6 +2505,7 @@ class TrainingQuestion {
   TrainingQuestionnaire? questionnaire;
   late String question;
   late String name;
+  // late int
   final  int TYPE_NUMBER = 0;
   final  int TYPE_SHORT_TEXT_ANSWER = 1;
   final  int TYPE_LONG_TEXT_ANSWER = 4;
@@ -2778,6 +2807,7 @@ class TrainingLocation {
   late String name;
   late String address;
   late String city;
+  // late String
   final  String STATE_NONE = "__";
   final  String STATE_AB = "AB";
   final  String STATE_AK = "AK";
@@ -2978,6 +3008,7 @@ class  TrainingWorkoutRecord {
   MyUser? user;
   DateTime? date;
   late double distance;
+  // late String
   final  String UNITS_MILES = "mi";
   final  String UNITS_METERS = "m";
   final  String UNITS_KM = "km";
@@ -3153,6 +3184,7 @@ class TrainingResource {
   late int id;
   late int category_id;
   TrainingResourceCategory? category;
+  // late int
   final  int TYPE_VIDEO = 0;
   final  int TYPE_IMAGE = 1;
   final  int TYPE_DOWNLOAD = 2;
@@ -3273,6 +3305,1114 @@ class TrainingEmail {
       'day' : day,
       'sent' : sent.toString(),
       'recipients' : recipients,
+    };
+  }
+
+}
+
+// <class 'books.models.Account'>
+class BooksAccount {
+  late int id;
+  late int entity_id;
+  Entity? entity;
+  late String name;
+  int? parent_id;
+  BooksAccount? parent;
+  // late int
+  final  int TYPE_ASSET = 0;
+  final  int TYPE_LIABILITY = 1;
+  final  int TYPE_EQUITY = 2;
+  String get typeString {
+    if(type == TYPE_ASSET) return 'Asset';
+    if(type == TYPE_LIABILITY) return 'Liability';
+    if(type == TYPE_EQUITY) return 'Equity';
+    return '?';
+  }
+
+  late int type;
+  // late int
+  final  int SUBTYPE_UNSPECIFIED = 0;
+  final  int SUBTYPE_CHECKING = 1;
+  final  int SUBTYPE_SAVINGS = 2;
+  final  int SUBTYPE_ACCOUNTS_PAYABLE = 3;
+  final  int SUBTYPE_ACCOUNTS_RECEIVABLE = 4;
+  String get subtypeString {
+    if(subtype == SUBTYPE_UNSPECIFIED) return 'Unspecified';
+    if(subtype == SUBTYPE_CHECKING) return 'Checking';
+    if(subtype == SUBTYPE_SAVINGS) return 'Savings';
+    if(subtype == SUBTYPE_ACCOUNTS_PAYABLE) return 'Accounts Payable';
+    if(subtype == SUBTYPE_ACCOUNTS_RECEIVABLE) return 'Accounts Receivable';
+    return '?';
+  }
+
+  late int subtype;
+  // late int
+  final  int STATE_ACTIVE = 1;
+  final  int STATE_NOT_ACTIVE = 0;
+  String get stateString {
+    if(state == STATE_ACTIVE) return 'Active';
+    if(state == STATE_NOT_ACTIVE) return 'Not Active';
+    return '?';
+  }
+
+  late int state;
+  String? account_num;
+  String? userdata;
+  late String currency;
+
+  BooksAccount.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    entity_id = j['entity_id'];
+    entity = (j['entity'] == null) ? null : Entity.fromJson(j['entity']);
+    name = j['name'];
+    parent_id = j['parent_id'];
+    parent = (j['parent'] == null) ? null : BooksAccount.fromJson(j['parent']);
+    type = j['type'];
+    subtype = j['subtype'];
+    state = j['state'];
+    account_num = j['account_num'];
+    userdata = j['userdata'];
+    currency = j['currency'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'entity_id' : entity_id,
+      'entity' : entity == null ? null : entity?.toJson(),
+      'name' : name,
+      'parent_id' : parent_id,
+      'parent' : parent == null ? null : parent?.toJson(),
+      'type' : type,
+      'subtype' : subtype,
+      'state' : state,
+      'account_num' : account_num,
+      'userdata' : userdata,
+      'currency' : currency,
+    };
+  }
+
+}
+
+// <class 'books.models.Category'>
+class BooksCategory {
+  late int id;
+  late int entity_id;
+  Entity? entity;
+  int? division_id;
+  // Division division;
+  late String name;
+  int? parent_id;
+  BooksCategory? parent;
+  // late int
+  final  int TYPE_INCOME = 0;
+  final  int TYPE_EXPENSE = 1;
+  String get typeString {
+    if(type == TYPE_INCOME) return 'Income';
+    if(type == TYPE_EXPENSE) return 'Expense';
+    return '?';
+  }
+
+  late int type;
+  // late int
+  final  int STATE_ACTIVE = 1;
+  final  int STATE_NOT_ACTIVE = 0;
+  String get stateString {
+    if(state == STATE_ACTIVE) return 'Active';
+    if(state == STATE_NOT_ACTIVE) return 'Not Active';
+    return '?';
+  }
+
+  late int state;
+
+  BooksCategory.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    entity_id = j['entity_id'];
+    entity = (j['entity'] == null) ? null : Entity.fromJson(j['entity']);
+    division_id = j['division_id'];
+    name = j['name'];
+    parent_id = j['parent_id'];
+    parent = (j['parent'] == null) ? null : BooksCategory.fromJson(j['parent']);
+    type = j['type'];
+    state = j['state'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'entity_id' : entity_id,
+      'entity' : entity == null ? null : entity?.toJson(),
+      'division_id' : division_id,
+      'name' : name,
+      'parent_id' : parent_id,
+      'parent' : parent == null ? null : parent?.toJson(),
+      'type' : type,
+      'state' : state,
+    };
+  }
+
+}
+
+// <class 'books.models.Klass'>
+class BooksKlass {
+  late int id;
+  late int entity_id;
+  Entity? entity;
+  late String name;
+  late String abbrev;
+  // late int
+  final  int STATE_ACTIVE = 1;
+  final  int STATE_NOT_ACTIVE = 0;
+  String get stateString {
+    if(state == STATE_ACTIVE) return 'Active';
+    if(state == STATE_NOT_ACTIVE) return 'Not Active';
+    return '?';
+  }
+
+  late int state;
+  int? division_id;
+  // Division division;
+
+  BooksKlass.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    entity_id = j['entity_id'];
+    entity = (j['entity'] == null) ? null : Entity.fromJson(j['entity']);
+    name = j['name'];
+    abbrev = j['abbrev'];
+    state = j['state'];
+    division_id = j['division_id'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'entity_id' : entity_id,
+      'entity' : entity == null ? null : entity?.toJson(),
+      'name' : name,
+      'abbrev' : abbrev,
+      'state' : state,
+      'division_id' : division_id,
+    };
+  }
+
+}
+
+// <class 'books.models.Company'>
+class BooksCompany {
+  late int id;
+  late int entity_id;
+  Entity? entity;
+  // late int
+  final  int TYPE_INDIVIDUAL = 1;
+  final  int TYPE_COMPANY = 2;
+  String get typeString {
+    if(type == TYPE_INDIVIDUAL) return 'Individual';
+    if(type == TYPE_COMPANY) return 'Company';
+    return '?';
+  }
+
+  late int type;
+  late String name;
+  late String lastname;
+  late String firstname;
+  String? address;
+  String? city;
+  // String?
+  final String? STATE_NONE = "__";
+  final String? STATE_AB = "AB";
+  final String? STATE_AK = "AK";
+  final String? STATE_AL = "AL";
+  final String? STATE_AR = "AR";
+  final String? STATE_AZ = "AZ";
+  final String? STATE_BC = "BC";
+  final String? STATE_CA = "CA";
+  final String? STATE_CO = "CO";
+  final String? STATE_CT = "CT";
+  final String? STATE_DC = "DC";
+  final String? STATE_DE = "DE";
+  final String? STATE_FL = "FL";
+  final String? STATE_GA = "GA";
+  final String? STATE_HI = "HI";
+  final String? STATE_IA = "IA";
+  final String? STATE_ID = "ID";
+  final String? STATE_IL = "IL";
+  final String? STATE_IN = "IN";
+  final String? STATE_KS = "KS";
+  final String? STATE_KY = "KY";
+  final String? STATE_LA = "LA";
+  final String? STATE_MA = "MA";
+  final String? STATE_MB = "MB";
+  final String? STATE_MD = "MD";
+  final String? STATE_ME = "ME";
+  final String? STATE_MI = "MI";
+  final String? STATE_MN = "MN";
+  final String? STATE_MO = "MO";
+  final String? STATE_MS = "MS";
+  final String? STATE_MT = "MT";
+  final String? STATE_NB = "NB";
+  final String? STATE_NC = "NC";
+  final String? STATE_ND = "ND";
+  final String? STATE_NE = "NE";
+  final String? STATE_NH = "NH";
+  final String? STATE_NJ = "NJ";
+  final String? STATE_NL = "NL";
+  final String? STATE_NM = "NM";
+  final String? STATE_NS = "NS";
+  final String? STATE_NT = "NT";
+  final String? STATE_NU = "NU";
+  final String? STATE_NV = "NV";
+  final String? STATE_NY = "NY";
+  final String? STATE_OH = "OH";
+  final String? STATE_OK = "OK";
+  final String? STATE_ON = "ON";
+  final String? STATE_OR = "OR";
+  final String? STATE_PA = "PA";
+  final String? STATE_PE = "PE";
+  final String? STATE_QC = "QC";
+  final String? STATE_RI = "RI";
+  final String? STATE_SC = "SC";
+  final String? STATE_SD = "SD";
+  final String? STATE_SK = "SK";
+  final String? STATE_TN = "TN";
+  final String? STATE_TX = "TX";
+  final String? STATE_UT = "UT";
+  final String? STATE_VT = "VT";
+  final String? STATE_VA = "VA";
+  final String? STATE_WA = "WA";
+  final String? STATE_WI = "WI";
+  final String? STATE_WV = "WV";
+  final String? STATE_WY = "WY";
+  final String? STATE_YT = "YT";
+  String get stateString {
+    if(state == STATE_NONE) return 'None';
+    if(state == STATE_AB) return 'AB';
+    if(state == STATE_AK) return 'AK';
+    if(state == STATE_AL) return 'AL';
+    if(state == STATE_AR) return 'AR';
+    if(state == STATE_AZ) return 'AZ';
+    if(state == STATE_BC) return 'BC';
+    if(state == STATE_CA) return 'CA';
+    if(state == STATE_CO) return 'CO';
+    if(state == STATE_CT) return 'CT';
+    if(state == STATE_DC) return 'DC';
+    if(state == STATE_DE) return 'DE';
+    if(state == STATE_FL) return 'FL';
+    if(state == STATE_GA) return 'GA';
+    if(state == STATE_HI) return 'HI';
+    if(state == STATE_IA) return 'IA';
+    if(state == STATE_ID) return 'ID';
+    if(state == STATE_IL) return 'IL';
+    if(state == STATE_IN) return 'IN';
+    if(state == STATE_KS) return 'KS';
+    if(state == STATE_KY) return 'KY';
+    if(state == STATE_LA) return 'LA';
+    if(state == STATE_MA) return 'MA';
+    if(state == STATE_MB) return 'MB';
+    if(state == STATE_MD) return 'MD';
+    if(state == STATE_ME) return 'ME';
+    if(state == STATE_MI) return 'MI';
+    if(state == STATE_MN) return 'MN';
+    if(state == STATE_MO) return 'MO';
+    if(state == STATE_MS) return 'MS';
+    if(state == STATE_MT) return 'MT';
+    if(state == STATE_NB) return 'NB';
+    if(state == STATE_NC) return 'NC';
+    if(state == STATE_ND) return 'ND';
+    if(state == STATE_NE) return 'NE';
+    if(state == STATE_NH) return 'NH';
+    if(state == STATE_NJ) return 'NJ';
+    if(state == STATE_NL) return 'NL';
+    if(state == STATE_NM) return 'NM';
+    if(state == STATE_NS) return 'NS';
+    if(state == STATE_NT) return 'NT';
+    if(state == STATE_NU) return 'NU';
+    if(state == STATE_NV) return 'NV';
+    if(state == STATE_NY) return 'NY';
+    if(state == STATE_OH) return 'OH';
+    if(state == STATE_OK) return 'OK';
+    if(state == STATE_ON) return 'ON';
+    if(state == STATE_OR) return 'OR';
+    if(state == STATE_PA) return 'PA';
+    if(state == STATE_PE) return 'PE';
+    if(state == STATE_QC) return 'QC';
+    if(state == STATE_RI) return 'RI';
+    if(state == STATE_SC) return 'SC';
+    if(state == STATE_SD) return 'SD';
+    if(state == STATE_SK) return 'SK';
+    if(state == STATE_TN) return 'TN';
+    if(state == STATE_TX) return 'TX';
+    if(state == STATE_UT) return 'UT';
+    if(state == STATE_VT) return 'VT';
+    if(state == STATE_VA) return 'VA';
+    if(state == STATE_WA) return 'WA';
+    if(state == STATE_WI) return 'WI';
+    if(state == STATE_WV) return 'WV';
+    if(state == STATE_WY) return 'WY';
+    if(state == STATE_YT) return 'YT';
+    return '?';
+  }
+
+  String? state;
+  // String?
+  final String? COUNTRY_AFGHANISTAN = "AF";
+  final String? COUNTRY_ALAND_ISLANDS = "AX";
+  final String? COUNTRY_ALBANIA = "AL";
+  final String? COUNTRY_ALGERIA = "DZ";
+  final String? COUNTRY_AMERICAN_SAMOA = "AS";
+  final String? COUNTRY_ANDORRA = "AD";
+  final String? COUNTRY_ANGOLA = "AO";
+  final String? COUNTRY_ANGUILLA = "AI";
+  final String? COUNTRY_ANTARCTICA = "AQ";
+  final String? COUNTRY_ANTIGUA_AND_BARBUDA = "AG";
+  final String? COUNTRY_ARGENTINA = "AR";
+  final String? COUNTRY_ARMENIA = "AM";
+  final String? COUNTRY_ARUBA = "AW";
+  final String? COUNTRY_AUSTRALIA = "AU";
+  final String? COUNTRY_AUSTRIA = "AT";
+  final String? COUNTRY_AZERBAIJAN = "AZ";
+  final String? COUNTRY_BAHAMAS = "BS";
+  final String? COUNTRY_BAHRAIN = "BH";
+  final String? COUNTRY_BANGLADESH = "BD";
+  final String? COUNTRY_BARBADOS = "BB";
+  final String? COUNTRY_BELARUS = "BY";
+  final String? COUNTRY_BELGIUM = "BE";
+  final String? COUNTRY_BELIZE = "BZ";
+  final String? COUNTRY_BENIN = "BJ";
+  final String? COUNTRY_BERMUDA = "BM";
+  final String? COUNTRY_BHUTAN = "BT";
+  final String? COUNTRY_BOLIVIA = "BO";
+  final String? COUNTRY_BOSNIA_AND_HERZEGOVINA = "BA";
+  final String? COUNTRY_BOTSWANA = "BW";
+  final String? COUNTRY_BOUVET_ISLAND = "BV";
+  final String? COUNTRY_BRAZIL = "BR";
+  final String? COUNTRY_BRITISH_INDIAN_OCEAN_TERRITORY = "IO";
+  final String? COUNTRY_BRUNEI_DARUSSALAM = "BN";
+  final String? COUNTRY_BULGARIA = "BG";
+  final String? COUNTRY_BURKINA_FASO = "BF";
+  final String? COUNTRY_BURUNDI = "BI";
+  final String? COUNTRY_CAMBODIA = "KH";
+  final String? COUNTRY_CAMEROON = "CM";
+  final String? COUNTRY_CANADA = "CA";
+  final String? COUNTRY_CAPE_VERDE = "CV";
+  final String? COUNTRY_CAYMAN_ISLANDS = "KY";
+  final String? COUNTRY_CENTRAL_AFRICAN_REPUBLIC = "CF";
+  final String? COUNTRY_CHAD = "TD";
+  final String? COUNTRY_CHILE = "CL";
+  final String? COUNTRY_CHINA = "CN";
+  final String? COUNTRY_CHRISTMAS_ISLAND = "CX";
+  final String? COUNTRY_COCOS_KEELING_ISLANDS = "CC";
+  final String? COUNTRY_COLOMBIA = "CO";
+  final String? COUNTRY_COMOROS = "KM";
+  final String? COUNTRY_CONGO = "CG";
+  final String? COUNTRY_CONGO_DEMOCRATIC_REPUBLIC = "CD";
+  final String? COUNTRY_COOK_ISLANDS = "CK";
+  final String? COUNTRY_COSTA_RICA = "CR";
+  final String? COUNTRY_COTE_DIVOIRE = "CI";
+  final String? COUNTRY_CROATIA = "HR";
+  final String? COUNTRY_CUBA = "CU";
+  final String? COUNTRY_CYPRUS = "CY";
+  final String? COUNTRY_CZECH_REPUBLIC = "CZ";
+  final String? COUNTRY_DENMARK = "DK";
+  final String? COUNTRY_DJIBOUTI = "DJ";
+  final String? COUNTRY_DOMINICA = "DM";
+  final String? COUNTRY_DOMINICAN_REPUBLIC = "DO";
+  final String? COUNTRY_ECUADOR = "EC";
+  final String? COUNTRY_EGYPT = "EG";
+  final String? COUNTRY_EL_SALVADOR = "SV";
+  final String? COUNTRY_EQUATORIAL_GUINEA = "GQ";
+  final String? COUNTRY_ERITREA = "ER";
+  final String? COUNTRY_ESTONIA = "EE";
+  final String? COUNTRY_ETHIOPIA = "ET";
+  final String? COUNTRY_FALKLAND_ISLANDS_MALVINAS = "FK";
+  final String? COUNTRY_FAROE_ISLANDS = "FO";
+  final String? COUNTRY_FIJI = "FJ";
+  final String? COUNTRY_FINLAND = "FI";
+  final String? COUNTRY_FRANCE = "FR";
+  final String? COUNTRY_FRENCH_GUIANA = "GF";
+  final String? COUNTRY_FRENCH_POLYNESIA = "PF";
+  final String? COUNTRY_FRENCH_SOUTHERN_TERRITORIES = "TF";
+  final String? COUNTRY_GABON = "GA";
+  final String? COUNTRY_GAMBIA = "GM";
+  final String? COUNTRY_GEORGIA = "GE";
+  final String? COUNTRY_GERMANY = "DE";
+  final String? COUNTRY_GHANA = "GH";
+  final String? COUNTRY_GIBRALTAR = "GI";
+  final String? COUNTRY_GREECE = "GR";
+  final String? COUNTRY_GREENLAND = "GL";
+  final String? COUNTRY_GRENADA = "GD";
+  final String? COUNTRY_GUADELOUPE = "GP";
+  final String? COUNTRY_GUAM = "GU";
+  final String? COUNTRY_GUATEMALA = "GT";
+  final String? COUNTRY_GUERNSEY = "GG";
+  final String? COUNTRY_GUINEA = "GN";
+  final String? COUNTRY_GUINEA_BISSAU = "GW";
+  final String? COUNTRY_GUYANA = "GY";
+  final String? COUNTRY_HAITI = "HT";
+  final String? COUNTRY_HEARD_ISLAND_AND_MCDONALD_ISLANDS = "HM";
+  final String? COUNTRY_HOLY_SEE_VATICAN_CITY_STATE = "VA";
+  final String? COUNTRY_HONDURAS = "HN";
+  final String? COUNTRY_HONG_KONG = "HK";
+  final String? COUNTRY_HUNGARY = "HU";
+  final String? COUNTRY_ICELAND = "IS";
+  final String? COUNTRY_INDIA = "IN";
+  final String? COUNTRY_INDONESIA = "ID";
+  final String? COUNTRY_IRAN_ISLAMIC_REPUBLIC_OF = "IR";
+  final String? COUNTRY_IRAQ = "IQ";
+  final String? COUNTRY_IRELAND = "IE";
+  final String? COUNTRY_ISLE_OF_MAN = "IM";
+  final String? COUNTRY_ISRAEL = "IL";
+  final String? COUNTRY_ITALY = "IT";
+  final String? COUNTRY_JAMAICA = "JM";
+  final String? COUNTRY_JAPAN = "JP";
+  final String? COUNTRY_JERSEY = "JE";
+  final String? COUNTRY_JORDAN = "JO";
+  final String? COUNTRY_KAZAKHSTAN = "KZ";
+  final String? COUNTRY_KENYA = "KE";
+  final String? COUNTRY_KIRIBATI = "KI";
+  final String? COUNTRY_KOREA_DEMOCRATIC_PEOPLES_REPUBLIC = "KP";
+  final String? COUNTRY_KOREA_REPUBLIC_OF = "KR";
+  final String? COUNTRY_KUWAIT = "KW";
+  final String? COUNTRY_KYRGYZSTAN = "KG";
+  final String? COUNTRY_LAO_PEOPLES_DEMOCRATIC_REPUBLIC = "LA";
+  final String? COUNTRY_LATVIA = "LV";
+  final String? COUNTRY_LEBANON = "LB";
+  final String? COUNTRY_LESOTHO = "LS";
+  final String? COUNTRY_LIBERIA = "LR";
+  final String? COUNTRY_LIBYAN_ARAB_JAMAHIRIYA = "LY";
+  final String? COUNTRY_LIECHTENSTEIN = "LI";
+  final String? COUNTRY_LITHUANIA = "LT";
+  final String? COUNTRY_LUXEMBOURG = "LU";
+  final String? COUNTRY_MACAO = "MO";
+  final String? COUNTRY_MACEDONIA_FORMER_YUGOSLAV_REPUBLIC = "MK";
+  final String? COUNTRY_MADAGASCAR = "MG";
+  final String? COUNTRY_MALAWI = "MW";
+  final String? COUNTRY_MALAYSIA = "MY";
+  final String? COUNTRY_MALDIVES = "MV";
+  final String? COUNTRY_MALI = "ML";
+  final String? COUNTRY_MALTA = "MT";
+  final String? COUNTRY_MARSHALL_ISLANDS = "MH";
+  final String? COUNTRY_MARTINIQUE = "MQ";
+  final String? COUNTRY_MAURITANIA = "MR";
+  final String? COUNTRY_MAURITIUS = "MU";
+  final String? COUNTRY_MAYOTTE = "YT";
+  final String? COUNTRY_MEXICO = "MX";
+  final String? COUNTRY_MICRONESIA_FEDERATED_STATES_OF = "FM";
+  final String? COUNTRY_MOLDOVA_REPUBLIC_OF = "MD";
+  final String? COUNTRY_MONACO = "MC";
+  final String? COUNTRY_MONGOLIA = "MN";
+  final String? COUNTRY_MONTSERRAT = "MS";
+  final String? COUNTRY_MOROCCO = "MA";
+  final String? COUNTRY_MOZAMBIQUE = "MZ";
+  final String? COUNTRY_MYANMAR = "MM";
+  final String? COUNTRY_NAMIBIA = "NA";
+  final String? COUNTRY_NAURU = "NR";
+  final String? COUNTRY_NEPAL = "NP";
+  final String? COUNTRY_NETHERLANDS = "NL";
+  final String? COUNTRY_NETHERLANDS_ANTILLES = "AN";
+  final String? COUNTRY_NEW_CALEDONIA = "NC";
+  final String? COUNTRY_NEW_ZEALAND = "NZ";
+  final String? COUNTRY_NICARAGUA = "NI";
+  final String? COUNTRY_NIGER = "NE";
+  final String? COUNTRY_NIGERIA = "NG";
+  final String? COUNTRY_NIUE = "NU";
+  final String? COUNTRY_NORFOLK_ISLAND = "NF";
+  final String? COUNTRY_NORTHERN_MARIANA_ISLANDS = "MP";
+  final String? COUNTRY_NORWAY = "NO";
+  final String? COUNTRY_OMAN = "OM";
+  final String? COUNTRY_PAKISTAN = "PK";
+  final String? COUNTRY_PALAU = "PW";
+  final String? COUNTRY_PALESTINIAN_TERRITORY_OCCUPIED = "PS";
+  final String? COUNTRY_PANAMA = "PA";
+  final String? COUNTRY_PAPUA_NEW_GUINEA = "PG";
+  final String? COUNTRY_PARAGUAY = "PY";
+  final String? COUNTRY_PERU = "PE";
+  final String? COUNTRY_PHILIPPINES = "PH";
+  final String? COUNTRY_PITCAIRN = "PN";
+  final String? COUNTRY_POLAND = "PL";
+  final String? COUNTRY_PORTUGAL = "PT";
+  final String? COUNTRY_PUERTO_RICO = "PR";
+  final String? COUNTRY_QATAR = "QA";
+  final String? COUNTRY_REUNION = "RE";
+  final String? COUNTRY_ROMANIA = "RO";
+  final String? COUNTRY_RUSSIAN_FEDERATION = "RU";
+  final String? COUNTRY_RWANDA = "RW";
+  final String? COUNTRY_SAINT_HELENA = "SH";
+  final String? COUNTRY_SAINT_KITTS_AND_NEVIS = "KN";
+  final String? COUNTRY_SAINT_LUCIA = "LC";
+  final String? COUNTRY_SAINT_PIERRE_AND_MIQUELON = "PM";
+  final String? COUNTRY_SAINT_VINCENT_AND_THE_GRENADINES = "VC";
+  final String? COUNTRY_SAMOA = "WS";
+  final String? COUNTRY_SAN_MARINO = "SM";
+  final String? COUNTRY_SAO_TOME_AND_PRINCIPE = "ST";
+  final String? COUNTRY_SAUDI_ARABIA = "SA";
+  final String? COUNTRY_SENEGAL = "SN";
+  final String? COUNTRY_SERBIA_AND_MONTENEGRO = "CS";
+  final String? COUNTRY_SEYCHELLES = "SC";
+  final String? COUNTRY_SIERRA_LEONE = "SL";
+  final String? COUNTRY_SINGAPORE = "SG";
+  final String? COUNTRY_SLOVAKIA = "SK";
+  final String? COUNTRY_SLOVENIA = "SI";
+  final String? COUNTRY_SOLOMON_ISLANDS = "SB";
+  final String? COUNTRY_SOMALIA = "SO";
+  final String? COUNTRY_SOUTH_AFRICA = "ZA";
+  final String? COUNTRY_SOUTH_GEORGIA__SANDWICH_ISLANDS = "GS";
+  final String? COUNTRY_SPAIN = "ES";
+  final String? COUNTRY_SRI_LANKA = "LK";
+  final String? COUNTRY_SUDAN = "SD";
+  final String? COUNTRY_SURINAME = "SR";
+  final String? COUNTRY_SVALBARD_AND_JAN_MAYEN = "SJ";
+  final String? COUNTRY_SWAZILAND = "SZ";
+  final String? COUNTRY_SWEDEN = "SE";
+  final String? COUNTRY_SWITZERLAND = "CH";
+  final String? COUNTRY_SYRIAN_ARAB_REPUBLIC = "SY";
+  final String? COUNTRY_TAIWAN_PROVINCE_OF_CHINA = "TW";
+  final String? COUNTRY_TAJIKISTAN = "TJ";
+  final String? COUNTRY_TANZANIA_UNITED_REPUBLIC_OF = "TZ";
+  final String? COUNTRY_THAILAND = "TH";
+  final String? COUNTRY_TIMOR_LESTE = "TL";
+  final String? COUNTRY_TOGO = "TG";
+  final String? COUNTRY_TOKELAU = "TK";
+  final String? COUNTRY_TONGA = "TO";
+  final String? COUNTRY_TRINIDAD_AND_TOBAGO = "TT";
+  final String? COUNTRY_TUNISIA = "TN";
+  final String? COUNTRY_TURKEY = "TR";
+  final String? COUNTRY_TURKMENISTAN = "TM";
+  final String? COUNTRY_TURKS_AND_CAICOS_ISLANDS = "TC";
+  final String? COUNTRY_TUVALU = "TV";
+  final String? COUNTRY_UGANDA = "UG";
+  final String? COUNTRY_UKRAINE = "UA";
+  final String? COUNTRY_UNITED_ARAB_EMIRATES = "AE";
+  final String? COUNTRY_UNITED_KINGDOM = "GB";
+  final String? COUNTRY_UNITED_STATES = "US";
+  final String? COUNTRY_UNITED_STATES_MINOR_OUTLYING_ISLANDS = "UM";
+  final String? COUNTRY_URUGUAY = "UY";
+  final String? COUNTRY_UZBEKISTAN = "UZ";
+  final String? COUNTRY_VANUATU = "VU";
+  final String? COUNTRY_VENEZUELA = "VE";
+  final String? COUNTRY_VIET_NAM = "VN";
+  final String? COUNTRY_VIRGIN_ISLANDS_BRITISH = "VG";
+  final String? COUNTRY_VIRGIN_ISLANDS_US = "VI";
+  final String? COUNTRY_WALLIS_AND_FUTUNA = "WF";
+  final String? COUNTRY_WESTERN_SAHARA = "EH";
+  final String? COUNTRY_YEMEN = "YE";
+  final String? COUNTRY_ZAMBIA = "ZM";
+  final String? COUNTRY_ZIMBABWE = "ZW";
+  String get countryString {
+    if(country == COUNTRY_AFGHANISTAN) return 'Afghanistan';
+    if(country == COUNTRY_ALAND_ISLANDS) return 'Aland Islands';
+    if(country == COUNTRY_ALBANIA) return 'Albania';
+    if(country == COUNTRY_ALGERIA) return 'Algeria';
+    if(country == COUNTRY_AMERICAN_SAMOA) return 'American Samoa';
+    if(country == COUNTRY_ANDORRA) return 'Andorra';
+    if(country == COUNTRY_ANGOLA) return 'Angola';
+    if(country == COUNTRY_ANGUILLA) return 'Anguilla';
+    if(country == COUNTRY_ANTARCTICA) return 'Antarctica';
+    if(country == COUNTRY_ANTIGUA_AND_BARBUDA) return 'Antigua And Barbuda';
+    if(country == COUNTRY_ARGENTINA) return 'Argentina';
+    if(country == COUNTRY_ARMENIA) return 'Armenia';
+    if(country == COUNTRY_ARUBA) return 'Aruba';
+    if(country == COUNTRY_AUSTRALIA) return 'Australia';
+    if(country == COUNTRY_AUSTRIA) return 'Austria';
+    if(country == COUNTRY_AZERBAIJAN) return 'Azerbaijan';
+    if(country == COUNTRY_BAHAMAS) return 'Bahamas';
+    if(country == COUNTRY_BAHRAIN) return 'Bahrain';
+    if(country == COUNTRY_BANGLADESH) return 'Bangladesh';
+    if(country == COUNTRY_BARBADOS) return 'Barbados';
+    if(country == COUNTRY_BELARUS) return 'Belarus';
+    if(country == COUNTRY_BELGIUM) return 'Belgium';
+    if(country == COUNTRY_BELIZE) return 'Belize';
+    if(country == COUNTRY_BENIN) return 'Benin';
+    if(country == COUNTRY_BERMUDA) return 'Bermuda';
+    if(country == COUNTRY_BHUTAN) return 'Bhutan';
+    if(country == COUNTRY_BOLIVIA) return 'Bolivia';
+    if(country == COUNTRY_BOSNIA_AND_HERZEGOVINA) return 'Bosnia And Herzegovina';
+    if(country == COUNTRY_BOTSWANA) return 'Botswana';
+    if(country == COUNTRY_BOUVET_ISLAND) return 'Bouvet Island';
+    if(country == COUNTRY_BRAZIL) return 'Brazil';
+    if(country == COUNTRY_BRITISH_INDIAN_OCEAN_TERRITORY) return 'British Indian Ocean Territory';
+    if(country == COUNTRY_BRUNEI_DARUSSALAM) return 'Brunei Darussalam';
+    if(country == COUNTRY_BULGARIA) return 'Bulgaria';
+    if(country == COUNTRY_BURKINA_FASO) return 'Burkina Faso';
+    if(country == COUNTRY_BURUNDI) return 'Burundi';
+    if(country == COUNTRY_CAMBODIA) return 'Cambodia';
+    if(country == COUNTRY_CAMEROON) return 'Cameroon';
+    if(country == COUNTRY_CANADA) return 'Canada';
+    if(country == COUNTRY_CAPE_VERDE) return 'Cape Verde';
+    if(country == COUNTRY_CAYMAN_ISLANDS) return 'Cayman Islands';
+    if(country == COUNTRY_CENTRAL_AFRICAN_REPUBLIC) return 'Central African Republic';
+    if(country == COUNTRY_CHAD) return 'Chad';
+    if(country == COUNTRY_CHILE) return 'Chile';
+    if(country == COUNTRY_CHINA) return 'China';
+    if(country == COUNTRY_CHRISTMAS_ISLAND) return 'Christmas Island';
+    if(country == COUNTRY_COCOS_KEELING_ISLANDS) return 'Cocos (Keeling), Islands';
+    if(country == COUNTRY_COLOMBIA) return 'Colombia';
+    if(country == COUNTRY_COMOROS) return 'Comoros';
+    if(country == COUNTRY_CONGO) return 'Congo';
+    if(country == COUNTRY_CONGO_DEMOCRATIC_REPUBLIC) return 'Congo, Democratic Republic';
+    if(country == COUNTRY_COOK_ISLANDS) return 'Cook Islands';
+    if(country == COUNTRY_COSTA_RICA) return 'Costa Rica';
+    if(country == COUNTRY_COTE_DIVOIRE) return 'Cote Divoire';
+    if(country == COUNTRY_CROATIA) return 'Croatia';
+    if(country == COUNTRY_CUBA) return 'Cuba';
+    if(country == COUNTRY_CYPRUS) return 'Cyprus';
+    if(country == COUNTRY_CZECH_REPUBLIC) return 'Czech Republic';
+    if(country == COUNTRY_DENMARK) return 'Denmark';
+    if(country == COUNTRY_DJIBOUTI) return 'Djibouti';
+    if(country == COUNTRY_DOMINICA) return 'Dominica';
+    if(country == COUNTRY_DOMINICAN_REPUBLIC) return 'Dominican Republic';
+    if(country == COUNTRY_ECUADOR) return 'Ecuador';
+    if(country == COUNTRY_EGYPT) return 'Egypt';
+    if(country == COUNTRY_EL_SALVADOR) return 'El Salvador';
+    if(country == COUNTRY_EQUATORIAL_GUINEA) return 'Equatorial Guinea';
+    if(country == COUNTRY_ERITREA) return 'Eritrea';
+    if(country == COUNTRY_ESTONIA) return 'Estonia';
+    if(country == COUNTRY_ETHIOPIA) return 'Ethiopia';
+    if(country == COUNTRY_FALKLAND_ISLANDS_MALVINAS) return 'Falkland Islands (Malvinas)';
+    if(country == COUNTRY_FAROE_ISLANDS) return 'Faroe Islands';
+    if(country == COUNTRY_FIJI) return 'Fiji';
+    if(country == COUNTRY_FINLAND) return 'Finland';
+    if(country == COUNTRY_FRANCE) return 'France';
+    if(country == COUNTRY_FRENCH_GUIANA) return 'French Guiana';
+    if(country == COUNTRY_FRENCH_POLYNESIA) return 'French Polynesia';
+    if(country == COUNTRY_FRENCH_SOUTHERN_TERRITORIES) return 'French Southern Territories';
+    if(country == COUNTRY_GABON) return 'Gabon';
+    if(country == COUNTRY_GAMBIA) return 'Gambia';
+    if(country == COUNTRY_GEORGIA) return 'Georgia';
+    if(country == COUNTRY_GERMANY) return 'Germany';
+    if(country == COUNTRY_GHANA) return 'Ghana';
+    if(country == COUNTRY_GIBRALTAR) return 'Gibraltar';
+    if(country == COUNTRY_GREECE) return 'Greece';
+    if(country == COUNTRY_GREENLAND) return 'Greenland';
+    if(country == COUNTRY_GRENADA) return 'Grenada';
+    if(country == COUNTRY_GUADELOUPE) return 'Guadeloupe';
+    if(country == COUNTRY_GUAM) return 'Guam';
+    if(country == COUNTRY_GUATEMALA) return 'Guatemala';
+    if(country == COUNTRY_GUERNSEY) return 'Guernsey';
+    if(country == COUNTRY_GUINEA) return 'Guinea';
+    if(country == COUNTRY_GUINEA_BISSAU) return 'Guinea-Bissau';
+    if(country == COUNTRY_GUYANA) return 'Guyana';
+    if(country == COUNTRY_HAITI) return 'Haiti';
+    if(country == COUNTRY_HEARD_ISLAND_AND_MCDONALD_ISLANDS) return 'Heard Island And Mcdonald Islands';
+    if(country == COUNTRY_HOLY_SEE_VATICAN_CITY_STATE) return 'Holy See (Vatican City State)';
+    if(country == COUNTRY_HONDURAS) return 'Honduras';
+    if(country == COUNTRY_HONG_KONG) return 'Hong Kong';
+    if(country == COUNTRY_HUNGARY) return 'Hungary';
+    if(country == COUNTRY_ICELAND) return 'Iceland';
+    if(country == COUNTRY_INDIA) return 'India';
+    if(country == COUNTRY_INDONESIA) return 'Indonesia';
+    if(country == COUNTRY_IRAN_ISLAMIC_REPUBLIC_OF) return 'Iran, Islamic Republic Of';
+    if(country == COUNTRY_IRAQ) return 'Iraq';
+    if(country == COUNTRY_IRELAND) return 'Ireland';
+    if(country == COUNTRY_ISLE_OF_MAN) return 'Isle Of Man';
+    if(country == COUNTRY_ISRAEL) return 'Israel';
+    if(country == COUNTRY_ITALY) return 'Italy';
+    if(country == COUNTRY_JAMAICA) return 'Jamaica';
+    if(country == COUNTRY_JAPAN) return 'Japan';
+    if(country == COUNTRY_JERSEY) return 'Jersey';
+    if(country == COUNTRY_JORDAN) return 'Jordan';
+    if(country == COUNTRY_KAZAKHSTAN) return 'Kazakhstan';
+    if(country == COUNTRY_KENYA) return 'Kenya';
+    if(country == COUNTRY_KIRIBATI) return 'Kiribati';
+    if(country == COUNTRY_KOREA_DEMOCRATIC_PEOPLES_REPUBLIC) return 'Korea, Democratic Peoples Republic';
+    if(country == COUNTRY_KOREA_REPUBLIC_OF) return 'Korea, Republic Of';
+    if(country == COUNTRY_KUWAIT) return 'Kuwait';
+    if(country == COUNTRY_KYRGYZSTAN) return 'Kyrgyzstan';
+    if(country == COUNTRY_LAO_PEOPLES_DEMOCRATIC_REPUBLIC) return 'Lao Peoples Democratic Republic';
+    if(country == COUNTRY_LATVIA) return 'Latvia';
+    if(country == COUNTRY_LEBANON) return 'Lebanon';
+    if(country == COUNTRY_LESOTHO) return 'Lesotho';
+    if(country == COUNTRY_LIBERIA) return 'Liberia';
+    if(country == COUNTRY_LIBYAN_ARAB_JAMAHIRIYA) return 'Libyan Arab Jamahiriya';
+    if(country == COUNTRY_LIECHTENSTEIN) return 'Liechtenstein';
+    if(country == COUNTRY_LITHUANIA) return 'Lithuania';
+    if(country == COUNTRY_LUXEMBOURG) return 'Luxembourg';
+    if(country == COUNTRY_MACAO) return 'Macao';
+    if(country == COUNTRY_MACEDONIA_FORMER_YUGOSLAV_REPUBLIC) return 'Macedonia, Former Yugoslav Republic';
+    if(country == COUNTRY_MADAGASCAR) return 'Madagascar';
+    if(country == COUNTRY_MALAWI) return 'Malawi';
+    if(country == COUNTRY_MALAYSIA) return 'Malaysia';
+    if(country == COUNTRY_MALDIVES) return 'Maldives';
+    if(country == COUNTRY_MALI) return 'Mali';
+    if(country == COUNTRY_MALTA) return 'Malta';
+    if(country == COUNTRY_MARSHALL_ISLANDS) return 'Marshall Islands';
+    if(country == COUNTRY_MARTINIQUE) return 'Martinique';
+    if(country == COUNTRY_MAURITANIA) return 'Mauritania';
+    if(country == COUNTRY_MAURITIUS) return 'Mauritius';
+    if(country == COUNTRY_MAYOTTE) return 'Mayotte';
+    if(country == COUNTRY_MEXICO) return 'Mexico';
+    if(country == COUNTRY_MICRONESIA_FEDERATED_STATES_OF) return 'Micronesia, Federated States Of';
+    if(country == COUNTRY_MOLDOVA_REPUBLIC_OF) return 'Moldova, Republic Of';
+    if(country == COUNTRY_MONACO) return 'Monaco';
+    if(country == COUNTRY_MONGOLIA) return 'Mongolia';
+    if(country == COUNTRY_MONTSERRAT) return 'Montserrat';
+    if(country == COUNTRY_MOROCCO) return 'Morocco';
+    if(country == COUNTRY_MOZAMBIQUE) return 'Mozambique';
+    if(country == COUNTRY_MYANMAR) return 'Myanmar';
+    if(country == COUNTRY_NAMIBIA) return 'Namibia';
+    if(country == COUNTRY_NAURU) return 'Nauru';
+    if(country == COUNTRY_NEPAL) return 'Nepal';
+    if(country == COUNTRY_NETHERLANDS) return 'Netherlands';
+    if(country == COUNTRY_NETHERLANDS_ANTILLES) return 'Netherlands Antilles';
+    if(country == COUNTRY_NEW_CALEDONIA) return 'New Caledonia';
+    if(country == COUNTRY_NEW_ZEALAND) return 'New Zealand';
+    if(country == COUNTRY_NICARAGUA) return 'Nicaragua';
+    if(country == COUNTRY_NIGER) return 'Niger';
+    if(country == COUNTRY_NIGERIA) return 'Nigeria';
+    if(country == COUNTRY_NIUE) return 'Niue';
+    if(country == COUNTRY_NORFOLK_ISLAND) return 'Norfolk Island';
+    if(country == COUNTRY_NORTHERN_MARIANA_ISLANDS) return 'Northern Mariana Islands';
+    if(country == COUNTRY_NORWAY) return 'Norway';
+    if(country == COUNTRY_OMAN) return 'Oman';
+    if(country == COUNTRY_PAKISTAN) return 'Pakistan';
+    if(country == COUNTRY_PALAU) return 'Palau';
+    if(country == COUNTRY_PALESTINIAN_TERRITORY_OCCUPIED) return 'Palestinian Territory, Occupied';
+    if(country == COUNTRY_PANAMA) return 'Panama';
+    if(country == COUNTRY_PAPUA_NEW_GUINEA) return 'Papua New Guinea';
+    if(country == COUNTRY_PARAGUAY) return 'Paraguay';
+    if(country == COUNTRY_PERU) return 'Peru';
+    if(country == COUNTRY_PHILIPPINES) return 'Philippines';
+    if(country == COUNTRY_PITCAIRN) return 'Pitcairn';
+    if(country == COUNTRY_POLAND) return 'Poland';
+    if(country == COUNTRY_PORTUGAL) return 'Portugal';
+    if(country == COUNTRY_PUERTO_RICO) return 'Puerto Rico';
+    if(country == COUNTRY_QATAR) return 'Qatar';
+    if(country == COUNTRY_REUNION) return 'Reunion';
+    if(country == COUNTRY_ROMANIA) return 'Romania';
+    if(country == COUNTRY_RUSSIAN_FEDERATION) return 'Russian Federation';
+    if(country == COUNTRY_RWANDA) return 'Rwanda';
+    if(country == COUNTRY_SAINT_HELENA) return 'Saint Helena';
+    if(country == COUNTRY_SAINT_KITTS_AND_NEVIS) return 'Saint Kitts And Nevis';
+    if(country == COUNTRY_SAINT_LUCIA) return 'Saint Lucia';
+    if(country == COUNTRY_SAINT_PIERRE_AND_MIQUELON) return 'Saint Pierre And Miquelon';
+    if(country == COUNTRY_SAINT_VINCENT_AND_THE_GRENADINES) return 'Saint Vincent And The Grenadines';
+    if(country == COUNTRY_SAMOA) return 'Samoa';
+    if(country == COUNTRY_SAN_MARINO) return 'San Marino';
+    if(country == COUNTRY_SAO_TOME_AND_PRINCIPE) return 'Sao Tome And Principe';
+    if(country == COUNTRY_SAUDI_ARABIA) return 'Saudi Arabia';
+    if(country == COUNTRY_SENEGAL) return 'Senegal';
+    if(country == COUNTRY_SERBIA_AND_MONTENEGRO) return 'Serbia And Montenegro';
+    if(country == COUNTRY_SEYCHELLES) return 'Seychelles';
+    if(country == COUNTRY_SIERRA_LEONE) return 'Sierra Leone';
+    if(country == COUNTRY_SINGAPORE) return 'Singapore';
+    if(country == COUNTRY_SLOVAKIA) return 'Slovakia';
+    if(country == COUNTRY_SLOVENIA) return 'Slovenia';
+    if(country == COUNTRY_SOLOMON_ISLANDS) return 'Solomon Islands';
+    if(country == COUNTRY_SOMALIA) return 'Somalia';
+    if(country == COUNTRY_SOUTH_AFRICA) return 'South Africa';
+    if(country == COUNTRY_SOUTH_GEORGIA__SANDWICH_ISLANDS) return 'South Georgia & Sandwich Islands';
+    if(country == COUNTRY_SPAIN) return 'Spain';
+    if(country == COUNTRY_SRI_LANKA) return 'Sri Lanka';
+    if(country == COUNTRY_SUDAN) return 'Sudan';
+    if(country == COUNTRY_SURINAME) return 'Suriname';
+    if(country == COUNTRY_SVALBARD_AND_JAN_MAYEN) return 'Svalbard And Jan Mayen';
+    if(country == COUNTRY_SWAZILAND) return 'Swaziland';
+    if(country == COUNTRY_SWEDEN) return 'Sweden';
+    if(country == COUNTRY_SWITZERLAND) return 'Switzerland';
+    if(country == COUNTRY_SYRIAN_ARAB_REPUBLIC) return 'Syrian Arab Republic';
+    if(country == COUNTRY_TAIWAN_PROVINCE_OF_CHINA) return 'Taiwan, Province Of China';
+    if(country == COUNTRY_TAJIKISTAN) return 'Tajikistan';
+    if(country == COUNTRY_TANZANIA_UNITED_REPUBLIC_OF) return 'Tanzania, United Republic Of';
+    if(country == COUNTRY_THAILAND) return 'Thailand';
+    if(country == COUNTRY_TIMOR_LESTE) return 'Timor-leste';
+    if(country == COUNTRY_TOGO) return 'Togo';
+    if(country == COUNTRY_TOKELAU) return 'Tokelau';
+    if(country == COUNTRY_TONGA) return 'Tonga';
+    if(country == COUNTRY_TRINIDAD_AND_TOBAGO) return 'Trinidad And Tobago';
+    if(country == COUNTRY_TUNISIA) return 'Tunisia';
+    if(country == COUNTRY_TURKEY) return 'Turkey';
+    if(country == COUNTRY_TURKMENISTAN) return 'Turkmenistan';
+    if(country == COUNTRY_TURKS_AND_CAICOS_ISLANDS) return 'Turks And Caicos Islands';
+    if(country == COUNTRY_TUVALU) return 'Tuvalu';
+    if(country == COUNTRY_UGANDA) return 'Uganda';
+    if(country == COUNTRY_UKRAINE) return 'Ukraine';
+    if(country == COUNTRY_UNITED_ARAB_EMIRATES) return 'United Arab Emirates';
+    if(country == COUNTRY_UNITED_KINGDOM) return 'United Kingdom';
+    if(country == COUNTRY_UNITED_STATES) return 'United States';
+    if(country == COUNTRY_UNITED_STATES_MINOR_OUTLYING_ISLANDS) return 'United States Minor Outlying Islands';
+    if(country == COUNTRY_URUGUAY) return 'Uruguay';
+    if(country == COUNTRY_UZBEKISTAN) return 'Uzbekistan';
+    if(country == COUNTRY_VANUATU) return 'Vanuatu';
+    if(country == COUNTRY_VENEZUELA) return 'Venezuela';
+    if(country == COUNTRY_VIET_NAM) return 'Viet Nam';
+    if(country == COUNTRY_VIRGIN_ISLANDS_BRITISH) return 'Virgin Islands, British';
+    if(country == COUNTRY_VIRGIN_ISLANDS_US) return 'Virgin Islands, U.S.';
+    if(country == COUNTRY_WALLIS_AND_FUTUNA) return 'Wallis And Futuna';
+    if(country == COUNTRY_WESTERN_SAHARA) return 'Western Sahara';
+    if(country == COUNTRY_YEMEN) return 'Yemen';
+    if(country == COUNTRY_ZAMBIA) return 'Zambia';
+    if(country == COUNTRY_ZIMBABWE) return 'Zimbabwe';
+    return '?';
+  }
+
+  String? country;
+  String? zip;
+  String? email;
+  String? phone;
+  // late int
+  final  int STATUS_ACTIVE = 1;
+  final  int STATUS_NOT_ACTIVE = 0;
+  String get statusString {
+    if(status == STATUS_ACTIVE) return 'Active';
+    if(status == STATUS_NOT_ACTIVE) return 'Not Active';
+    return '?';
+  }
+
+  late int status;
+  String? notes;
+  late String last_email_from;
+  late String last_email_to;
+
+  BooksCompany.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    entity_id = j['entity_id'];
+    entity = (j['entity'] == null) ? null : Entity.fromJson(j['entity']);
+    type = j['type'];
+    name = j['name'];
+    lastname = j['lastname'];
+    firstname = j['firstname'];
+    address = j['address'];
+    city = j['city'];
+    state = j['state'];
+    country = j['country'];
+    zip = j['zip'];
+    email = j['email'];
+    phone = j['phone'];
+    status = j['status'];
+    notes = j['notes'];
+    last_email_from = j['last_email_from'];
+    last_email_to = j['last_email_to'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'entity_id' : entity_id,
+      'entity' : entity == null ? null : entity?.toJson(),
+      'type' : type,
+      'name' : name,
+      'lastname' : lastname,
+      'firstname' : firstname,
+      'address' : address,
+      'city' : city,
+      'state' : state,
+      'country' : country,
+      'zip' : zip,
+      'email' : email,
+      'phone' : phone,
+      'status' : status,
+      'notes' : notes,
+      'last_email_from' : last_email_from,
+      'last_email_to' : last_email_to,
+    };
+  }
+
+}
+
+// <class 'books.models.Entry'>
+class BooksEntry {
+  late int id;
+  late int entity_id;
+  Entity? entity;
+  int? owner_id;
+  MyUser? owner;
+  // late int
+  final  int STATUS_COMPLETED = 0;
+  final  int STATUS_INCOMING___NEEDS_PAID = 1;
+  final  int STATUS_INCOMING___RECEIVED = 2;
+  final  int STATUS_OUTGOING___NEEDS_PRINTED = 3;
+  final  int STATUS_OUTGOING___SENT = 4;
+  String get statusString {
+    if(status == STATUS_COMPLETED) return 'Completed';
+    if(status == STATUS_INCOMING___NEEDS_PAID) return 'Incoming - Needs Paid';
+    if(status == STATUS_INCOMING___RECEIVED) return 'Incoming - Received';
+    if(status == STATUS_OUTGOING___NEEDS_PRINTED) return 'Outgoing - Needs Printed';
+    if(status == STATUS_OUTGOING___SENT) return 'Outgoing - Sent';
+    return '?';
+  }
+
+  late int status;
+  int? company_id;
+  BooksCompany? company;
+  int? payment_id;
+  BooksAccountLineItem? payment;
+  // late int
+  final  int TYPE_MANUAL_ENTRY = 0;
+  final  int TYPE_ONLINE_PURCHASE = 1;
+  final  int TYPE_POS_PURCHASE = 2;
+  final  int TYPE_INCOMING_INVOICE = 3;
+  final  int TYPE_OUTGOING_BILL = 4;
+  final  int TYPE_IMPORTED = 5;
+  String get typeString {
+    if(type == TYPE_MANUAL_ENTRY) return 'Manual Entry';
+    if(type == TYPE_ONLINE_PURCHASE) return 'Online Purchase';
+    if(type == TYPE_POS_PURCHASE) return 'POS Purchase';
+    if(type == TYPE_INCOMING_INVOICE) return 'Incoming Invoice';
+    if(type == TYPE_OUTGOING_BILL) return 'Outgoing Bill';
+    if(type == TYPE_IMPORTED) return 'Imported';
+    return '?';
+  }
+
+  late int type;
+  DateTime? timestamp;
+  DateTime? date;
+  String? trans_id;
+  String? memo;
+  String? notes;
+  int? approved_by_id;
+  MyUser? approved_by;
+
+  BooksEntry.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    entity_id = j['entity_id'];
+    entity = (j['entity'] == null) ? null : Entity.fromJson(j['entity']);
+    owner_id = j['owner_id'];
+    owner = (j['owner'] == null) ? null : MyUser.fromJson(j['owner']);
+    status = j['status'];
+    company_id = j['company_id'];
+    company = (j['company'] == null) ? null : BooksCompany.fromJson(j['company']);
+    payment_id = j['payment_id'];
+    payment = (j['payment'] == null) ? null : BooksAccountLineItem.fromJson(j['payment']);
+    type = j['type'];
+    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }     try { date = DateTime.parse(j['date']); } catch(e) { date = null; }     trans_id = j['trans_id'];
+    memo = j['memo'];
+    notes = j['notes'];
+    approved_by_id = j['approved_by_id'];
+    approved_by = (j['approved_by'] == null) ? null : MyUser.fromJson(j['approved_by']);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'entity_id' : entity_id,
+      'entity' : entity == null ? null : entity?.toJson(),
+      'owner_id' : owner_id,
+      'owner' : owner == null ? null : owner?.toJson(),
+      'status' : status,
+      'company_id' : company_id,
+      'company' : company == null ? null : company?.toJson(),
+      'payment_id' : payment_id,
+      'payment' : payment == null ? null : payment?.toJson(),
+      'type' : type,
+      'timestamp' : timestamp.toString(),
+      'date' : date.toString(),
+      'trans_id' : trans_id,
+      'memo' : memo,
+      'notes' : notes,
+      'approved_by_id' : approved_by_id,
+      'approved_by' : approved_by == null ? null : approved_by?.toJson(),
+    };
+  }
+
+}
+
+// <class 'books.models.AccountLineItem'>
+class BooksAccountLineItem {
+  late int id;
+  late int entry_id;
+  BooksEntry? entry;
+  late int account_id;
+  BooksAccount? account;
+  late int amount;
+  late String currency;
+  late bool reconciled;
+  String? doc_num;
+  late String name;
+  String? userdata;
+  late int order;
+  DateTime? bankdate;
+  String? trans_id;
+  int? related_entity_id;
+  Entity? related_entity;
+
+  BooksAccountLineItem.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    entry_id = j['entry_id'];
+    entry = (j['entry'] == null) ? null : BooksEntry.fromJson(j['entry']);
+    account_id = j['account_id'];
+    account = (j['account'] == null) ? null : BooksAccount.fromJson(j['account']);
+    amount = j['amount'];
+    currency = j['currency'];
+    reconciled = j['reconciled'];
+    doc_num = j['doc_num'];
+    name = j['name'];
+    userdata = j['userdata'];
+    order = j['order'];
+    try { bankdate = DateTime.parse(j['bankdate']); } catch(e) { bankdate = null; }     trans_id = j['trans_id'];
+    related_entity_id = j['related_entity_id'];
+    related_entity = (j['related_entity'] == null) ? null : Entity.fromJson(j['related_entity']);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'entry_id' : entry_id,
+      'entry' : entry == null ? null : entry?.toJson(),
+      'account_id' : account_id,
+      'account' : account == null ? null : account?.toJson(),
+      'amount' : amount,
+      'currency' : currency,
+      'reconciled' : reconciled,
+      'doc_num' : doc_num,
+      'name' : name,
+      'userdata' : userdata,
+      'order' : order,
+      'bankdate' : bankdate.toString(),
+      'trans_id' : trans_id,
+      'related_entity_id' : related_entity_id,
+      'related_entity' : related_entity == null ? null : related_entity?.toJson(),
+    };
+  }
+
+}
+
+// <class 'books.models.CategoryLineItem'>
+class BooksCategoryLineItem {
+  late int id;
+  late int entry_id;
+  BooksEntry? entry;
+  late int category_id;
+  BooksCategory? category;
+  late int amount;
+  late String currency;
+  late String name;
+  String? userdata;
+  late int order;
+  int? klass_id;
+  BooksKlass? klass;
+  int? line_item_id;
+  // LineItem line_item;
+
+  BooksCategoryLineItem.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    entry_id = j['entry_id'];
+    entry = (j['entry'] == null) ? null : BooksEntry.fromJson(j['entry']);
+    category_id = j['category_id'];
+    category = (j['category'] == null) ? null : BooksCategory.fromJson(j['category']);
+    amount = j['amount'];
+    currency = j['currency'];
+    name = j['name'];
+    userdata = j['userdata'];
+    order = j['order'];
+    klass_id = j['klass_id'];
+    klass = (j['klass'] == null) ? null : BooksKlass.fromJson(j['klass']);
+    line_item_id = j['line_item_id'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'entry_id' : entry_id,
+      'entry' : entry == null ? null : entry?.toJson(),
+      'category_id' : category_id,
+      'category' : category == null ? null : category?.toJson(),
+      'amount' : amount,
+      'currency' : currency,
+      'name' : name,
+      'userdata' : userdata,
+      'order' : order,
+      'klass_id' : klass_id,
+      'klass' : klass == null ? null : klass?.toJson(),
+      'line_item_id' : line_item_id,
     };
   }
 
