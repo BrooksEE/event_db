@@ -12,6 +12,7 @@ import 'package:flutter_udid/flutter_udid.dart';
 import 'package:uuid/uuid.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 GlobalKey<NavigatorState>? navKey;
 MyUserProvider? gMyUserProvider;
@@ -99,9 +100,20 @@ class MyUserProvider with ChangeNotifier {
       }
     }
 
+    while(true) {
+      var connectivityResult = await (Connectivity().checkConnectivity());
+      if (connectivityResult == ConnectivityResult.none) {
+        dlg.showBusy("No Internet Detected. Please connect to internet to proceed.");
+        await Future.delayed(Duration(seconds: 4));
+        dlg.closeBusy();
+      } else {
+        break;
+      }
+    }
+
     // try to connect to establish last user
     try {
-      userFromJson(await RPC().rpc("rest", "User", "whoami", {}, null, forceLogin: false));
+      userFromJson(await RPC().rpc("rest", "User", "`whoami`", {}, null, forceLogin: false));
     } on NotLoggedInException {
 
     } catch(e) {
@@ -232,6 +244,7 @@ class Login extends StatefulWidget {
 
 class LoginState extends State<Login> {
   final _loginFormKey = GlobalKey<FormState>();
+  bool _passwordVisible=false;
   String? err;
 
   @override
@@ -274,13 +287,21 @@ class LoginState extends State<Login> {
                   }
                   return null;
                 },
+                textInputAction: TextInputAction.next,
               )),
               Container(width: loginWidth, child: TextFormField(
+                obscureText: !_passwordVisible,
                 decoration: InputDecoration(
                   labelText: "Password",
+                  suffixIcon: IconButton(
+                      icon: Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off, color: Theme.of(context).primaryColorDark),
+                      onPressed: () {
+                        setState(() { _passwordVisible = !_passwordVisible; });
+                      }
+                  ),
                 ),
+                textInputAction: TextInputAction.done,
                 initialValue: myUser.tmpPasswd,
-                obscureText: true,
                 onChanged: (newValue) {
                   myUser.tmpPasswd = newValue;
                 },

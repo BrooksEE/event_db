@@ -17,6 +17,8 @@ import 'state.dart';
 import 'package:flutter/material.dart';
 //import 'main.dart' as mn;
 //import 'package:connectivity/connectivity.dart';
+import 'package:mutex/mutex.dart';
+import 'package:sqflite/sqflite.dart';
 
 class NotLoggedInException implements Exception {
   String errMsg() => "Not Logged In";
@@ -36,47 +38,70 @@ class RPC {
 
 //  static final server = "http://192.168.75.157:8080";
 //  static final server = "http://192.168.75.5:8080";
-  static final server = "https://backend.brooksee.com";
+  static String server = "https://backend.brooksee.com";
 //  PersistCookieJar? cookieJar;
   Timer? retryTimer;
   final Dio dio = Dio();
   Function? notLoggedInHandler;
   String? session;
+  Mutex mutex = Mutex();
+  Database? _sdb;
+
+  Future<Database> get sdb async {
+    if(_sdb == null) {
+      _sdb = await openDatabase("rpc.sqlite", version: 1,
+        onCreate: (Database db, int version) async {
+          await db.execute('CREATE TABLE rpc(id INTEGER PRIMARY KEY, args TEXT not null, retryCount integer not null, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)');
+        }
+      );
+    }
+    return _sdb!;
+  }
 
   void registerNotLoggedInHandler(Function f) {
     notLoggedInHandler = f;
   }
+  void setServer(String s) => server = s;
+  String getServer() => server;
 
   Future<void> rpcEnsure([Map? args=null]) async {
     // tries to perform the requested rpc. if it fails, saves it to try later
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> queue = prefs.getStringList("rpc") ?? <String>[];
-    if(args != null) {
-      queue.add(jsonEncode(args));
-    }
-    print("RPC ENSURE QUEUE: ${queue}");
-    List<String> failures = [];
-    for(int idx=0; idx<queue.length; idx++) {
-      try {
-        Map arg = jsonDecode(queue[idx]);
-        await rpc(arg["mod"], arg["view"], arg["func"], arg["args"], arg["msg"]);
-      } catch(e) {
-        failures.add(queue[idx]);
+    await mutex.acquire();
+    try {
+      Database sdb_ = await sdb;
+      if (args != null) {
+        //queue.add(jsonEncode(args));
+        await sdb_.insert("rpc",{"args":jsonEncode(args), "retryCount": 0});
       }
-    }
-    prefs.setStringList("rpc",failures);
-    if(failures.length > 0) {
-      print("RPC ENSURE DELAY ON: ${failures}");
-      if(retryTimer == null) {
-        retryTimer = Timer.periodic(Duration(minutes: kReleaseMode ? 10: 1), (evt) {
-          rpcEnsure();
-        });
+      List queue = await sdb_.query("rpc") ?? const [];
+      print("RPC ENSURE: trying count = ${queue.length}");
+      for (var item in queue) {
+        try {
+          Map arg = jsonDecode(item["args"]);
+          print(" RPC ENSURE: trying ${item}");
+          await rpc(arg["mod"], arg["view"], arg["func"], arg["args"], arg["msg"]);
+          await sdb_.delete("rpc", where:"id=?", whereArgs:[item["id"]]);
+          print("RPC COMPLETED ${item}");
+        } catch (e) {
+          await sdb_.update("rpc",{"retryCount":item["retryCount"]+1},where:"id=?", whereArgs:[item["id"]]);
+          print("RPC FAIL ${item} ${e}");
+        }
       }
-    } else {
-      if(retryTimer != null) {
-        retryTimer?.cancel();
-        retryTimer = null;
+      List failures = await sdb_.query("rpc") ?? const [];
+      print("RPC ENSURE: failure count = ${failures.length}");
+      if (failures.length > 0) {
+        print("RPC ENSURE DELAY ON: ${failures}");
+        if (retryTimer == null) {
+          retryTimer = Timer.periodic(Duration(minutes: kReleaseMode ? 10 : 1), (evt) { rpcEnsure(); });
+        }
+      } else {
+        if (retryTimer != null) {
+          retryTimer?.cancel();
+          retryTimer = null;
+        }
       }
+    } finally {
+      mutex.release();
     }
   }
 

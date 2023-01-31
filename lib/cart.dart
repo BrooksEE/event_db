@@ -9,13 +9,14 @@ import 'state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart' as mt;
 import 'package:flutter/widgets.dart';
-import 'package:square_in_app_payments/in_app_payments.dart';
-import 'package:square_in_app_payments/models.dart';
-import 'package:square_in_app_payments/google_pay_constants.dart' as google_pay_constants;
+//import 'package:square_in_app_payments/in_app_payments.dart';
+//import 'package:square_in_app_payments/models.dart';
+//import 'package:square_in_app_payments/google_pay_constants.dart' as google_pay_constants;
 import 'dart:math';
 import 'dart:io' show Platform;
 import 'dialogs.dart' as dlg;
 import 'package:db/db.dart';
+
 
 final List<String> states = ["__","AB","AK","AL","AR","AZ","BC","CA","CO","CT","DC","DE","FL","GA","HI","IA","ID","IL","IN","KS","KY","LA","MA","MB","MD","ME","MI","MN","MO","MS","MT","NB","NC","ND","NE","NH","NJ","NL","NM","NS","NT","NU","NV","NY","OH","OK","ON","OR","PA","PE","QC","RI","SC","SD","SK","TN","TX","UT","VT","VA","WA","WI","WV","WY","YT",];
 final List country_choices = [
@@ -489,7 +490,7 @@ class _CartState extends State<CartView> {
   Future<void> checkPayOptions() async {
     var canUseGooglePay = false;
     var canUseApplePay = false;
-    if(Platform.isAndroid && widget.googlePayId != null) {
+/*    if(Platform.isAndroid && widget.googlePayId != null) {
       // initialize the google pay with square location id
       // use test environment first to quick start
       await InAppPayments.initializeGooglePay(
@@ -508,7 +509,7 @@ class _CartState extends State<CartView> {
       canUseApplePay = await InAppPayments.canUseApplePay;
       print("CAN USE APPLE PAY: ${canUseApplePay}");
     }
-    setState(() {
+*/    setState(() {
       _googlePayEnabled = canUseGooglePay;
       _applePayEnabled = canUseApplePay;
     });
@@ -517,11 +518,11 @@ class _CartState extends State<CartView> {
   @override void initState() {
     super.initState();
     init = false;
-    InAppPayments.setSquareApplicationId(widget.squareAppId).then((_) {
+    /*InAppPayments.setSquareApplicationId(widget.squareAppId).then((_) {
       init=true;
       checkPayOptions();
     });
-
+*/
     print("SHIPPING NAME: ${Cart.shippingAddress.name}");
     shippingNameController.text = Cart.shippingAddress.name;
     shippingAddressController.text = Cart.shippingAddress.address;
@@ -537,7 +538,7 @@ class _CartState extends State<CartView> {
     super.dispose();
   }
 
-  Future<void> _onStartCardEntryFlow() async {
+/*  Future<void> _onStartCardEntryFlow() async {
     await InAppPayments.startCardEntryFlow(
         onCardNonceRequestSuccess: _onCardEntryCardNonceRequestSuccess,
         onCardEntryCancel: _onCancelCardEntryFlow);
@@ -546,7 +547,7 @@ class _CartState extends State<CartView> {
   void _onCancelCardEntryFlow() {
     // Handle the cancel callback
   }
-
+*/
   Future<Invoice?> checkout(Map args) async {
     args["invoice_number"] = Cart.invoiceNumber;
     args["total"]          = Cart.getTotal().amt;
@@ -571,7 +572,7 @@ class _CartState extends State<CartView> {
     }
     return invoice;
   }
-
+/*
   void _onCardEntryCardNonceRequestSuccess(CardDetails cardDetails) async {
     try {
       await checkout({"which":"squareweb", "nonce": cardDetails.nonce});
@@ -586,7 +587,7 @@ class _CartState extends State<CartView> {
       InAppPayments.showCardNonceProcessingError(ex.toString());
     }
   }
-
+*/
   void showError() {
     print("showError called");
   }
@@ -597,7 +598,7 @@ class _CartState extends State<CartView> {
     });
     // Update UI to notify user that the payment flow is finished successfully
   }
-
+/*
   void _onStartApplePay() async {
     String price = Cart.getTotal().display(bare:true);
     try {
@@ -668,7 +669,7 @@ class _CartState extends State<CartView> {
     dlg.showError(errorInfo.toString());
     // handle google pay failure
   }
-
+*/
   @override
   Widget build(BuildContext context) {
     Amount tot = Cart.getTotal();
@@ -1044,7 +1045,7 @@ class _CartState extends State<CartView> {
                     mainAxisSize: MainAxisSize.max,
                     children: <Widget> [
                   Expanded(child: Container(width: 0)),
-                  tot.amt == 0 ? ElevatedButton(
+  /*                tot.amt == 0 ? ElevatedButton(
                     child: Text("Checkout"),
                     onPressed: () async {
                       if(_formKey.currentState?.validate() ?? false) {
@@ -1088,7 +1089,7 @@ class _CartState extends State<CartView> {
                         },
                       ) : Container(width: 0),
                       Expanded(child: Container(width: 0)),
-                ]),
+  */              ]),
                 Container(height: 20),
               ]
       )
