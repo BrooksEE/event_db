@@ -87,7 +87,7 @@ class MyUserProvider with ChangeNotifier {
     }
   }
 
-  Future<void> init() async {
+  Future<void> init({bool offline_ok: true}) async {
     initialized = false;
 
     // restore last user as a place holder in case they are offline
@@ -100,7 +100,7 @@ class MyUserProvider with ChangeNotifier {
       }
     }
 
-    while(true) {
+    while(!offline_ok) {
       var connectivityResult = await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.none) {
         dlg.showBusy("No Internet Detected. Please connect to internet to proceed.");
