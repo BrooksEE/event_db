@@ -73,6 +73,11 @@ class RegForm  {
           form_data["form"].retainWhere((f) {
             return setup["fields"].indexWhere((key) { return key == f["key"]; }) != -1 || f["key"] == "race_event";
           });
+          if(!(setup["initialize"] ?? true)) {
+            form_data["form"].forEach((f) {
+              f.remove("initial");
+            });
+          }
           print("FIELDS2: ${setup["fields"]}");
           if(setup["fields"].indexOf("bib") >= 0) {
             form_data["form"].add(

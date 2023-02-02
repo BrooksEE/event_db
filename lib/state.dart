@@ -113,7 +113,7 @@ class MyUserProvider with ChangeNotifier {
 
     // try to connect to establish last user
     try {
-      userFromJson(await RPC().rpc("rest", "User", "`whoami`", {}, null, forceLogin: false));
+      userFromJson(await RPC().rpc("rest", "User", "whoami", {}, null, forceLogin: false));
     } on NotLoggedInException {
 
     } catch(e) {
