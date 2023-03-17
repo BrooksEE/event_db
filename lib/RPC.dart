@@ -99,10 +99,8 @@ class RPC {
       if (args != null) {
         //queue.add(jsonEncode(args));
         await sdb_.insert("rpc", {"args": jsonEncode(args), "retryCount": 0});
-      } else {
-        await sdb_.delete("rpc");
       }
-      List queue = await sdb_.query("rpc", where: "retryCount < ?", whereArgs: [3]) ?? const [];
+      List queue = await sdb_.query("rpc", where: "retryCount < ?", whereArgs: [10]) ?? const [];
       print("RPC ENSURE: trying count = ${queue.length}");
       for (var item in queue) {
         try {
@@ -121,8 +119,7 @@ class RPC {
       if (failures.length > 0) {
         print("RPC ENSURE DELAY ON: ${failures}");
         if (retryTimer == null) {
-          retryTimer =
-              Timer.periodic(Duration(minutes: kReleaseMode ? 10 : 1), (evt) {
+          retryTimer = Timer.periodic(Duration(minutes: kReleaseMode ? 10 : 1), (evt) {
                 rpcEnsure();
               });
         }

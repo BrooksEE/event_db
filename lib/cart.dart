@@ -317,6 +317,15 @@ class Invoice {
   }
 }
 
+class Tax {
+  String category;
+  Amount taxAmt;
+  Amount taxableAmt;
+  Tax(this.category, this.taxAmt, this.taxableAmt);
+  Map toMap() {
+    return {"category":category, "taxAmt": { "amt": taxAmt.amt, "currency": taxAmt.currency  }, "taxableAmt": { "amt": taxableAmt.amt, "currency": taxableAmt.currency  } };
+  }
+}
 
 class CartItem {
   String type;
