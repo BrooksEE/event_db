@@ -249,7 +249,7 @@ class RPC {
             print("Cache miss.");
           }
         } */
-          if(e.message.startsWith("SocketException: Failed host lookup")) {
+          if(e.message?.startsWith("SocketException: Failed host lookup") ?? false) {
             throw ConnectionException();
           } else {
             throw e;
