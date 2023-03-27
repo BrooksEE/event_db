@@ -150,7 +150,8 @@ class MyFormController {
           addField(RadioField.fromJSON(f));
           break;
         }
-        case "Select": {
+        case "Select":
+        case "SelectWithDisabled": {
           addField(SelectField.fromJSON(f));
           break;
         }
