@@ -6,7 +6,10 @@ import 'dialogs.dart' as dlg;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'cart.dart';
-import 'html_view.dart';
+import 'state.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:provider/provider.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 // TODO:
 //  - Waves (change as a dependacny
@@ -184,17 +187,29 @@ class TeamField extends Field<int> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text("Team Registration", style: TextStyle(fontWeight: FontWeight.bold)),
-          HtmlView(info["blurp"]),
+          Html(data: info["blurp"]),
           ElevatedButton(
             child: Text("Tell Me More"),
             onPressed: () {
-              Navigator.pushNamed(context, "/team/rules", arguments: info);
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) {
+                    return Scaffold(
+                      appBar: AppBar(title: Text("Team Rules")),
+                      body: Html(data: info["rules"]),
+                    );
+                  })
+              );
             },
           ),
           ElevatedButton(
             child: Text("Create A Team"),
             onPressed: () {
-              Navigator.pushNamed(context, "/team/create", arguments: {"info":info, "race": race, "setTeam": setTeam});
+              Navigator.push(context, MaterialPageRoute(
+                builder: (context) {
+                  //{"info":info, "race": race, "setTeam": setTeam});
+                  return TeamCreate(race, info, setTeam);
+                })
+              );
             },
           ),
           ElevatedButton(
@@ -252,5 +267,121 @@ class TeamField extends Field<int> {
       this.team = team;
       value = this.team!["id"];
     });
+  }
+}
+
+class TeamCreate extends StatefulWidget {
+  Race race;
+  Map info;
+  Function(Map) setTeam;
+  TeamCreate(this.race, this.info, this.setTeam) : super();
+
+  @override _TeamCreateState createState() => _TeamCreateState();
+}
+
+class _TeamCreateState extends State<TeamCreate> {
+  final _formKey = GlobalKey<FormState>();
+  MyFormController? myFormController;
+  @override
+  void initState() {
+    myFormController = MyFormController(_formKey);
+    MyUserProvider? myUser = MyUserProvider.instance;
+    myFormController!.fromJSON([
+      {
+        "widget"             : "TextInput",
+        "label"              : "Team Name",
+        "key"                : "name",
+        "required"           : true,
+        "autofillHints"      : ["name"],
+        "keyboardType"       : "name",
+        "textCapitalization" : "words",
+        "type"               : "",
+      },
+      {
+        "widget": "TextInput",
+        "label" : "Team Captain's Name",
+        "key"   : "captain",
+        "required": true,
+        "autofillHints"      : ["name"],
+        "keyboardType"       : "name",
+        "textCapitalization" : "words",
+        "initial"            : myUser?.user?.name ?? "",
+        "type"               : "",
+      },
+      {
+        "widget": "EmailInput",
+        "label" : "Team Captain's Email",
+        "key"   : "email",
+        "required": true,
+        "autofillHints"      : ["email"],
+        "keyboardType"       : "email",
+        "initial"            : myUser?.user?.email ?? "",
+        "type"               : "",
+      },
+      {
+        "widget": "TextInput",
+        "label" : "Team Description",
+        "key"   : "desc",
+        "required": false,
+        "multiline" : true,
+        "type"               : "",
+      },
+    ]);
+    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      init();
+    });
+  }
+
+  Future<void> init() async {
+  }
+
+  Future<void> createTeam() async {
+    try{
+      Map args = myFormController!.getFormData();
+      args["race_id"] = widget.race.id;
+      Map data = await RPC().rpc("teams","Teams","create", args, "Creating Team...");
+      print("NEW TEAM: ${data["team"]}");
+      widget.setTeam(data["team"]);
+      Navigator.pop(context);
+    } catch(e) {
+      dlg.showError(e.toString());
+    }
+  }
+
+  @override Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(title: Text("Create Team")),
+        body: myFormController == null ? Center(child: CircularProgressIndicator()) : SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                  child:   AutoSizeText(widget.race.getName, maxLines: 1, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 26)),
+                ),
+                Container(padding: EdgeInsets.all(10), child: Text("Create Team", textAlign: TextAlign.center,)),
+                Column(children: <Widget> [
+                  Container(padding: EdgeInsets.only(left: 20, right: 20), child: MyForm(controller: myFormController!)),
+                  Container(padding: EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10), child: ElevatedButton(
+                    onPressed: () async {
+                      if(myFormController!.validate()) {
+                        await createTeam();
+                      }
+                      setState(() {
+
+                      });
+                    },
+                    child: Text("Create"),
+                  )),
+                  Container(height: 100),
+                ]),
+              ],
+            )
+        )
+    );
   }
 }
