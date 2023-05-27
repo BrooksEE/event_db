@@ -142,6 +142,24 @@ class ProfileState extends State<Profile> {
       dlg.showError(error.toString());
     }
   }
+  Future<void> _delete_account() async {
+      dlg.confirm(
+        "Confirm",
+        "Are you sure you want to delete your account? This cannot be undone.",
+        () async {
+          try {
+            Map myuser = await RPC().rpc("rest", "User", "delete_account", {}, "Deleting Account...");
+            Provider.of<MyUserProvider>(context, listen: false).logout();
+            Navigator.pop(context);
+          } catch (error) {
+            dlg.showError(error.toString());
+          }
+        },
+        (){
+
+        },
+      );
+  }
 
   @override void initState() {
     super.initState();
@@ -329,6 +347,13 @@ class ProfileState extends State<Profile> {
                 ),
               )
             ),
+              Container(height: 50),
+              TextButton(
+                child: Text("Delete Account"),
+                onPressed: () {
+                  _delete_account();
+                }
+              )
           ]),
         ),
       );
