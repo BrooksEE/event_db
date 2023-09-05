@@ -20,7 +20,7 @@ MyUserProvider? gMyUserProvider;
 BuildContext get gContext {
   BuildContext? context = navKey?.currentContext;
   if(context == null) {
-    throw("navKey is null. Call dialog init() function");
+    throw("navKey.currentContext is null. Call dialog init() function");
   } else {
     return context;
   }
@@ -62,7 +62,7 @@ class MyUserProvider with ChangeNotifier {
   String get tmpPasswd => _tmpPasswd;
 
   MyUserProvider(GlobalKey<NavigatorState> nKey, this.hostKey) {
-    print("MyUserProvider Constructor");
+    print("MyUserProvider Constructor ${nKey}");
     navKey = nKey;
     RPC().registerNotLoggedInHandler(() async {
       _user = null;
