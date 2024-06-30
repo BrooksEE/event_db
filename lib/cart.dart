@@ -733,7 +733,7 @@ class _CartState extends State<CartView> {
             + [
               Container(height: 20),
           AutoSizeText(
-            'Reciept',
+            'Receipt',
             style: TextStyle(
                 fontSize: 30,
                 color: Theme.of(context).primaryColor),
@@ -1076,7 +1076,7 @@ class _CartState extends State<CartView> {
                   Container(width: _googlePayEnabled && tot.amt > 0 ? 20 : 0),
                   _googlePayEnabled && tot.amt > 0 ? ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(0xFF, 0, 0, 0),
+                      backgroundColor: Color.fromARGB(0xFF, 0, 0, 0),
                     ),
                     child: Image.asset("assets/google_pay.png", height: 20),
                     onPressed: () async {
