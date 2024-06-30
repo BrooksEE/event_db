@@ -245,9 +245,14 @@ class LoginState extends State<Login> {
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
+              Expanded(child: Container(width: 0)),
+              Text("Login", style: Theme
+                  .of(context)
+                  .textTheme.titleMedium),
+              Container(height: 10),
               err == null ? Container(height: 0) : Text(
                   "$err", style: TextStyle(color: Colors.red)),
-              Container(height: 50),
+              Container(height: 10),
               Container(width: loginWidth, child: TextFormField(
                 initialValue: myUser.tmpEmail,
                 decoration: InputDecoration(
@@ -364,10 +369,15 @@ class PasswordReset1State extends State<PasswordReset1> {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget> [
+<<<<<<< HEAD
                 Container(height: 50),
                 Text("Setup Account/Forgot Password", style: Theme.of(context).textTheme.titleMedium),
                 Text("(For Race Participants Only)", style: Theme.of(context).textTheme.bodyMedium),
                 Container(height: 30),
+=======
+                Expanded(child: Container()),
+                Text("Setup/Forgot Password", style: Theme.of(context).textTheme.titleMedium),
+>>>>>>> 41be941 (updates)
                 Container(width: loginWidth, child: TextFormField(
                   initialValue: myUserProvider.tmpEmail,
                   decoration: InputDecoration(
@@ -454,10 +464,16 @@ class PasswordReset2State extends State<PasswordReset2> {
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget> [
+<<<<<<< HEAD
               Container(height: 40),
               Text("Set Password for", style: Theme.of(context).textTheme.titleMedium),
               Text("${widget.email}", style: Theme.of(context).textTheme.titleMedium),
               Container(height: 20),
+=======
+              Expanded(child: Container()),
+              Text("Set Password for", style: Theme.of(context).textTheme.titleMedium),
+              Text("${widget.email}", style: Theme.of(context).textTheme.titleMedium),
+>>>>>>> 41be941 (updates)
               Container(width: loginWidth, child: TextFormField(
                 obscureText: !_passwordVisible1,
                 decoration: InputDecoration(
