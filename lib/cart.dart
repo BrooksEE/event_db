@@ -1076,7 +1076,7 @@ class _CartState extends State<CartView> {
                   Container(width: _googlePayEnabled && tot.amt > 0 ? 20 : 0),
                   _googlePayEnabled && tot.amt > 0 ? ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      primary: Color.fromARGB(0xFF, 0, 0, 0),
+                        backgroundColor: Color.fromARGB(0xFF, 0, 0, 0),
                     ),
                     child: Image.asset("assets/google_pay.png", height: 20),
                     onPressed: () async {
@@ -1088,7 +1088,7 @@ class _CartState extends State<CartView> {
                       Container(width: _applePayEnabled && tot.amt > 0 ? 20 : 0),
                       _applePayEnabled && tot.amt > 0 ? ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          primary: Color.fromARGB(0xFF, 0, 0, 0),
+                          backgroundColor: Color.fromARGB(0xFF, 0, 0, 0),
                         ),
                         child: Image.asset("assets/apple_pay.png", height: 20),
                         onPressed: () async {

@@ -264,13 +264,10 @@ class LoginState extends State<Login> {
               Expanded(child: Container(width: 0)),
               Text("Login", style: Theme
                   .of(context)
-                  .textTheme
-                  .headline5),
+                  .textTheme.titleMedium),
               Container(height: 10),
               err == null ? Container(height: 0) : Text(
-                  "$err", style: TextStyle(color: Theme
-                  .of(context)
-                  .errorColor)),
+                  "$err", style: TextStyle(color: Colors.red)),
               Container(height: 10),
               Container(width: loginWidth, child: TextFormField(
                 initialValue: myUser.tmpEmail,
@@ -379,7 +376,7 @@ class PasswordReset1State extends State<PasswordReset1> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget> [
                 Expanded(child: Container()),
-                Text("Setup/Forgot Password", style: Theme.of(context).textTheme.headline5),
+                Text("Setup/Forgot Password", style: Theme.of(context).textTheme.titleMedium),
                 Container(width: loginWidth, child: TextFormField(
                   initialValue: myUserProvider.tmpEmail,
                   decoration: InputDecoration(
@@ -463,8 +460,8 @@ class PasswordReset2State extends State<PasswordReset2> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget> [
               Expanded(child: Container()),
-              Text("Set Password for", style: Theme.of(context).textTheme.headline5),
-              Text("${widget.email}", style: Theme.of(context).textTheme.headline5),
+              Text("Set Password for", style: Theme.of(context).textTheme.titleMedium),
+              Text("${widget.email}", style: Theme.of(context).textTheme.titleMedium),
               Container(width: loginWidth, child: TextFormField(
                 decoration: InputDecoration(
                   labelText: "Password",

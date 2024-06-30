@@ -128,7 +128,7 @@ class _ImageDialogState extends State<ImageDialog> {
 
         ElevatedButton(child: Text("Dismiss", style:TextStyle(color: Colors.white)),
           style: ElevatedButton.styleFrom(
-            primary: Theme.of(context).primaryColor,
+            backgroundColor: Theme.of(context).primaryColor,
           ),
           onPressed: () {
             Navigator.of(context).pop();
