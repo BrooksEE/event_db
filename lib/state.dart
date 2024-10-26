@@ -11,6 +11,10 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:uuid/uuid.dart';
+<<<<<<< HEAD
+=======
+import 'package:app_links/app_links.dart';
+>>>>>>> 0d0b911 (updated pubspec.yaml)
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:app_links/app_links.dart';
@@ -122,6 +126,7 @@ class MyUserProvider with ChangeNotifier {
       //dlg.showError(e.toString());
     }
 
+<<<<<<< HEAD
     /* handle uni_links/app links */
     final appLinks = AppLinks();
     final sub = appLinks.uriLinkStream.listen((uri) {
@@ -131,6 +136,35 @@ class MyUserProvider with ChangeNotifier {
           processLink(link.toString());
        }
     });// get the initial universal/deep link
+=======
+    /* handle uni_links */
+    // get the initial universal/deep link
+    try {
+      final appLinks = AppLinks();
+      Uri? link = await appLinks.getInitialLink();
+      //final link = await getInitialLink();
+      print('initial link: $link');
+      if (link != null) {
+        processLink(link.toString());
+      }
+    } catch(e) {
+      print("$e");
+      // Handle exception by warning the user their action did not succeed
+      // return?
+    }
+
+    final appLinks = AppLinks();
+    var _sub = appLinks.uriLinkStream.listen((Uri? uri) {
+      if (uri != null) {
+        // Handle the incoming link
+        print("Received link: $uri");
+        processLink(uri.toString());
+      }
+    }, onError: (err) {
+      print("$err");
+      // Handle exception by warning the user their action did not succeed
+    });
+>>>>>>> 0d0b911 (updated pubspec.yaml)
 
     initialized = true;
     notifyListeners();
@@ -369,15 +403,10 @@ class PasswordReset1State extends State<PasswordReset1> {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget> [
-<<<<<<< HEAD
                 Container(height: 50),
                 Text("Setup Account/Forgot Password", style: Theme.of(context).textTheme.titleMedium),
                 Text("(For Race Participants Only)", style: Theme.of(context).textTheme.bodyMedium),
                 Container(height: 30),
-=======
-                Expanded(child: Container()),
-                Text("Setup/Forgot Password", style: Theme.of(context).textTheme.titleMedium),
->>>>>>> 41be941 (updates)
                 Container(width: loginWidth, child: TextFormField(
                   initialValue: myUserProvider.tmpEmail,
                   decoration: InputDecoration(
