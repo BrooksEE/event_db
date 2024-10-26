@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:uuid/uuid.dart';
-import 'package:uni_links/uni_links.dart';
+import 'package:app_links/app_links.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
@@ -124,10 +124,12 @@ class MyUserProvider with ChangeNotifier {
     /* handle uni_links */
     // get the initial universal/deep link
     try {
-      final link = await getInitialLink();
+      final appLinks = AppLinks();
+      Uri? link = await appLinks.getInitialLink();
+      //final link = await getInitialLink();
       print('initial link: $link');
       if (link != null) {
-        processLink(link);
+        processLink(link.toString());
       }
     } catch(e) {
       print("$e");
@@ -135,17 +137,17 @@ class MyUserProvider with ChangeNotifier {
       // return?
     }
 
-    // listen for univiersal/deep links
-    var _sub = linkStream.listen((String? link) {
-      print("RX LINK: ${link}");
-      if(link != null) {
-        processLink(link);
+    final appLinks = AppLinks();
+    var _sub = appLinks.uriLinkStream.listen((Uri? uri) {
+      if (uri != null) {
+        // Handle the incoming link
+        print("Received link: $uri");
+        processLink(uri.toString());
       }
     }, onError: (err) {
       print("$err");
       // Handle exception by warning the user their action did not succeed
     });
-    // NOTE: Don't forget to call _sub.cancel() in dispose()
 
     initialized = true;
     notifyListeners();
