@@ -18,7 +18,6 @@ import 'cart.dart';
 import 'dart:math';
 import 'dialogs.dart' as dlg;
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import "dart:io";
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
