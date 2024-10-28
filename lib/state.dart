@@ -230,8 +230,7 @@ class MyUserProvider with ChangeNotifier {
   Future<void> logout() async {
     await RPC().rpc("rest", "User", "logout",  {}, "Logging Out");
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove("email");
-    await prefs.remove("password");
+    await prefs.clear();
     _user = null;
     Cart.email = "";
     notifyListeners();
@@ -263,14 +262,9 @@ class LoginState extends State<Login> {
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Expanded(child: Container(width: 0)),
-              Text("Login", style: Theme
-                  .of(context)
-                  .textTheme.titleMedium),
-              Container(height: 10),
               err == null ? Container(height: 0) : Text(
                   "$err", style: TextStyle(color: Colors.red)),
-              Container(height: 10),
+              Container(height: 50),
               Container(width: loginWidth, child: TextFormField(
                 initialValue: myUser.tmpEmail,
                 decoration: InputDecoration(
@@ -287,13 +281,15 @@ class LoginState extends State<Login> {
                   return null;
                 },
                 textInputAction: TextInputAction.next,
+                autofillHints: [AutofillHints.email],
               )),
+              Container(height: 30),
               Container(width: loginWidth, child: TextFormField(
                 obscureText: !_passwordVisible,
                 decoration: InputDecoration(
                   labelText: "Password",
                   suffixIcon: IconButton(
-                      icon: Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off, color: Theme.of(context).primaryColorDark),
+                      icon: Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off),
                       onPressed: () {
                         setState(() { _passwordVisible = !_passwordVisible; });
                       }
@@ -310,9 +306,10 @@ class LoginState extends State<Login> {
                   }
                   return null;
                 },
+                autofillHints: [AutofillHints.password],
               )),
-              Container(height: 10),
-              ElevatedButton(
+              Container(height: 50),
+              SizedBox(width: loginWidth, child: ElevatedButton(
                 onPressed: () async {
                   setState(() {
                     err = null;
@@ -331,13 +328,20 @@ class LoginState extends State<Login> {
                   }
                 },
                 child: const Text('Login'),
-              ),
-              Expanded(child: Container(width: 0)),
+              )),
+              Container(height: 20),
+              SizedBox(width: loginWidth, child: OutlinedButton(
+                onPressed: () async {
+                  await MyUserProvider.navTo(builder: (context) => PasswordReset1());
+                },
+                child: const Text('Setup Account'),
+              )),
+              Container(height: 30),
               TextButton(
                 onPressed: () async {
                   await MyUserProvider.navTo(builder: (context) => PasswordReset1());
                 },
-                child: const Text("Setup/Forgot Password"),
+                child: const Text("Forgot Password"),
               ),
             ],
           ),
@@ -377,8 +381,9 @@ class PasswordReset1State extends State<PasswordReset1> {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget> [
-                Expanded(child: Container()),
+                Container(height: 50),
                 Text("Setup/Forgot Password", style: Theme.of(context).textTheme.titleMedium),
+                Container(height: 30),
                 Container(width: loginWidth, child: TextFormField(
                   initialValue: myUserProvider.tmpEmail,
                   decoration: InputDecoration(
@@ -395,8 +400,8 @@ class PasswordReset1State extends State<PasswordReset1> {
                     return null;
                   },
                 )),
-                Container(height: 10),
-                ElevatedButton(
+                Container(height: 30),
+                SizedBox(width: loginWidth, child: ElevatedButton(
                     child: Text("Submit"),
                     onPressed: (myUserProvider.tmpEmail.isEmpty || !(_formKey.currentState?.validate() ?? false)) ? null : () async {
                       setState(() {
@@ -417,7 +422,7 @@ class PasswordReset1State extends State<PasswordReset1> {
                         dlg.showError(e.toString());
                       }
                     }
-                ),
+                )),
                 Expanded(child: Container()),
               ],
             ),

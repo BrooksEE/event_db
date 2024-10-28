@@ -999,6 +999,7 @@ class _MyFormState extends State<MyForm> {
       if(widget.post != null && widget.post![field.key] != null) {
         widget.post![field.key](field, children, this, context);
       }
+      children.add(Container(height: 20));
     }
     return AutofillGroup(
         child: Form(
