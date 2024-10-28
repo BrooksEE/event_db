@@ -279,14 +279,9 @@ class LoginState extends State<Login> {
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Expanded(child: Container(width: 0)),
-              Text("Login", style: Theme
-                  .of(context)
-                  .textTheme.titleMedium),
-              Container(height: 10),
               err == null ? Container(height: 0) : Text(
                   "$err", style: TextStyle(color: Colors.red)),
-              Container(height: 10),
+              Container(height: 50),
               Container(width: loginWidth, child: TextFormField(
                 initialValue: myUser.tmpEmail,
                 decoration: InputDecoration(
@@ -349,21 +344,33 @@ class LoginState extends State<Login> {
                     });
                   }
                 },
+<<<<<<< HEAD
                 child: const Text('LOGIN'),
+=======
+                child: const Text('Login'),
+>>>>>>> aba21a2 (EWM updates)
               )),
               Container(height: 20),
               SizedBox(width: loginWidth, child: OutlinedButton(
                 onPressed: () async {
                   await MyUserProvider.navTo(builder: (context) => PasswordReset1());
                 },
+<<<<<<< HEAD
                 child: const Text('SETUP ACCOUNT'),
+=======
+                child: const Text('Setup Account'),
+>>>>>>> aba21a2 (EWM updates)
               )),
               Container(height: 30),
               TextButton(
                 onPressed: () async {
                   await MyUserProvider.navTo(builder: (context) => PasswordReset1());
                 },
+<<<<<<< HEAD
                 child: const Text("FORGOT PASSWORD"),
+=======
+                child: const Text("Forgot Password"),
+>>>>>>> aba21a2 (EWM updates)
               ),
             ],
           ),
@@ -404,8 +411,12 @@ class PasswordReset1State extends State<PasswordReset1> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget> [
                 Container(height: 50),
+<<<<<<< HEAD
                 Text("Setup Account/Forgot Password", style: Theme.of(context).textTheme.titleMedium),
                 Text("(For Race Participants Only)", style: Theme.of(context).textTheme.bodyMedium),
+=======
+                Text("Setup/Forgot Password", style: Theme.of(context).textTheme.titleMedium),
+>>>>>>> aba21a2 (EWM updates)
                 Container(height: 30),
                 Container(width: loginWidth, child: TextFormField(
                   initialValue: myUserProvider.tmpEmail,
@@ -493,16 +504,10 @@ class PasswordReset2State extends State<PasswordReset2> {
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget> [
-<<<<<<< HEAD
               Container(height: 40),
               Text("Set Password for", style: Theme.of(context).textTheme.titleMedium),
               Text("${widget.email}", style: Theme.of(context).textTheme.titleMedium),
               Container(height: 20),
-=======
-              Expanded(child: Container()),
-              Text("Set Password for", style: Theme.of(context).textTheme.titleMedium),
-              Text("${widget.email}", style: Theme.of(context).textTheme.titleMedium),
->>>>>>> 41be941 (updates)
               Container(width: loginWidth, child: TextFormField(
                 obscureText: !_passwordVisible1,
                 decoration: InputDecoration(
