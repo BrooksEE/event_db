@@ -1,5 +1,6 @@
 library db;
 import 'dart:io';
+import "dart:ui";
 import 'db.dart';
 import 'dart:convert';
 import 'RPC.dart';
@@ -10,9 +11,9 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:uuid/uuid.dart';
-import 'package:app_links/app_links.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:app_links/app_links.dart';
 
 GlobalKey<NavigatorState>? navKey;
 MyUserProvider? gMyUserProvider;
@@ -121,33 +122,15 @@ class MyUserProvider with ChangeNotifier {
       //dlg.showError(e.toString());
     }
 
-    /* handle uni_links */
-    // get the initial universal/deep link
-    try {
-      final appLinks = AppLinks();
-      Uri? link = await appLinks.getInitialLink();
-      //final link = await getInitialLink();
-      print('initial link: $link');
-      if (link != null) {
-        processLink(link.toString());
-      }
-    } catch(e) {
-      print("$e");
-      // Handle exception by warning the user their action did not succeed
-      // return?
-    }
-
+    /* handle uni_links/app links */
     final appLinks = AppLinks();
-    var _sub = appLinks.uriLinkStream.listen((Uri? uri) {
-      if (uri != null) {
-        // Handle the incoming link
-        print("Received link: $uri");
-        processLink(uri.toString());
-      }
-    }, onError: (err) {
-      print("$err");
-      // Handle exception by warning the user their action did not succeed
-    });
+    final sub = appLinks.uriLinkStream.listen((uri) {
+       var link = uri.toString();
+       print('link: $link');
+       if (link != null) {
+          processLink(link.toString());
+       }
+    });// get the initial universal/deep link
 
     initialized = true;
     notifyListeners();
@@ -173,8 +156,8 @@ class MyUserProvider with ChangeNotifier {
     }
     if (link.contains("password/reset")) {
       List m = link.split("/");
-      String email = m[6];
-      String rId = m[7];
+      String email = m[m.length-2];
+      String rId = m[m.length-1];
       print("EMAIL=$email rId=$rId");
 
       if(navKey?.currentContext != null) {
@@ -452,6 +435,8 @@ class PasswordReset2State extends State<PasswordReset2> {
     }
     var data = await RPC().rpc("rest", "User", "set_password", {"email": widget.email, "password": passwd1, "rId": widget.rId}, "Setting Password...");
   }
+  bool _passwordVisible1 = false;
+  bool _passwordVisible2 = false;
 
   @override Widget build(BuildContext context) {
     return Consumer<MyUserProvider>(builder: (context, myUserProvider, child) {
@@ -466,15 +451,22 @@ class PasswordReset2State extends State<PasswordReset2> {
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget> [
-              Expanded(child: Container()),
+              Container(height: 40),
               Text("Set Password for", style: Theme.of(context).textTheme.titleMedium),
               Text("${widget.email}", style: Theme.of(context).textTheme.titleMedium),
+              Container(height: 20),
               Container(width: loginWidth, child: TextFormField(
+                obscureText: !_passwordVisible1,
                 decoration: InputDecoration(
                   labelText: "Password",
+                  suffixIcon: IconButton(
+                      icon: Icon(_passwordVisible1 ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () {
+                        setState(() { _passwordVisible1 = !_passwordVisible1; });
+                      }
+                  ),
                 ),
                 initialValue: passwd1,
-                obscureText: true,
                 onChanged: (newValue) {
                   setState(() {
                     passwd1 = newValue;
@@ -486,13 +478,19 @@ class PasswordReset2State extends State<PasswordReset2> {
                   }
                   return null;
                 },                )),
-              Container(height: 10),
+              Container(height: 20),
               Container(width: loginWidth, child: TextFormField(
+                obscureText: !_passwordVisible2,
                 decoration: InputDecoration(
-                  labelText: "Password Again",
+                  labelText: "Password",
+                  suffixIcon: IconButton(
+                      icon: Icon(_passwordVisible2 ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () {
+                        setState(() { _passwordVisible2 = !_passwordVisible2; });
+                      }
+                  ),
                 ),
                 initialValue: passwd2,
-                obscureText: true,
                 onChanged: (newValue) {
                   setState(() {
                     passwd2 = newValue;
@@ -504,9 +502,10 @@ class PasswordReset2State extends State<PasswordReset2> {
                   }
                   return null;
                 },                )),
-              Container(height: 10),
-              ElevatedButton(
-                  child: Text("Submit"),
+              Container(height: 20),
+              Container(width: loginWidth, child:
+                ElevatedButton(
+                  child: Text("SUBMIT"),
                   onPressed: (passwd1.isEmpty || passwd2.isEmpty || !(_formKey.currentState?.validate() ?? false)) ? null : () async {
                     setState(() {
                       submitted = true;
@@ -525,7 +524,7 @@ class PasswordReset2State extends State<PasswordReset2> {
                       });
                     }
                   }
-              ),
+              )),
               Expanded(child: Container()),
             ],
           ),
