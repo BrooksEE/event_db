@@ -310,21 +310,21 @@ class LoginState extends State<Login> {
                     });
                   }
                 },
-                child: const Text('Login'),
+                child: const Text('LOGIN'),
               )),
               Container(height: 20),
               SizedBox(width: loginWidth, child: OutlinedButton(
                 onPressed: () async {
                   await MyUserProvider.navTo(builder: (context) => PasswordReset1());
                 },
-                child: const Text('Setup Account'),
+                child: const Text('SETUP ACCOUNT'),
               )),
               Container(height: 30),
               TextButton(
                 onPressed: () async {
                   await MyUserProvider.navTo(builder: (context) => PasswordReset1());
                 },
-                child: const Text("Forgot Password"),
+                child: const Text("FORGOT PASSWORD"),
               ),
             ],
           ),
@@ -385,7 +385,7 @@ class PasswordReset1State extends State<PasswordReset1> {
                 )),
                 Container(height: 30),
                 SizedBox(width: loginWidth, child: ElevatedButton(
-                    child: Text("Submit"),
+                    child: Text("SUBMIT"),
                     onPressed: (myUserProvider.tmpEmail.isEmpty || !(_formKey.currentState?.validate() ?? false)) ? null : () async {
                       setState(() {
                         submitted = true;
