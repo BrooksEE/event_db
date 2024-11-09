@@ -11,10 +11,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:uuid/uuid.dart';
-<<<<<<< HEAD
-=======
-import 'package:app_links/app_links.dart';
->>>>>>> 0d0b911 (updated pubspec.yaml)
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:app_links/app_links.dart';
@@ -126,7 +122,6 @@ class MyUserProvider with ChangeNotifier {
       //dlg.showError(e.toString());
     }
 
-<<<<<<< HEAD
     /* handle uni_links/app links */
     final appLinks = AppLinks();
     final sub = appLinks.uriLinkStream.listen((uri) {
@@ -136,35 +131,15 @@ class MyUserProvider with ChangeNotifier {
           processLink(link.toString());
        }
     });// get the initial universal/deep link
-=======
-    /* handle uni_links */
-    // get the initial universal/deep link
-    try {
-      final appLinks = AppLinks();
-      Uri? link = await appLinks.getInitialLink();
-      //final link = await getInitialLink();
-      print('initial link: $link');
-      if (link != null) {
-        processLink(link.toString());
-      }
-    } catch(e) {
-      print("$e");
-      // Handle exception by warning the user their action did not succeed
-      // return?
-    }
-
+    /* handle uni_links/app links */
     final appLinks = AppLinks();
-    var _sub = appLinks.uriLinkStream.listen((Uri? uri) {
-      if (uri != null) {
-        // Handle the incoming link
-        print("Received link: $uri");
-        processLink(uri.toString());
-      }
-    }, onError: (err) {
-      print("$err");
-      // Handle exception by warning the user their action did not succeed
-    });
->>>>>>> 0d0b911 (updated pubspec.yaml)
+    final sub = appLinks.uriLinkStream.listen((uri) {
+       var link = uri.toString();
+       print('link: $link');
+       if (link != null) {
+          processLink(link.toString());
+       }
+    });// get the initial universal/deep link
 
     initialized = true;
     notifyListeners();
@@ -344,33 +319,21 @@ class LoginState extends State<Login> {
                     });
                   }
                 },
-<<<<<<< HEAD
                 child: const Text('LOGIN'),
-=======
-                child: const Text('Login'),
->>>>>>> aba21a2 (EWM updates)
               )),
               Container(height: 20),
               SizedBox(width: loginWidth, child: OutlinedButton(
                 onPressed: () async {
                   await MyUserProvider.navTo(builder: (context) => PasswordReset1());
                 },
-<<<<<<< HEAD
                 child: const Text('SETUP ACCOUNT'),
-=======
-                child: const Text('Setup Account'),
->>>>>>> aba21a2 (EWM updates)
               )),
               Container(height: 30),
               TextButton(
                 onPressed: () async {
                   await MyUserProvider.navTo(builder: (context) => PasswordReset1());
                 },
-<<<<<<< HEAD
                 child: const Text("FORGOT PASSWORD"),
-=======
-                child: const Text("Forgot Password"),
->>>>>>> aba21a2 (EWM updates)
               ),
             ],
           ),
@@ -411,12 +374,8 @@ class PasswordReset1State extends State<PasswordReset1> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget> [
                 Container(height: 50),
-<<<<<<< HEAD
                 Text("Setup Account/Forgot Password", style: Theme.of(context).textTheme.titleMedium),
                 Text("(For Race Participants Only)", style: Theme.of(context).textTheme.bodyMedium),
-=======
-                Text("Setup/Forgot Password", style: Theme.of(context).textTheme.titleMedium),
->>>>>>> aba21a2 (EWM updates)
                 Container(height: 30),
                 Container(width: loginWidth, child: TextFormField(
                   initialValue: myUserProvider.tmpEmail,
