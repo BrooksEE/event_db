@@ -365,7 +365,8 @@ class PasswordReset1State extends State<PasswordReset1> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget> [
                 Container(height: 50),
-                Text("Setup/Forgot Password", style: Theme.of(context).textTheme.titleMedium),
+                Text("Setup Account/Forgot Password", style: Theme.of(context).textTheme.titleMedium),
+                Text("(For Race Participants Only)", style: Theme.of(context).textTheme.bodyMedium),
                 Container(height: 30),
                 Container(width: loginWidth, child: TextFormField(
                   initialValue: myUserProvider.tmpEmail,
@@ -406,6 +407,8 @@ class PasswordReset1State extends State<PasswordReset1> {
                       }
                     }
                 )),
+                Container(height: 50),
+                Container(padding: EdgeInsets.all(40), child: Text("Spectator? Head back to the home screen and follow the links to Track your participant.", textAlign:TextAlign.center, style: Theme.of(context).textTheme.bodyLarge)),
                 Expanded(child: Container()),
               ],
             ),
