@@ -35,7 +35,7 @@ class AppDrawer {
     }
   }
 
-  static Drawer getDrawer(BuildContext context, Function builder, {bool allowLogout: true}) {
+  static Drawer getDrawer(BuildContext context, Function builder, {bool allowLogout= true}) {
     return Drawer(
       child: Consumer<MyUserProvider>(builder: (context, myUser, child) {
         return Column(

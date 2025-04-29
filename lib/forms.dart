@@ -34,8 +34,8 @@ class MyFormController {
   SetCartItemDesc? setCartItemDesc;
 
   MyFormController(this.key, {
-    this.setCartItemName : null,
-    this.setCartItemDesc : null,
+    this.setCartItemName = null,
+    this.setCartItemDesc = null,
   });
 
   bool validate() {
@@ -69,7 +69,7 @@ class MyFormController {
     return data;
   }
 
-  List<CartItem> addToCart({String? parent_key: null}) {
+  List<CartItem> addToCart({String? parent_key= null}) {
     List<CartItem> items = [];
     CartItem? parent = null;
     if(parent_key != null) {

@@ -87,7 +87,7 @@ class MyUserProvider with ChangeNotifier {
     }
   }
 
-  Future<void> init({bool offline_ok: true}) async {
+  Future<void> init({bool offline_ok=true}) async {
     initialized = false;
 
     // restore last user as a place holder in case they are offline
@@ -121,32 +121,16 @@ class MyUserProvider with ChangeNotifier {
       //dlg.showError(e.toString());
     }
 
-    /* handle uni_links */
-    // get the initial universal/deep link
-    try {
-      final link = await getInitialLink();
-      print('initial link: $link');
-      if (link != null) {
-        processLink(link);
-      }
-    } catch(e) {
-      print("$e");
-      // Handle exception by warning the user their action did not succeed
-      // return?
-    }
-
-    // listen for univiersal/deep links
-    var _sub = linkStream.listen((String? link) {
-      print("RX LINK: ${link}");
-      if(link != null) {
-        processLink(link);
-      }
-    }, onError: (err) {
-      print("$err");
-      // Handle exception by warning the user their action did not succeed
-    });
-    // NOTE: Don't forget to call _sub.cancel() in dispose()
-
+    /* handle uni_links/app links */
+    final appLinks = AppLinks();
+    final sub = appLinks.uriLinkStream.listen((uri) {
+       var link = uri.toString();
+       print('link: $link');
+       if (link != null) {
+          processLink(link.toString());
+       }
+    });// get the initial universal/deep link
+params in functions)
     initialized = true;
     notifyListeners();
   }
