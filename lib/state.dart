@@ -88,7 +88,7 @@ class MyUserProvider with ChangeNotifier {
     }
   }
 
-  Future<void> init({bool offline_ok: true}) async {
+  Future<void> init({bool offline_ok=true}) async {
     initialized = false;
 
     // restore last user as a place holder in case they are offline
@@ -131,16 +131,6 @@ class MyUserProvider with ChangeNotifier {
           processLink(link.toString());
        }
     });// get the initial universal/deep link
-    /* handle uni_links/app links */
-    final appLinks = AppLinks();
-    final sub = appLinks.uriLinkStream.listen((uri) {
-       var link = uri.toString();
-       print('link: $link');
-       if (link != null) {
-          processLink(link.toString());
-       }
-    });// get the initial universal/deep link
-
     initialized = true;
     notifyListeners();
   }

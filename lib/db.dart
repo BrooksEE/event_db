@@ -4453,7 +4453,7 @@ late int amt;
     return { "amt": amt, "currency": currency ?? "USD"};
   }
 
-  String display({int qty: 1, bool bare: false}) {
+  String display({int qty= 1, bool bare= false}) {
     int amt_ = amt * qty;
     if('USD' == this.currency) {
       double x = amt_/100.0;

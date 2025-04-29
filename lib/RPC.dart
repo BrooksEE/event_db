@@ -161,7 +161,7 @@ class RPC {
       return url;
   }
 
-  Future<Map> rpc(String mod, String view, String func, Map args, String? msg, {bool retryLogin : true, bool forceLogin : true, bool useSnackBarMsg: false, bool cache: false }) async {
+  Future<Map> rpc(String mod, String view, String func, Map args, String? msg, {bool retryLogin = true, bool forceLogin = true, bool useSnackBarMsg= false, bool cache= false }) async {
       // retryLogin: when true, will try cached login credentials behind the scenes to log back in for the user
       // forceLogin: when true, will launch a login screen for the user to login
       // cache: when true, result is saved off and can be restored with the fromCache() method

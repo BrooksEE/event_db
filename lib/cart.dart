@@ -342,7 +342,7 @@ class CartItem {
 
   Function(Invoice)? onComplete;
 
-  CartItem(this.type, this.name, this.desc, this.amt, this.qty, {this.data: null, this.parent: null, this.thumb: "", this.shippingRequired: false, this.onComplete: null, this.deletable: true}) {
+  CartItem(this.type, this.name, this.desc, this.amt, this.qty, {this.data= null, this.parent= null, this.thumb= "", this.shippingRequired= false, this.onComplete= null, this.deletable= true}) {
     id = Random().nextInt(0xFFFFFFFF);
   }
   Map toMap() {
