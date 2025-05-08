@@ -10,7 +10,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:uuid/uuid.dart';
-import 'package:uni_links/uni_links.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
@@ -122,6 +121,7 @@ class MyUserProvider with ChangeNotifier {
     }
 
     /* handle uni_links/app links */
+    /*
     final appLinks = AppLinks();
     final sub = appLinks.uriLinkStream.listen((uri) {
        var link = uri.toString();
@@ -129,8 +129,8 @@ class MyUserProvider with ChangeNotifier {
        if (link != null) {
           processLink(link.toString());
        }
-    });// get the initial universal/deep link
-params in functions)
+    });// get the initial universal/deep link params in functions)
+    */
     initialized = true;
     notifyListeners();
   }
@@ -246,15 +246,12 @@ class LoginState extends State<Login> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Expanded(child: Container(width: 0)),
-              Text("Login", style: Theme
-                  .of(context)
-                  .textTheme
-                  .headline5),
+	      Text("Login", style: Theme.of(context).textTheme.headlineSmall),
               Container(height: 10),
-              err == null ? Container(height: 0) : Text(
-                  "$err", style: TextStyle(color: Theme
-                  .of(context)
-                  .errorColor)),
+              err == null ? Container(height: 0) :Text(
+  "$err",
+  style: TextStyle(color: Theme.of(context).colorScheme.error),
+),
               Container(height: 10),
               Container(width: loginWidth, child: TextFormField(
                 initialValue: myUser.tmpEmail,
@@ -363,7 +360,7 @@ class PasswordReset1State extends State<PasswordReset1> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget> [
                 Expanded(child: Container()),
-                Text("Setup/Forgot Password", style: Theme.of(context).textTheme.headline5),
+                Text("Setup/Forgot Password", style: Theme.of(context).textTheme.headlineMedium),
                 Container(width: loginWidth, child: TextFormField(
                   initialValue: myUserProvider.tmpEmail,
                   decoration: InputDecoration(
@@ -447,8 +444,8 @@ class PasswordReset2State extends State<PasswordReset2> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget> [
               Expanded(child: Container()),
-              Text("Set Password for", style: Theme.of(context).textTheme.headline5),
-              Text("${widget.email}", style: Theme.of(context).textTheme.headline5),
+              Text("Set Password for", style: Theme.of(context).textTheme.headlineMedium),
+              Text("${widget.email}", style: Theme.of(context).textTheme.headlineMedium),
               Container(width: loginWidth, child: TextFormField(
                 decoration: InputDecoration(
                   labelText: "Password",
