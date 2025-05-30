@@ -91,6 +91,12 @@ class RPC {
     return _server;
   }
 
+  Future<List<Map<String, dynamic>>> getFailures(Database sdb_) async {
+      return await sdb_.rawQuery(
+        "SELECT * FROM rpc WHERE timestamp >= datetime('now', '-10 days')"
+      );
+  } 
+
   Future<void> rpcEnsure([Map? args = null]) async {
     // tries to perform the requested rpc. if it fails, saves it to try later
     await mutex.acquire();
@@ -100,7 +106,8 @@ class RPC {
         //queue.add(jsonEncode(args));
         await sdb_.insert("rpc", {"args": jsonEncode(args), "retryCount": 0});
       }
-      List queue = await sdb_.query("rpc", where: "retryCount < ?", whereArgs: [10]) ?? const [];
+      //List queue = await sdb_.query("rpc", where: "retryCount < ?", whereArgs: [100]) ?? const [];
+      var queue = await getFailures(sdb_);
       print("RPC ENSURE: trying count = ${queue.length}");
       for (var item in queue) {
         try {
@@ -110,11 +117,11 @@ class RPC {
           await sdb_.delete("rpc", where: "id=?", whereArgs: [item["id"]]);
           print("RPC COMPLETED ${item}");
         } catch (e) {
-          await sdb_.update("rpc", {"retryCount": item["retryCount"] + 1}, where: "id=?", whereArgs: [item["id"]]);
           print("RPC FAIL ${item} ${e}");
+          await sdb_.update("rpc", {"retryCount": item["retryCount"] + 1}, where: "id=?", whereArgs: [item["id"]]);
         }
       }
-      List failures = await sdb_.query("rpc") ?? const [];
+      List failures = await getFailures(sdb_);
       print("RPC ENSURE: failure count = ${failures.length}");
       if (failures.length > 0) {
         print("RPC ENSURE DELAY ON: ${failures}");
