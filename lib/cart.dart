@@ -497,6 +497,7 @@ class _CartState extends State<CartView> {
   bool _applePayEnabled = false;
 
   Future<void> checkPayOptions() async {
+  /*
     var canUseGooglePay = false;
     var canUseApplePay = false;
     if(Platform.isAndroid && widget.googlePayId != null) {
@@ -522,6 +523,7 @@ class _CartState extends State<CartView> {
       _googlePayEnabled = canUseGooglePay;
       _applePayEnabled = canUseApplePay;
     });
+    */
   }
 
   @override void initState() {
