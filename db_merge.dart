@@ -33,7 +33,7 @@ class Amount {
     return { "amt": amt, "currency": currency ?? "USD"};
   }
 
-  String display({int qty: 1, bool bare: false}) {
+  String display({int qty= 1, bool bare= false}) {
     int amt_ = amt * qty;
     if('USD' == this.currency) {
       double x = amt_/100.0;
@@ -64,6 +64,8 @@ class Race {
   String get getName => "${series?.name}${name.isEmpty ? '' : ' ' + name}";
 }
 class RaceEvent {
+
+  bool get isVirtual => timing?.any((e) => e.type == e.TYPE_VIRTUAL) ?? false;
   DateTime? get getDate => date == null ? race?.date : date;
 }
 
