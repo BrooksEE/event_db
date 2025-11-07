@@ -273,7 +273,7 @@ class RPC {
           }
           if (result["status"] == "ERROR") {
             if (result["result"] == "Not Logged In") {
-              if(retryLogin) {
+              if(retryLogin == true) {
                 SharedPreferences prefs = await SharedPreferences.getInstance();
                 String email = prefs.getString("email") ?? "";
                 String password = prefs.getString("password") ?? "";
@@ -291,7 +291,7 @@ class RPC {
                   }
                 }
               }
-              if(forceLogin) {
+              if(forceLogin == true) {
                 print("FETCHING LOGIN PAGE $mod $view $func");
                 try {
                   await MyUserProvider.instance?.goToLogin();
