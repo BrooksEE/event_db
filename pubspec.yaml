@@ -19,7 +19,9 @@ dependencies:
   just_audio: ^0.9.41
   flutter:
     sdk: flutter
-  flutter_udid: ^3.0.0
+  flutter_udid: ^4.1.1
+
+  
   flutter_web_plugins:
     sdk: flutter
   image_picker: ^1.1.2
