@@ -9,9 +9,9 @@ import 'state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart' as mt;
 import 'package:flutter/widgets.dart';
-//import 'package:square_in_app_payments/in_app_payments.dart';
-//import 'package:square_in_app_payments/models.dart';
-//import 'package:square_in_app_payments/google_pay_constants.dart' as google_pay_constants;
+// import 'package:square_in_app_payments/in_app_payments.dart';
+// import 'package:square_in_app_payments/models.dart';
+// import 'package:square_in_app_payments/google_pay_constants.dart' as google_pay_constants;
 import 'dart:math';
 import 'dart:io' show Platform;
 import 'dialogs.dart' as dlg;
@@ -497,9 +497,10 @@ class _CartState extends State<CartView> {
   bool _applePayEnabled = false;
 
   Future<void> checkPayOptions() async {
+  /*
     var canUseGooglePay = false;
     var canUseApplePay = false;
-/*    if(Platform.isAndroid && widget.googlePayId != null) {
+    if(Platform.isAndroid && widget.googlePayId != null) {
       // initialize the google pay with square location id
       // use test environment first to quick start
       await InAppPayments.initializeGooglePay(
@@ -518,20 +519,21 @@ class _CartState extends State<CartView> {
       canUseApplePay = await InAppPayments.canUseApplePay;
       print("CAN USE APPLE PAY: ${canUseApplePay}");
     }
-*/    setState(() {
+    setState(() {
       _googlePayEnabled = canUseGooglePay;
       _applePayEnabled = canUseApplePay;
     });
+    */
   }
 
   @override void initState() {
     super.initState();
     init = false;
-    /*InAppPayments.setSquareApplicationId(widget.squareAppId).then((_) {
-      init=true;
-      checkPayOptions();
-    });
-*/
+    // InAppPayments.setSquareApplicationId(widget.squareAppId).then((_) {
+    //   init=true;
+    //   checkPayOptions();
+    // });
+
     print("SHIPPING NAME: ${Cart.shippingAddress.name}");
     shippingNameController.text = Cart.shippingAddress.name;
     shippingAddressController.text = Cart.shippingAddress.address;
@@ -547,16 +549,16 @@ class _CartState extends State<CartView> {
     super.dispose();
   }
 
-/*  Future<void> _onStartCardEntryFlow() async {
-    await InAppPayments.startCardEntryFlow(
-        onCardNonceRequestSuccess: _onCardEntryCardNonceRequestSuccess,
-        onCardEntryCancel: _onCancelCardEntryFlow);
+  Future<void> _onStartCardEntryFlow() async {
+    // await InAppPayments.startCardEntryFlow(
+    //     onCardNonceRequestSuccess: _onCardEntryCardNonceRequestSuccess,
+    //     onCardEntryCancel: _onCancelCardEntryFlow);
   }
 
   void _onCancelCardEntryFlow() {
     // Handle the cancel callback
   }
-*/
+
   Future<Invoice?> checkout(Map args) async {
     args["invoice_number"] = Cart.invoiceNumber;
     args["total"]          = Cart.getTotal().amt;
@@ -581,22 +583,22 @@ class _CartState extends State<CartView> {
     }
     return invoice;
   }
-/*
-  void _onCardEntryCardNonceRequestSuccess(CardDetails cardDetails) async {
-    try {
-      await checkout({"which":"squareweb", "nonce": cardDetails.nonce});
-      if(invoice == null) {
-        InAppPayments.completeCardEntry(onCardEntryComplete: showError);
-      } else {
-        InAppPayments.completeCardEntry(onCardEntryComplete: showReceipt);
-      }
-    } catch (ex) {
-      // payment failed to complete due to error
-      // notify card entry to show processing error
-      InAppPayments.showCardNonceProcessingError(ex.toString());
-    }
-  }
-*/
+
+  // void _onCardEntryCardNonceRequestSuccess(CardDetails cardDetails) async {
+  //   try {
+  //     await checkout({"which":"squareweb", "nonce": cardDetails.nonce});
+  //     if(invoice == null) {
+  //       InAppPayments.completeCardEntry(onCardEntryComplete: showError);
+  //     } else {
+  //       InAppPayments.completeCardEntry(onCardEntryComplete: showReceipt);
+  //     }
+  //   } catch (ex) {
+  //     // payment failed to complete due to error
+  //     // notify card entry to show processing error
+  //     InAppPayments.showCardNonceProcessingError(ex.toString());
+  //   }
+  // }
+
   void showError() {
     print("showError called");
   }
@@ -607,59 +609,59 @@ class _CartState extends State<CartView> {
     });
     // Update UI to notify user that the payment flow is finished successfully
   }
-/*
-  void _onStartApplePay() async {
-    String price = Cart.getTotal().display(bare:true);
-    try {
-      await InAppPayments.requestApplePayNonce(
-          price: price,
-          summaryLabel: 'Brooksee Endurance Events',
-          countryCode: 'US',
-          currencyCode: 'USD',
-          paymentType: ApplePayPaymentType.finalPayment,
-          onApplePayNonceRequestSuccess: _onApplePayNonceRequestSuccess,
-          onApplePayNonceRequestFailure: _onGooglePayNonceRequestFailure,
-          onApplePayComplete: showReceipt);
-    } on PlatformException catch (ex) {
-      print("_onStartApplePay: $ex");
-      dlg.showError(ex.toString());
-    }
-  }
-  void _onApplePayNonceRequestSuccess(CardDetails cardDetails) async {
-    try {
-      await checkout({"which":"squareweb", "nonce": cardDetails.nonce});
-      await InAppPayments.completeApplePayAuthorization(isSuccess: invoice != null);
-    } on Exception catch (ex) {
-      await InAppPayments.completeApplePayAuthorization(
-          isSuccess: false,
-          errorMessage: ex.toString());
-    }
-  }
-  void _onStartGooglePay() async {
-    String price = Cart.getTotal().display(bare:true);
-    print("PRICE: ${price}");
-    try {
-      await InAppPayments.requestGooglePayNonce(
-          price: price,
-          priceStatus: 3, // TOTAL_PRICE_STATUS_FINAL
-          currencyCode: 'USD',
-          onGooglePayNonceRequestSuccess: _onGooglePayNonceRequestSuccess,
-          onGooglePayNonceRequestFailure: _onGooglePayNonceRequestFailure,
-          onGooglePayCanceled:            _onGooglePayCancel);
-    } on InAppPaymentsException catch(ex) {
-      print("_onStartGooglePay $ex");
-      dlg.showError(ex.toString());
-    }
-  }
-  void _onGooglePayNonceRequestSuccess(CardDetails cardDetails) async {
-    try {
-      await checkout({"which":"squareweb", "nonce": cardDetails.nonce});
-    } catch (ex, stacktrace) {
-      print("_onGooglePayNonceRequestSuccess $ex");
-      print(stacktrace);
-      dlg.showError(ex.toString());
-    }
-  }
+
+  // void _onStartApplePay() async {
+  //   String price = Cart.getTotal().display(bare:true);
+  //   try {
+  //     await InAppPayments.requestApplePayNonce(
+  //         price: price,
+  //         summaryLabel: 'Brooksee Endurance Events',
+  //         countryCode: 'US',
+  //         currencyCode: 'USD',
+  //         paymentType: ApplePayPaymentType.finalPayment,
+  //         onApplePayNonceRequestSuccess: _onApplePayNonceRequestSuccess,
+  //         onApplePayNonceRequestFailure: _onGooglePayNonceRequestFailure,
+  //         onApplePayComplete: showReceipt);
+  //   } on PlatformException catch (ex) {
+  //     print("_onStartApplePay: $ex");
+  //     dlg.showError(ex.toString());
+  //   }
+  // }
+  // void _onApplePayNonceRequestSuccess(CardDetails cardDetails) async {
+  //   try {
+  //     await checkout({"which":"squareweb", "nonce": cardDetails.nonce});
+  //     await InAppPayments.completeApplePayAuthorization(isSuccess: invoice != null);
+  //   } on Exception catch (ex) {
+  //     await InAppPayments.completeApplePayAuthorization(
+  //         isSuccess: false,
+  //         errorMessage: ex.toString());
+  //   }
+  // }
+  // void _onStartGooglePay() async {
+  //   String price = Cart.getTotal().display(bare:true);
+  //   print("PRICE: ${price}");
+  //   try {
+  //     await InAppPayments.requestGooglePayNonce(
+  //         price: price,
+  //         priceStatus: 3, // TOTAL_PRICE_STATUS_FINAL
+  //         currencyCode: 'USD',
+  //         onGooglePayNonceRequestSuccess: _onGooglePayNonceRequestSuccess,
+  //         onGooglePayNonceRequestFailure: _onGooglePayNonceRequestFailure,
+  //         onGooglePayCanceled:            _onGooglePayCancel);
+  //   } on InAppPaymentsException catch(ex) {
+  //     print("_onStartGooglePay $ex");
+  //     dlg.showError(ex.toString());
+  //   }
+  // }
+  // void _onGooglePayNonceRequestSuccess(CardDetails cardDetails) async {
+  //   try {
+  //     await checkout({"which":"squareweb", "nonce": cardDetails.nonce});
+  //   } catch (ex, stacktrace) {
+  //     print("_onGooglePayNonceRequestSuccess $ex");
+  //     print(stacktrace);
+  //     dlg.showError(ex.toString());
+  //   }
+  // }
 
   /**
    * Callback when google pay is canceled
@@ -673,12 +675,12 @@ class _CartState extends State<CartView> {
    * Callback when failed to get the card nonce
    * google pay sheet has been closed when this callback is invoked
    */
-  void _onGooglePayNonceRequestFailure(ErrorInfo errorInfo) {
-    print("_onGooglePayNonceRequestFailure $errorInfo");
-    dlg.showError(errorInfo.toString());
-    // handle google pay failure
-  }
-*/
+  // void _onGooglePayNonceRequestFailure(ErrorInfo errorInfo) {
+  //   print("_onGooglePayNonceRequestFailure $errorInfo");
+  //   dlg.showError(errorInfo.toString());
+  //   // handle google pay failure
+  // }
+
   @override
   Widget build(BuildContext context) {
     Amount tot = Cart.getTotal();
@@ -733,7 +735,7 @@ class _CartState extends State<CartView> {
             + [
               Container(height: 20),
           AutoSizeText(
-            'Reciept',
+            'Receipt',
             style: TextStyle(
                 fontSize: 30,
                 color: Theme.of(context).primaryColor),
@@ -1049,56 +1051,57 @@ class _CartState extends State<CartView> {
                     );
                   }),
                 Container(height: 20),
-                Row(
-                    //direction: Axis.vertical,//MediaQuery.of(context).size.width > 10 ? Axis.horizontal : Axis.vertical,
-                    mainAxisSize: MainAxisSize.max,
-                    children: <Widget> [
-                  Expanded(child: Container(width: 0)),
-  /*                tot.amt == 0 ? ElevatedButton(
-                    child: Text("Checkout"),
-                    onPressed: () async {
-                      if(_formKey.currentState?.validate() ?? false) {
-                          await checkout({"which":"free", "nonce": ""});
-                          if(invoice != null) {
-                            showReceipt();
-                          }
-                      }
-                    },
-                  ) :
-                ElevatedButton(
-                  child: Text("Pay With Credit Card"),
-                  onPressed: () async {
-                    if(_formKey.currentState?.validate() ?? false) {
-                        await _onStartCardEntryFlow();
-                    }
-                  },
-                ),
-                  Container(width: _googlePayEnabled && tot.amt > 0 ? 20 : 0),
-                  _googlePayEnabled && tot.amt > 0 ? ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      primary: Color.fromARGB(0xFF, 0, 0, 0),
-                    ),
-                    child: Image.asset("assets/google_pay.png", height: 20),
-                    onPressed: () async {
-                      if(_formKey.currentState?.validate() ?? false) {
-                        _onStartGooglePay();
-                      }
-                    },
-                  ) : Container(width: 0),
-                      Container(width: _applePayEnabled && tot.amt > 0 ? 20 : 0),
-                      _applePayEnabled && tot.amt > 0 ? ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          primary: Color.fromARGB(0xFF, 0, 0, 0),
-                        ),
-                        child: Image.asset("assets/apple_pay.png", height: 20),
-                        onPressed: () async {
-                          if(_formKey.currentState?.validate() ?? false) {
-                            _onStartApplePay();
-                          }
-                        },
-                      ) : Container(width: 0),
-                      Expanded(child: Container(width: 0)),
-  */              ]),
+                // Row(
+                //     //direction: Axis.vertical,//MediaQuery.of(context).size.width > 10 ? Axis.horizontal : Axis.vertical,
+                //     mainAxisSize: MainAxisSize.max,
+                //     children: <Widget> [
+                //   Expanded(child: Container(width: 0)),
+                //   tot.amt == 0 ? ElevatedButton(
+                //     child: Text("Checkout"),
+                //     onPressed: () async {
+                //       if(_formKey.currentState?.validate() ?? false) {
+                //           await checkout({"which":"free", "nonce": ""});
+                //           if(invoice != null) {
+                //             showReceipt();
+                //           }
+                //       }
+                //     },
+                //   ) :
+                // ElevatedButton(
+                //   child: Text("Pay With Credit Card"),
+                //   onPressed: () async {
+                //     if(_formKey.currentState?.validate() ?? false) {
+                //         await _onStartCardEntryFlow();
+                //     }
+                //   },
+                // ),
+                //   Container(width: _googlePayEnabled && tot.amt > 0 ? 20 : 0),
+                //   _googlePayEnabled && tot.amt > 0 ? ElevatedButton(
+                //     style: ElevatedButton.styleFrom(
+                //       backgroundColor: Color.fromARGB(0xFF, 0, 0, 0),
+                //     ),
+                //     child: Image.asset("assets/google_pay.png", height: 20),
+                //     onPressed: () async {
+                //       if(_formKey.currentState?.validate() ?? false) {
+                //         _onStartGooglePay();
+                //       }
+                //     },
+                //   ) : Container(width: 0),
+                //       Container(width: _applePayEnabled && tot.amt > 0 ? 20 : 0),
+                //       _applePayEnabled && tot.amt > 0 ? ElevatedButton(
+                //         style: ElevatedButton.styleFrom(
+                //           backgroundColor: Color.fromARGB(0xFF, 0, 0, 0),
+                //         ),
+                //         child: Image.asset("assets/apple_pay.png", height: 20),
+                //         onPressed: () async {
+                //           if(_formKey.currentState?.validate() ?? false) {
+                //             _onStartApplePay();
+                //           }
+                //         },
+                //       ) : Container(width: 0),
+                //       Expanded(child: Container(width: 0)),
+                //]
+                // ),
                 Container(height: 20),
               ]
       )

@@ -70,7 +70,7 @@ class AppDrawer {
             Expanded(child: SingleChildScrollView(child: builder(context))),
             Container(height: 30),
             allowLogout ? GestureDetector(
-              child: Container(
+                child: Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).primaryColor,
                 ),
@@ -257,6 +257,7 @@ class ProfileState extends State<Profile> {
                             else
                               return null;
                           }),
+                    Container(height: 20),
                     TextFormField(
                           decoration: InputDecoration(
                             labelText: "Last Name",
@@ -268,6 +269,7 @@ class ProfileState extends State<Profile> {
                             else
                               return null;
                           }),
+                    Container(height: 20),
                     TextFormField(
                       decoration: InputDecoration(
                         labelText: "Email",
@@ -283,6 +285,7 @@ class ProfileState extends State<Profile> {
                         return null;
                       }
                     ),
+                    Container(height: 20),
                     DropdownButtonFormField<int>(
                       decoration: InputDecoration(
                         labelText: "Preferred Units",
@@ -299,6 +302,7 @@ class ProfileState extends State<Profile> {
                       },
 
                     ),
+                    Container(height: 20),
                     DropdownButtonFormField<int>(
                       decoration: InputDecoration(
                         labelText: "Preferred Day To Start Calendar Week",
@@ -320,6 +324,7 @@ class ProfileState extends State<Profile> {
                         });
                       },
                     ),
+                    Container(height: 20),
                     TextFormField(
                         decoration: InputDecoration(
                           labelText: "Bio",
@@ -333,9 +338,6 @@ class ProfileState extends State<Profile> {
                     ),
                     Container(height: 20),
                     ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.only(bottom: 8.0, top: 8.0),
-                    ),
                       onPressed: () {
                         if (_formKey.currentState?.validate() ?? false) {
                           _save_profile();
@@ -353,7 +355,8 @@ class ProfileState extends State<Profile> {
                 onPressed: () {
                   _delete_account();
                 }
-              )
+              ),
+              Container(height: 20),
           ]),
         ),
       );

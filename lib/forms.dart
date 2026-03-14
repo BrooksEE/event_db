@@ -17,8 +17,6 @@ import 'db.dart';
 import 'cart.dart';
 import 'dart:math';
 import 'dialogs.dart' as dlg;
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:device_info/device_info.dart';
 import "dart:io";
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -999,6 +997,7 @@ class _MyFormState extends State<MyForm> {
       if(widget.post != null && widget.post![field.key] != null) {
         widget.post![field.key](field, children, this, context);
       }
+      children.add(Container(height: 20));
     }
     return AutofillGroup(
         child: Form(

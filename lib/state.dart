@@ -1,5 +1,6 @@
 library db;
 import 'dart:io';
+import "dart:ui";
 import 'db.dart';
 import 'dart:convert';
 import 'RPC.dart';
@@ -12,6 +13,7 @@ import 'package:flutter_udid/flutter_udid.dart';
 import 'package:uuid/uuid.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:app_links/app_links.dart';
 
 GlobalKey<NavigatorState>? navKey;
 MyUserProvider? gMyUserProvider;
@@ -19,7 +21,7 @@ MyUserProvider? gMyUserProvider;
 BuildContext get gContext {
   BuildContext? context = navKey?.currentContext;
   if(context == null) {
-    throw("navKey is null. Call dialog init() function");
+    throw("navKey.currentContext is null. Call dialog init() function");
   } else {
     return context;
   }
@@ -61,7 +63,7 @@ class MyUserProvider with ChangeNotifier {
   String get tmpPasswd => _tmpPasswd;
 
   MyUserProvider(GlobalKey<NavigatorState> nKey, this.hostKey) {
-    print("MyUserProvider Constructor");
+    print("MyUserProvider Constructor ${nKey}");
     navKey = nKey;
     RPC().registerNotLoggedInHandler(() async {
       _user = null;
@@ -121,7 +123,6 @@ class MyUserProvider with ChangeNotifier {
     }
 
     /* handle uni_links/app links */
-    /*
     final appLinks = AppLinks();
     final sub = appLinks.uriLinkStream.listen((uri) {
        var link = uri.toString();
@@ -129,8 +130,7 @@ class MyUserProvider with ChangeNotifier {
        if (link != null) {
           processLink(link.toString());
        }
-    });// get the initial universal/deep link params in functions)
-    */
+    });// get the initial universal/deep link
     initialized = true;
     notifyListeners();
   }
@@ -155,8 +155,8 @@ class MyUserProvider with ChangeNotifier {
     }
     if (link.contains("password/reset")) {
       List m = link.split("/");
-      String email = m[6];
-      String rId = m[7];
+      String email = m[m.length-2];
+      String rId = m[m.length-1];
       print("EMAIL=$email rId=$rId");
 
       if(navKey?.currentContext != null) {
@@ -212,8 +212,7 @@ class MyUserProvider with ChangeNotifier {
   Future<void> logout() async {
     await RPC().rpc("rest", "User", "logout",  {}, "Logging Out");
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove("email");
-    await prefs.remove("password");
+    await prefs.clear();
     _user = null;
     Cart.email = "";
     notifyListeners();
@@ -245,14 +244,9 @@ class LoginState extends State<Login> {
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Expanded(child: Container(width: 0)),
-	      Text("Login", style: Theme.of(context).textTheme.headlineSmall),
-              Container(height: 10),
-              err == null ? Container(height: 0) :Text(
-  "$err",
-  style: TextStyle(color: Theme.of(context).colorScheme.error),
-),
-              Container(height: 10),
+              err == null ? Container(height: 0) : Text(
+                  "$err", style: TextStyle(color: Colors.red)),
+              Container(height: 50),
               Container(width: loginWidth, child: TextFormField(
                 initialValue: myUser.tmpEmail,
                 decoration: InputDecoration(
@@ -269,13 +263,15 @@ class LoginState extends State<Login> {
                   return null;
                 },
                 textInputAction: TextInputAction.next,
+                autofillHints: [AutofillHints.email],
               )),
+              Container(height: 30),
               Container(width: loginWidth, child: TextFormField(
                 obscureText: !_passwordVisible,
                 decoration: InputDecoration(
                   labelText: "Password",
                   suffixIcon: IconButton(
-                      icon: Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off, color: Theme.of(context).primaryColorDark),
+                      icon: Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off),
                       onPressed: () {
                         setState(() { _passwordVisible = !_passwordVisible; });
                       }
@@ -292,9 +288,10 @@ class LoginState extends State<Login> {
                   }
                   return null;
                 },
+                autofillHints: [AutofillHints.password],
               )),
-              Container(height: 10),
-              ElevatedButton(
+              Container(height: 50),
+              SizedBox(width: loginWidth, child: ElevatedButton(
                 onPressed: () async {
                   setState(() {
                     err = null;
@@ -312,14 +309,21 @@ class LoginState extends State<Login> {
                     });
                   }
                 },
-                child: const Text('Login'),
-              ),
-              Expanded(child: Container(width: 0)),
+                child: const Text('LOGIN'),
+              )),
+              Container(height: 20),
+              SizedBox(width: loginWidth, child: OutlinedButton(
+                onPressed: () async {
+                  await MyUserProvider.navTo(builder: (context) => PasswordReset1());
+                },
+                child: const Text('SETUP ACCOUNT'),
+              )),
+              Container(height: 30),
               TextButton(
                 onPressed: () async {
                   await MyUserProvider.navTo(builder: (context) => PasswordReset1());
                 },
-                child: const Text("Setup/Forgot Password"),
+                child: const Text("FORGOT PASSWORD"),
               ),
             ],
           ),
@@ -359,8 +363,10 @@ class PasswordReset1State extends State<PasswordReset1> {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget> [
-                Expanded(child: Container()),
-                Text("Setup/Forgot Password", style: Theme.of(context).textTheme.headlineMedium),
+                Container(height: 50),
+                Text("Setup Account/Forgot Password", style: Theme.of(context).textTheme.titleMedium),
+                Text("(For Race Participants Only)", style: Theme.of(context).textTheme.bodyMedium),
+                Container(height: 30),
                 Container(width: loginWidth, child: TextFormField(
                   initialValue: myUserProvider.tmpEmail,
                   decoration: InputDecoration(
@@ -377,9 +383,9 @@ class PasswordReset1State extends State<PasswordReset1> {
                     return null;
                   },
                 )),
-                Container(height: 10),
-                ElevatedButton(
-                    child: Text("Submit"),
+                Container(height: 30),
+                SizedBox(width: loginWidth, child: ElevatedButton(
+                    child: Text("SUBMIT"),
                     onPressed: (myUserProvider.tmpEmail.isEmpty || !(_formKey.currentState?.validate() ?? false)) ? null : () async {
                       setState(() {
                         submitted = true;
@@ -399,7 +405,9 @@ class PasswordReset1State extends State<PasswordReset1> {
                         dlg.showError(e.toString());
                       }
                     }
-                ),
+                )),
+                Container(height: 50),
+                Container(padding: EdgeInsets.all(40), child: Text("Spectator? Head back to the home screen and follow the links to Track your participant.", textAlign:TextAlign.center, style: Theme.of(context).textTheme.bodyLarge)),
                 Expanded(child: Container()),
               ],
             ),
@@ -429,6 +437,8 @@ class PasswordReset2State extends State<PasswordReset2> {
     }
     var data = await RPC().rpc("rest", "User", "set_password", {"email": widget.email, "password": passwd1, "rId": widget.rId}, "Setting Password...");
   }
+  bool _passwordVisible1 = false;
+  bool _passwordVisible2 = false;
 
   @override Widget build(BuildContext context) {
     return Consumer<MyUserProvider>(builder: (context, myUserProvider, child) {
@@ -443,15 +453,22 @@ class PasswordReset2State extends State<PasswordReset2> {
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget> [
-              Expanded(child: Container()),
-              Text("Set Password for", style: Theme.of(context).textTheme.headlineMedium),
-              Text("${widget.email}", style: Theme.of(context).textTheme.headlineMedium),
+              Container(height: 40),
+              Text("Set Password for", style: Theme.of(context).textTheme.titleMedium),
+              Text("${widget.email}", style: Theme.of(context).textTheme.titleMedium),
+              Container(height: 20),
               Container(width: loginWidth, child: TextFormField(
+                obscureText: !_passwordVisible1,
                 decoration: InputDecoration(
                   labelText: "Password",
+                  suffixIcon: IconButton(
+                      icon: Icon(_passwordVisible1 ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () {
+                        setState(() { _passwordVisible1 = !_passwordVisible1; });
+                      }
+                  ),
                 ),
                 initialValue: passwd1,
-                obscureText: true,
                 onChanged: (newValue) {
                   setState(() {
                     passwd1 = newValue;
@@ -463,13 +480,19 @@ class PasswordReset2State extends State<PasswordReset2> {
                   }
                   return null;
                 },                )),
-              Container(height: 10),
+              Container(height: 20),
               Container(width: loginWidth, child: TextFormField(
+                obscureText: !_passwordVisible2,
                 decoration: InputDecoration(
-                  labelText: "Password Again",
+                  labelText: "Password",
+                  suffixIcon: IconButton(
+                      icon: Icon(_passwordVisible2 ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () {
+                        setState(() { _passwordVisible2 = !_passwordVisible2; });
+                      }
+                  ),
                 ),
                 initialValue: passwd2,
-                obscureText: true,
                 onChanged: (newValue) {
                   setState(() {
                     passwd2 = newValue;
@@ -481,9 +504,10 @@ class PasswordReset2State extends State<PasswordReset2> {
                   }
                   return null;
                 },                )),
-              Container(height: 10),
-              ElevatedButton(
-                  child: Text("Submit"),
+              Container(height: 20),
+              Container(width: loginWidth, child:
+                ElevatedButton(
+                  child: Text("SUBMIT"),
                   onPressed: (passwd1.isEmpty || passwd2.isEmpty || !(_formKey.currentState?.validate() ?? false)) ? null : () async {
                     setState(() {
                       submitted = true;
@@ -502,7 +526,7 @@ class PasswordReset2State extends State<PasswordReset2> {
                       });
                     }
                   }
-              ),
+              )),
               Expanded(child: Container()),
             ],
           ),

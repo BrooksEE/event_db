@@ -15,6 +15,8 @@ class Photo {
   String? url_thumb;
   String? url_web;
   String? url_mid;
+  String? url_sample;
+  String? url_origorig;
   DateTime? timestamp;
   double? lat;
   double? lon;
@@ -23,6 +25,9 @@ class Photo {
   // Location location;
   late bool has_untagged_participants;
   late bool is_participant_photo;
+  double? epoch;
+  late int views;
+  late int downloads;
 
   Photo.fromJson(Map<String, dynamic> j) {
     id = j['id'];
@@ -36,12 +41,18 @@ class Photo {
     url_thumb = j['url_thumb'];
     url_web = j['url_web'];
     url_mid = j['url_mid'];
-    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }     lat = j['lat'];
+    url_sample = j['url_sample'];
+    url_origorig = j['url_origorig'];
+    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }
+    lat = j['lat'];
     lon = j['lon'];
     needsTagged = j['needsTagged'];
     location_id = j['location_id'];
     has_untagged_participants = j['has_untagged_participants'];
     is_participant_photo = j['is_participant_photo'];
+    epoch = j['epoch'];
+    views = j['views'];
+    downloads = j['downloads'];
   }
 
   Map<String, dynamic> toJson() {
@@ -57,6 +68,8 @@ class Photo {
       'url_thumb' : url_thumb,
       'url_web' : url_web,
       'url_mid' : url_mid,
+      'url_sample' : url_sample,
+      'url_origorig' : url_origorig,
       'timestamp' : timestamp.toString(),
       'lat' : lat,
       'lon' : lon,
@@ -64,6 +77,9 @@ class Photo {
       'location_id' : location_id,
       'has_untagged_participants' : has_untagged_participants,
       'is_participant_photo' : is_participant_photo,
+      'epoch' : epoch,
+      'views' : views,
+      'downloads' : downloads,
     };
   }
 
@@ -82,12 +98,14 @@ class MyUser {
 
   MyUser.fromJson(Map<String, dynamic> j) {
     id = j['id'];
-    try { last_login = DateTime.parse(j['last_login']); } catch(e) { last_login = null; }     username = j['username'];
+    try { last_login = DateTime.parse(j['last_login']); } catch(e) { last_login = null; }
+    username = j['username'];
     first_name = j['first_name'];
     last_name = j['last_name'];
     email = j['email'];
     is_active = j['is_active'];
-    try { date_joined = DateTime.parse(j['date_joined']); } catch(e) { date_joined = null; }   }
+    try { date_joined = DateTime.parse(j['date_joined']); } catch(e) { date_joined = null; }
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -251,6 +269,7 @@ class Host {
   final  String TIMEZONE_AMERICA_CAYMAN = "America/Cayman";
   final  String TIMEZONE_AMERICA_CHICAGO = "America/Chicago";
   final  String TIMEZONE_AMERICA_CHIHUAHUA = "America/Chihuahua";
+  final  String TIMEZONE_AMERICA_CIUDAD_JUAREZ = "America/Ciudad_Juarez";
   final  String TIMEZONE_AMERICA_CORAL_HARBOUR = "America/Coral_Harbour";
   final  String TIMEZONE_AMERICA_CORDOBA = "America/Cordoba";
   final  String TIMEZONE_AMERICA_COSTA_RICA = "America/Costa_Rica";
@@ -605,6 +624,7 @@ class Host {
   final  String TIMEZONE_EUROPE_KALININGRAD = "Europe/Kaliningrad";
   final  String TIMEZONE_EUROPE_KIEV = "Europe/Kiev";
   final  String TIMEZONE_EUROPE_KIROV = "Europe/Kirov";
+  final  String TIMEZONE_EUROPE_KYIV = "Europe/Kyiv";
   final  String TIMEZONE_EUROPE_LISBON = "Europe/Lisbon";
   final  String TIMEZONE_EUROPE_LJUBLJANA = "Europe/Ljubljana";
   final  String TIMEZONE_EUROPE_LONDON = "Europe/London";
@@ -846,6 +866,7 @@ class Host {
     if(timezone == TIMEZONE_AMERICA_CAYMAN) return 'America/Cayman';
     if(timezone == TIMEZONE_AMERICA_CHICAGO) return 'America/Chicago';
     if(timezone == TIMEZONE_AMERICA_CHIHUAHUA) return 'America/Chihuahua';
+    if(timezone == TIMEZONE_AMERICA_CIUDAD_JUAREZ) return 'America/Ciudad_Juarez';
     if(timezone == TIMEZONE_AMERICA_CORAL_HARBOUR) return 'America/Coral_Harbour';
     if(timezone == TIMEZONE_AMERICA_CORDOBA) return 'America/Cordoba';
     if(timezone == TIMEZONE_AMERICA_COSTA_RICA) return 'America/Costa_Rica';
@@ -1200,6 +1221,7 @@ class Host {
     if(timezone == TIMEZONE_EUROPE_KALININGRAD) return 'Europe/Kaliningrad';
     if(timezone == TIMEZONE_EUROPE_KIEV) return 'Europe/Kiev';
     if(timezone == TIMEZONE_EUROPE_KIROV) return 'Europe/Kirov';
+    if(timezone == TIMEZONE_EUROPE_KYIV) return 'Europe/Kyiv';
     if(timezone == TIMEZONE_EUROPE_LISBON) return 'Europe/Lisbon';
     if(timezone == TIMEZONE_EUROPE_LJUBLJANA) return 'Europe/Ljubljana';
     if(timezone == TIMEZONE_EUROPE_LONDON) return 'Europe/London';
@@ -1440,6 +1462,7 @@ class RaceSeries {
   int? last_id;
   Race? last;
   String? cart_icon;
+  String? logo;
 
   RaceSeries.fromJson(Map<String, dynamic> j) {
     id = j['id'];
@@ -1452,6 +1475,7 @@ class RaceSeries {
     last_id = j['last_id'];
     last = (j['last'] == null) ? null : Race.fromJson(j['last']);
     cart_icon = j['cart_icon'];
+    logo = j['logo'];
   }
 
   Map<String, dynamic> toJson() {
@@ -1466,6 +1490,7 @@ class RaceSeries {
       'last_id' : last_id,
       'last' : last == null ? null : last?.toJson(),
       'cart_icon' : cart_icon,
+      'logo' : logo,
     };
   }
 
@@ -1507,6 +1532,7 @@ class Race {
   DateTime? cost_change4;
   DateTime? cost_change5;
   DateTime? registration_closes;
+  late String registration_closes_time;
   String? waiver;
   late bool volunteer_closed;
   String? volunteer_closed_message;
@@ -1527,6 +1553,9 @@ class Race {
   int? klass_id;
   BooksKlass? klass;
   String? url_app_data;
+  String? pin;
+  String? timers_pin;
+  late bool live_tracking;
 
   Race.fromJson(Map<String, dynamic> j) {
     id = j['id'];
@@ -1536,11 +1565,20 @@ class Race {
     short_name = j['short_name'];
     full_name = j['full_name'];
     desc = j['desc'];
-    try { date = DateTime.parse(j['date']); } catch(e) { date = null; }     status = j['status'];
+    try { date = DateTime.parse(j['date']); } catch(e) { date = null; }
+    status = j['status'];
     hide_date = j['hide_date'];
     time = j['time'];
     tagline = j['tagline'];
-    try { registration_opens = DateTime.parse(j['registration_opens']); } catch(e) { registration_opens = null; }     try { cost_change1 = DateTime.parse(j['cost_change1']); } catch(e) { cost_change1 = null; }     try { cost_change2 = DateTime.parse(j['cost_change2']); } catch(e) { cost_change2 = null; }     try { cost_change3 = DateTime.parse(j['cost_change3']); } catch(e) { cost_change3 = null; }     try { cost_change4 = DateTime.parse(j['cost_change4']); } catch(e) { cost_change4 = null; }     try { cost_change5 = DateTime.parse(j['cost_change5']); } catch(e) { cost_change5 = null; }     try { registration_closes = DateTime.parse(j['registration_closes']); } catch(e) { registration_closes = null; }     waiver = j['waiver'];
+    try { registration_opens = DateTime.parse(j['registration_opens']); } catch(e) { registration_opens = null; }
+    try { cost_change1 = DateTime.parse(j['cost_change1']); } catch(e) { cost_change1 = null; }
+    try { cost_change2 = DateTime.parse(j['cost_change2']); } catch(e) { cost_change2 = null; }
+    try { cost_change3 = DateTime.parse(j['cost_change3']); } catch(e) { cost_change3 = null; }
+    try { cost_change4 = DateTime.parse(j['cost_change4']); } catch(e) { cost_change4 = null; }
+    try { cost_change5 = DateTime.parse(j['cost_change5']); } catch(e) { cost_change5 = null; }
+    try { registration_closes = DateTime.parse(j['registration_closes']); } catch(e) { registration_closes = null; }
+    registration_closes_time = j['registration_closes_time'];
+    waiver = j['waiver'];
     volunteer_closed = j['volunteer_closed'];
     volunteer_closed_message = j['volunteer_closed_message'];
     volunteer_waiver = j['volunteer_waiver'];
@@ -1559,6 +1597,9 @@ class Race {
     klass_id = j['klass_id'];
     klass = (j['klass'] == null) ? null : BooksKlass.fromJson(j['klass']);
     url_app_data = j['url_app_data'];
+    pin = j['pin'];
+    timers_pin = j['timers_pin'];
+    live_tracking = j['live_tracking'];
   }
 
   Map<String, dynamic> toJson() {
@@ -1582,6 +1623,7 @@ class Race {
       'cost_change4' : cost_change4.toString(),
       'cost_change5' : cost_change5.toString(),
       'registration_closes' : registration_closes.toString(),
+      'registration_closes_time' : registration_closes_time,
       'waiver' : waiver,
       'volunteer_closed' : volunteer_closed,
       'volunteer_closed_message' : volunteer_closed_message,
@@ -1601,6 +1643,9 @@ class Race {
       'klass_id' : klass_id,
       'klass' : klass == null ? null : klass?.toJson(),
       'url_app_data' : url_app_data,
+      'pin' : pin,
+      'timers_pin' : timers_pin,
+      'live_tracking' : live_tracking,
     };
   }
 
@@ -1717,6 +1762,7 @@ class RaceEvent {
   int? path_id;
   // Path path;
   DateTime? date;
+  List? timing;
 
   RaceEvent.fromJson(Map<String, dynamic> j) {
     id = j['id'];
@@ -1762,7 +1808,9 @@ class RaceEvent {
     help_text = j['help_text'];
     parking_address = j['parking_address'];
     path_id = j['path_id'];
-    try { date = DateTime.parse(j['date']); } catch(e) { date = null; }   }
+    try { date = DateTime.parse(j['date']); } catch(e) { date = null; }
+    timing = j['timing']?.map((e) => RaceEventTiming.fromJson(e)).toList();
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -1810,11 +1858,13 @@ class RaceEvent {
       'parking_address' : parking_address,
       'path_id' : path_id,
       'date' : date.toString(),
+      'timing' : timing,
     };
   }
 
 
-DateTime? get getDate => date == null ? race?.date : date;
+bool get isVirtual => timing?.any((e) => e.type == e.TYPE_VIRTUAL) ?? false;
+  DateTime? get getDate => date == null ? race?.date : date;
 }
 
 // <class 'event.models.Wave'>
@@ -1871,6 +1921,7 @@ class Participant {
   late String lastname;
   late String email;
   late String phone;
+  late bool text_opt_in;
   late String address;
   late String city;
   late String state;
@@ -1891,6 +1942,7 @@ class Participant {
   late bool withdrawn;
   late bool checkedin;
   DateTime? checkedin_date;
+  String? checkedin_location;
   int? withdrawn_line_item_id;
   // LineItem withdrawn_line_item;
   String? external_id;
@@ -1907,6 +1959,8 @@ class Participant {
   // Bracket bracket;
   int? person_id;
   // Person person;
+  String? import_data;
+  String? userdata;
   // late int
   final  int STATUS_SIGNED_UP = 0;
   final  int STATUS_BIB_CHECKED = 1;
@@ -1939,6 +1993,7 @@ class Participant {
     lastname = j['lastname'];
     email = j['email'];
     phone = j['phone'];
+    text_opt_in = j['text_opt_in'];
     address = j['address'];
     city = j['city'];
     state = j['state'];
@@ -1946,7 +2001,8 @@ class Participant {
     zip = j['zip'];
     gender = j['gender'];
     gendet_id = j['gendet_id'];
-    try { birthday = DateTime.parse(j['birthday']); } catch(e) { birthday = null; }     lat = j['lat'];
+    try { birthday = DateTime.parse(j['birthday']); } catch(e) { birthday = null; }
+    lat = j['lat'];
     lon = j['lon'];
     age = j['age'];
     bib = j['bib'];
@@ -1956,17 +2012,22 @@ class Participant {
     wave = (j['wave'] == null) ? null : Wave.fromJson(j['wave']);
     withdrawn = j['withdrawn'];
     checkedin = j['checkedin'];
-    try { checkedin_date = DateTime.parse(j['checkedin_date']); } catch(e) { checkedin_date = null; }     withdrawn_line_item_id = j['withdrawn_line_item_id'];
+    try { checkedin_date = DateTime.parse(j['checkedin_date']); } catch(e) { checkedin_date = null; }
+    checkedin_location = j['checkedin_location'];
+    withdrawn_line_item_id = j['withdrawn_line_item_id'];
     external_id = j['external_id'];
     user_id = j['user_id'];
     user = (j['user'] == null) ? null : MyUser.fromJson(j['user']);
     slug = j['slug'];
-    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }     referer = j['referer'];
+    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }
+    referer = j['referer'];
     hide_results = j['hide_results'];
     tag = j['tag'];
     division_id = j['division_id'];
     bracket_id = j['bracket_id'];
     person_id = j['person_id'];
+    import_data = j['import_data'];
+    userdata = j['userdata'];
     status = j['status'];
   }
 
@@ -1980,6 +2041,7 @@ class Participant {
       'lastname' : lastname,
       'email' : email,
       'phone' : phone,
+      'text_opt_in' : text_opt_in,
       'address' : address,
       'city' : city,
       'state' : state,
@@ -1999,6 +2061,7 @@ class Participant {
       'withdrawn' : withdrawn,
       'checkedin' : checkedin,
       'checkedin_date' : checkedin_date.toString(),
+      'checkedin_location' : checkedin_location,
       'withdrawn_line_item_id' : withdrawn_line_item_id,
       'external_id' : external_id,
       'user_id' : user_id,
@@ -2011,6 +2074,8 @@ class Participant {
       'division_id' : division_id,
       'bracket_id' : bracket_id,
       'person_id' : person_id,
+      'import_data' : import_data,
+      'userdata' : userdata,
       'status' : status,
     };
   }
@@ -2018,6 +2083,90 @@ class Participant {
 
 int? tagt;
   String get name => "${firstname} ${lastname}";
+
+}
+
+// <class 'result.models.RaceEventTiming'>
+class RaceEventTiming {
+  late int id;
+  late int race_event_id;
+  RaceEvent? race_event;
+  double? start_time;
+  // late int
+  final  int TYPE_RACE = 0;
+  final  int TYPE_VIRTUAL = 1;
+  final  int TYPE_PERMA = 2;
+  final  int TYPE_DISTANCE = 3;
+  String get typeString {
+    if(type == TYPE_RACE) return 'Race';
+    if(type == TYPE_VIRTUAL) return 'Virtual';
+    if(type == TYPE_PERMA) return 'Perma';
+    if(type == TYPE_DISTANCE) return 'Distance';
+    return '?';
+  }
+
+  late int type;
+  int? num_overall;
+  String? points;
+  // late int
+  final  int RANK_BY_CHIP_TIME = 0;
+  final  int RANK_BY_GUN_TIME = 1;
+  final  int RANK_BY_POINTS_MIN_WINS = 2;
+  final  int RANK_BY_POINTS_MAX_WINS = 3;
+  String get rank_byString {
+    if(rank_by == RANK_BY_CHIP_TIME) return 'Chip Time';
+    if(rank_by == RANK_BY_GUN_TIME) return 'Gun Time';
+    if(rank_by == RANK_BY_POINTS_MIN_WINS) return 'Points (min wins)';
+    if(rank_by == RANK_BY_POINTS_MAX_WINS) return 'Points (max wins)';
+    return '?';
+  }
+
+  late int rank_by;
+  late bool doubledip;
+  String? leaderboard_fields;
+  String? result_fields;
+  late bool hide_results;
+  String? individual_results_setup;
+  double? moving_pace_min_per_mile;
+  late bool overide_overall_gun_timed;
+
+  RaceEventTiming.fromJson(Map<String, dynamic> j) {
+    id = j['id'];
+    race_event_id = j['race_event_id'];
+    race_event = (j['race_event'] == null) ? null : RaceEvent.fromJson(j['race_event']);
+    start_time = j['start_time'];
+    type = j['type'];
+    num_overall = j['num_overall'];
+    points = j['points'];
+    rank_by = j['rank_by'];
+    doubledip = j['doubledip'];
+    leaderboard_fields = j['leaderboard_fields'];
+    result_fields = j['result_fields'];
+    hide_results = j['hide_results'];
+    individual_results_setup = j['individual_results_setup'];
+    moving_pace_min_per_mile = j['moving_pace_min_per_mile'];
+    overide_overall_gun_timed = j['overide_overall_gun_timed'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id' : id,
+      'race_event_id' : race_event_id,
+      'race_event' : race_event == null ? null : race_event?.toJson(),
+      'start_time' : start_time,
+      'type' : type,
+      'num_overall' : num_overall,
+      'points' : points,
+      'rank_by' : rank_by,
+      'doubledip' : doubledip,
+      'leaderboard_fields' : leaderboard_fields,
+      'result_fields' : result_fields,
+      'hide_results' : hide_results,
+      'individual_results_setup' : individual_results_setup,
+      'moving_pace_min_per_mile' : moving_pace_min_per_mile,
+      'overide_overall_gun_timed' : overide_overall_gun_timed,
+    };
+  }
 
 }
 
@@ -2443,7 +2592,8 @@ class TrainingPlan {
     desc = j['desc'];
     duration_weeks = j['duration_weeks'];
     cost = j['cost'];
-    try { expires = DateTime.parse(j['expires']); } catch(e) { expires = null; }     purchasable = j['purchasable'];
+    try { expires = DateTime.parse(j['expires']); } catch(e) { expires = null; }
+    purchasable = j['purchasable'];
     hidden = j['hidden'];
     order = j['order'];
   }
@@ -2600,10 +2750,13 @@ class TrainingParticipant {
     firstname = j['firstname'];
     lastname = j['lastname'];
     email = j['email'];
-    try { birthday = DateTime.parse(j['birthday']); } catch(e) { birthday = null; }     phone = j['phone'];
+    try { birthday = DateTime.parse(j['birthday']); } catch(e) { birthday = null; }
+    phone = j['phone'];
     line_item_id = j['line_item_id'];
-    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }     notes = j['notes'];
-    try { end_date = DateTime.parse(j['end_date']); } catch(e) { end_date = null; }     pace_spm = j['pace_spm'];
+    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }
+    notes = j['notes'];
+    try { end_date = DateTime.parse(j['end_date']); } catch(e) { end_date = null; }
+    pace_spm = j['pace_spm'];
   }
 
   Map<String, dynamic> toJson() {
@@ -2986,7 +3139,8 @@ class TrainingWorkoutLocation {
     id = j['id'];
     location_id = j['location_id'];
     location = (j['location'] == null) ? null : TrainingLocation.fromJson(j['location']);
-    try { when = DateTime.parse(j['when']); } catch(e) { when = null; }     notes = j['notes'];
+    try { when = DateTime.parse(j['when']); } catch(e) { when = null; }
+    notes = j['notes'];
   }
 
   Map<String, dynamic> toJson() {
@@ -3022,15 +3176,29 @@ class  TrainingWorkoutRecord {
   late String units;
   late int duration;
   String? notes;
+  // late String
+  final  String SOURCE_USER_ENTERED = "User Entered";
+  final  String SOURCE_GARMIN = "Garmin";
+  String get sourceString {
+    if(source == SOURCE_USER_ENTERED) return 'User Entered';
+    if(source == SOURCE_GARMIN) return 'Garmin';
+    return '?';
+  }
+
+  late String source;
+  String? external_id;
 
    TrainingWorkoutRecord.fromJson(Map<String, dynamic> j) {
     id = j['id'];
     user_id = j['user_id'];
     user = (j['user'] == null) ? null : MyUser.fromJson(j['user']);
-    try { date = DateTime.parse(j['date']); } catch(e) { date = null; }     distance = j['distance'];
+    try { date = DateTime.parse(j['date']); } catch(e) { date = null; }
+    distance = j['distance'];
     units = j['units'];
     duration = j['duration'];
     notes = j['notes'];
+    source = j['source'];
+    external_id = j['external_id'];
   }
 
   Map<String, dynamic> toJson() {
@@ -3043,6 +3211,8 @@ class  TrainingWorkoutRecord {
       'units' : units,
       'duration' : duration,
       'notes' : notes,
+      'source' : source,
+      'external_id' : external_id,
     };
   }
 
@@ -3066,7 +3236,9 @@ class TrainingWorkoutComment {
     who_id = j['who_id'];
     who = (j['who'] == null) ? null : MyUser.fromJson(j['who']);
     notes = j['notes'];
-    try { date = DateTime.parse(j['date']); } catch(e) { date = null; }     try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }   }
+    try { date = DateTime.parse(j['date']); } catch(e) { date = null; }
+    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -3099,7 +3271,9 @@ class TrainingWorkoutThumbsUp {
     user = (j['user'] == null) ? null : MyUser.fromJson(j['user']);
     who_id = j['who_id'];
     who = (j['who'] == null) ? null : MyUser.fromJson(j['who']);
-    try { date = DateTime.parse(j['date']); } catch(e) { date = null; }     try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }   }
+    try { date = DateTime.parse(j['date']); } catch(e) { date = null; }
+    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -3134,7 +3308,8 @@ class TrainingLog {
     participant = (j['participant'] == null) ? null : TrainingParticipant.fromJson(j['participant']);
     subject = j['subject'];
     message = j['message'];
-    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }   }
+    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -3292,7 +3467,8 @@ class TrainingEmail {
     subject = j['subject'];
     msg = j['msg'];
     day = j['day'];
-    try { sent = DateTime.parse(j['sent']); } catch(e) { sent = null; }     recipients = j['recipients'];
+    try { sent = DateTime.parse(j['sent']); } catch(e) { sent = null; }
+    recipients = j['recipients'];
   }
 
   Map<String, dynamic> toJson() {
@@ -3458,6 +3634,8 @@ class BooksKlass {
   late int id;
   late int entity_id;
   Entity? entity;
+  int? parent_id;
+  BooksKlass? parent;
   late String name;
   late String abbrev;
   // late int
@@ -3477,6 +3655,8 @@ class BooksKlass {
     id = j['id'];
     entity_id = j['entity_id'];
     entity = (j['entity'] == null) ? null : Entity.fromJson(j['entity']);
+    parent_id = j['parent_id'];
+    parent = (j['parent'] == null) ? null : BooksKlass.fromJson(j['parent']);
     name = j['name'];
     abbrev = j['abbrev'];
     state = j['state'];
@@ -3488,6 +3668,8 @@ class BooksKlass {
       'id' : id,
       'entity_id' : entity_id,
       'entity' : entity == null ? null : entity?.toJson(),
+      'parent_id' : parent_id,
+      'parent' : parent == null ? null : parent?.toJson(),
       'name' : name,
       'abbrev' : abbrev,
       'state' : state,
@@ -4161,6 +4343,8 @@ class BooksCompany {
   String? notes;
   late String last_email_from;
   late String last_email_to;
+  String? ssn_ein;
+  late bool needs_1099;
 
   BooksCompany.fromJson(Map<String, dynamic> j) {
     id = j['id'];
@@ -4181,6 +4365,8 @@ class BooksCompany {
     notes = j['notes'];
     last_email_from = j['last_email_from'];
     last_email_to = j['last_email_to'];
+    ssn_ein = j['ssn_ein'];
+    needs_1099 = j['needs_1099'];
   }
 
   Map<String, dynamic> toJson() {
@@ -4203,6 +4389,8 @@ class BooksCompany {
       'notes' : notes,
       'last_email_from' : last_email_from,
       'last_email_to' : last_email_to,
+      'ssn_ein' : ssn_ein,
+      'needs_1099' : needs_1099,
     };
   }
 
@@ -4273,7 +4461,9 @@ class BooksEntry {
     payment_id = j['payment_id'];
     payment = (j['payment'] == null) ? null : BooksAccountLineItem.fromJson(j['payment']);
     type = j['type'];
-    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }     try { date = DateTime.parse(j['date']); } catch(e) { date = null; }     trans_id = j['trans_id'];
+    try { timestamp = DateTime.parse(j['timestamp']); } catch(e) { timestamp = null; }
+    try { date = DateTime.parse(j['date']); } catch(e) { date = null; }
+    trans_id = j['trans_id'];
     memo = j['memo'];
     notes = j['notes'];
     approved_by_id = j['approved_by_id'];
@@ -4337,7 +4527,8 @@ class BooksAccountLineItem {
     name = j['name'];
     userdata = j['userdata'];
     order = j['order'];
-    try { bankdate = DateTime.parse(j['bankdate']); } catch(e) { bankdate = null; }     trans_id = j['trans_id'];
+    try { bankdate = DateTime.parse(j['bankdate']); } catch(e) { bankdate = null; }
+    trans_id = j['trans_id'];
     related_entity_id = j['related_entity_id'];
     related_entity = (j['related_entity'] == null) ? null : Entity.fromJson(j['related_entity']);
   }
