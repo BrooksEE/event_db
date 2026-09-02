@@ -17,15 +17,17 @@ dependencies:
 #  dio_cookie_manager: ^2.0.0
   expandable:
   just_audio: ^0.10.5
+  firebase_messaging: ^16.0.4
   flutter:
     sdk: flutter
+  flutter_local_notifications: ^19.0.0
   flutter_udid: ^4.1.1
 
   
   flutter_web_plugins:
     sdk: flutter
   image_picker: ^1.1.2
-  intl: ^0.20.2
+  intl: ^0.19.0
   mutex: ^3.0.1
   package_info_plus: ^9.0.0
   path: ^1.9.0

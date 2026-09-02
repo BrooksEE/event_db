@@ -233,30 +233,44 @@ class RPC {
           print("SESSION=${session}");
         }
         var response;
-        try {
-          Map<String, dynamic> headers = {};
-          if(session != null) {
-            headers["x-session"] = session;
-          }
-          response = await dio.post(url, data: body, options: Options(headers: headers));
-        } on DioError catch(e) {
-          print("$e");
-          /* if(cache) {
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          if(prefs.containsKey(key)) {
-            print("Cache hit.");
-            String? cache = prefs.getString(key);
-            if(cache != null) {
-              return jsonDecode(cache);
+        // Android can briefly suspend an app's network/DNS access around
+        // screen-off and Doze transitions -- a bare failure here used to
+        // propagate immediately with no retry, which is what left the home
+        // screen empty. A few short retries paper over that transient
+        // window; a real outage still surfaces as ConnectionException once
+        // attempts are exhausted, same as before.
+        const int maxAttempts = 3;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+          try {
+            Map<String, dynamic> headers = {};
+            if(session != null) {
+              headers["x-session"] = session;
             }
-          } else {
-            print("Cache miss.");
-          }
-        } */
-          if(e.message?.startsWith("SocketException: Failed host lookup") ?? false) {
-            throw ConnectionException();
-          } else {
-            throw e;
+            response = await dio.post(url, data: body, options: Options(headers: headers));
+            break;
+          } on DioError catch(e) {
+            print("$e");
+            /* if(cache) {
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            if(prefs.containsKey(key)) {
+              print("Cache hit.");
+              String? cache = prefs.getString(key);
+              if(cache != null) {
+                return jsonDecode(cache);
+              }
+            } else {
+              print("Cache miss.");
+            }
+          } */
+            final bool isConnectionFailure = e.message?.startsWith("SocketException: Failed host lookup") ?? false;
+            if (!isConnectionFailure) {
+              throw e;
+            }
+            if (attempt == maxAttempts) {
+              throw ConnectionException();
+            }
+            print("RPC connection failure, retrying ($attempt/$maxAttempts)...");
+            await Future.delayed(Duration(seconds: attempt));
           }
         }
         print(" body: ${response.data}");

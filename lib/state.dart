@@ -14,6 +14,7 @@ import 'package:uuid/uuid.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:app_links/app_links.dart';
+import 'push.dart';
 
 GlobalKey<NavigatorState>? navKey;
 MyUserProvider? gMyUserProvider;
@@ -67,6 +68,7 @@ class MyUserProvider with ChangeNotifier {
     navKey = nKey;
     RPC().registerNotLoggedInHandler(() async {
       _user = null;
+      PushNotifications().onUserChanged(null);
       notifyListeners();
     });
 
@@ -189,6 +191,7 @@ class MyUserProvider with ChangeNotifier {
     SharedPreferences.getInstance().then((prefs) {
       prefs.setString("lastUser", jsonEncode(m));
     });
+    PushNotifications().onUserChanged(_user?.id);
     notifyListeners();
   }
 
@@ -215,6 +218,7 @@ class MyUserProvider with ChangeNotifier {
     await prefs.clear();
     _user = null;
     Cart.email = "";
+    PushNotifications().onUserChanged(null);
     notifyListeners();
   }
 }
