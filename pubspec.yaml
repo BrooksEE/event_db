@@ -17,11 +17,11 @@ dependencies:
 #  dio_cookie_manager: ^2.0.0
   expandable:
   just_audio: ^0.10.5
-  firebase_messaging: ^16.0.4
   flutter:
     sdk: flutter
   flutter_local_notifications: ^19.0.0
   flutter_udid: ^4.1.1
+  klaviyo_flutter_sdk: any
 
   
   flutter_web_plugins:

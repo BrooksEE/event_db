@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'RPC.dart';
 import 'db.dart';
-import 'dart:convert';
 import 'dialogs.dart' as dlg;
 import 'state.dart';
 import 'package:image_picker/image_picker.dart';
@@ -177,14 +176,7 @@ class ProfileState extends State<Profile> {
   }
 
   Future<void> uploadPhoto(XFile image, MyUserProvider myUserProvider) async {
-    try {
-      var bytes = await image.readAsBytes();
-      final String image_b64 = base64.encode(bytes);
-      Map result = await RPC().rpc("training", "Training", "set_avatar", {"image_b64": image_b64,}, "Uploading Photo");
-      myUserProvider.userFromJson(result["user"]);
-    } catch(e) {
-      dlg.showError(e.toString());
-    }
+    await myUserProvider.uploadProfilePhoto(image);
   }
 
   @override Widget build(BuildContext context) {

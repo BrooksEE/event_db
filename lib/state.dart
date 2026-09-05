@@ -14,6 +14,7 @@ import 'package:uuid/uuid.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:app_links/app_links.dart';
+import 'package:image_picker/image_picker.dart';
 import 'push.dart';
 
 GlobalKey<NavigatorState>? navKey;
@@ -63,9 +64,16 @@ class MyUserProvider with ChangeNotifier {
   String get tmpEmail => _tmpEmail;
   String get tmpPasswd => _tmpPasswd;
 
-  MyUserProvider(GlobalKey<NavigatorState> nKey, this.hostKey) {
+  MyUserProvider(GlobalKey<NavigatorState> nKey, this.hostKey, {String? klaviyoApiKey, String? androidNotificationIcon}) {
     print("MyUserProvider Constructor ${nKey}");
     navKey = nKey;
+    // Fire and forget: requests OS permission and registers the device's
+    // token in the background. Every app gets this for free by constructing
+    // MyUserProvider (which all of them already do) -- no separate wiring
+    // needed in main.dart. Never blocks app startup on the permission
+    // prompt or a slow/failed token fetch; push is additive, never
+    // load-bearing, so a failure here can't affect anything else.
+    PushNotifications().init(hostKey, klaviyoApiKey: klaviyoApiKey, androidNotificationIcon: androidNotificationIcon);
     RPC().registerNotLoggedInHandler(() async {
       _user = null;
       PushNotifications().onUserChanged(null);
@@ -203,6 +211,7 @@ class MyUserProvider with ChangeNotifier {
       await prefs.setString("email", email);
       await prefs.setString("password", passwd);
       Cart.email = email;
+      _promptForProfilePhotoIfMissing();
     } catch(e) {
       if(raise) {
         throw(e);
@@ -210,6 +219,61 @@ class MyUserProvider with ChangeNotifier {
         dlg.showError("$e");
       }
     }
+  }
+
+  Future<void> uploadProfilePhoto(XFile image) async {
+    try {
+      var bytes = await image.readAsBytes();
+      final String image_b64 = base64.encode(bytes);
+      Map result = await RPC().rpc("training", "Training", "set_avatar", {"image_b64": image_b64,}, "Uploading Photo");
+      userFromJson(result["user"]);
+    } catch(e) {
+      dlg.showError("$e");
+    }
+  }
+
+  // Nudge new/returning-without-one users to add a profile photo right after
+  // login, rather than leaving it to be discovered on the Update Profile
+  // screen. Skipped entirely once a photo exists.
+  void _promptForProfilePhotoIfMissing() {
+    if (_user?.profile?.photo?.url_web != null) {
+      return;
+    }
+    showDialog(
+      context: gContext,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Add a Profile Photo"),
+          content: Text("Help others recognize you by adding a profile photo."),
+          actions: <Widget>[
+            TextButton(
+              child: Text("Not Now"),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: Text("From Gallery"),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                final XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
+                if (image != null) {
+                  uploadProfilePhoto(image);
+                }
+              },
+            ),
+            TextButton(
+              child: Text("From Camera"),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                final XFile? image = await ImagePicker().pickImage(source: ImageSource.camera, preferredCameraDevice: CameraDevice.front);
+                if (image != null) {
+                  uploadProfilePhoto(image);
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> logout() async {
