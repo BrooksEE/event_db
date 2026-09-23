@@ -161,6 +161,24 @@ class PushNotifications {
     if (_klaviyoApiKey != null) {
       try {
         await KlaviyoSDK().initialize(apiKey: _klaviyoApiKey!);
+        if (Platform.isIOS) {
+          // On iOS, the native didRegisterForRemoteNotificationsWithDeviceToken
+          // callback (which is what actually hands the APNs token to Klaviyo's
+          // SDK -- see KlaviyoFlutterSdkPlugin) can fire before Dart ever gets
+          // here, on app launches where iOS already has a cached registration
+          // from a previous run -- confirmed via a real device log showing
+          // "APNs token received" before this file's own init had even
+          // started. Klaviyo can't correctly associate a token with an
+          // account it hasn't been initialize()'d against yet, so that first
+          // delivery is likely lost. Re-requesting registration now, after
+          // initialize() has definitely completed, is idempotent on iOS and
+          // forces a fresh delegate callback the plugin will catch correctly.
+          try {
+            await KlaviyoSDK().registerForPushNotifications();
+          } catch (e) {
+            print("PushNotifications: Klaviyo re-registerForPushNotifications failed: $e");
+          }
+        }
       } catch (e) {
         // Klaviyo is additive on top of our own push, same as our own push is
         // additive to the app -- a failure here must never block our own
