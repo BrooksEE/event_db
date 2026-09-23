@@ -185,13 +185,29 @@ class PushNotifications {
       await androidPlugin?.createNotificationChannel(_updatesChannel);
     }
 
+    if (Platform.isIOS) {
+      // iOS's own equivalent of the Android foreground-display gap below --
+      // without this, iOS silently swallows a notification-payload push
+      // while the app is foregrounded instead of presenting it. Unlike
+      // Android, no manual local-notification construction is needed: this
+      // just tells iOS to present it the same way it would if backgrounded,
+      // so the existing onMessageOpenedApp tap handler below covers it too
+      // (no separate flutter_local_notifications tap callback required).
+      await messaging.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+    }
+
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("Push (foreground): ${message.messageId} ${message.data}");
-      // OS never auto-displays while the app is foregrounded -- Android
-      // only, for now (iOS foreground presentation is Phase 2, alongside
-      // the delivery-path spike).
+      // Android doesn't auto-display while foregrounded even with the
+      // channel/permission setup above, so this still needs a manual local
+      // notification -- iOS's presentation is handled by the OS itself once
+      // setForegroundNotificationPresentationOptions is set above.
       final notification = message.notification;
       if (Platform.isAndroid && notification != null) {
         final channel =
