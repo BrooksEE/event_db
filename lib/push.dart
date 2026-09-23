@@ -253,11 +253,20 @@ class PushNotifications {
     });
   }
 
-  /// Klaviyo needs the same token we already captured for our own
-  /// registration -- this is the whole "manual integration" on Klaviyo's
-  /// side, no native service registration required.
+  /// Android only: Klaviyo needs the same FCM token we already captured for
+  /// our own registration -- this is the whole "manual integration" on
+  /// Klaviyo's side there, no native service registration required.
+  ///
+  /// Never call this on iOS -- klaviyo_flutter_sdk's setPushToken expects a
+  /// hex-encoded raw APNs device token, not an FCM registration token
+  /// string (confirmed by reading the plugin's native iOS source: it does
+  /// `Data(hexString: token)` and fails with INVALID_TOKEN_FORMAT
+  /// otherwise). iOS doesn't need this call regardless -- the plugin
+  /// auto-intercepts the real raw APNs token itself via
+  /// `application(_:didRegisterForRemoteNotificationsWithDeviceToken:)`,
+  /// which Flutter wires up automatically through `addApplicationDelegate`.
   void _forwardTokenToKlaviyo(String token) {
-    if (_klaviyoApiKey == null) return;
+    if (_klaviyoApiKey == null || !Platform.isAndroid) return;
     try {
       KlaviyoSDK().setPushToken(token);
     } catch (e) {
