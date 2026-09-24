@@ -245,7 +245,7 @@ class PushNotifications {
                   : Priority.defaultPriority,
             ),
           ),
-          payload: message.data["message_id"] as String?,
+          payload: _messageIdOf(message),
         );
       }
     });
@@ -254,7 +254,7 @@ class PushNotifications {
       print("Push (tapped, was backgrounded): ${message.messageId} ${message.data}");
       // TODO(push-phase1-followup): route via message.data once the
       // notification-type -> app-route table exists.
-      _reportOpened(message.data["message_id"] as String?);
+      _reportOpened(_messageIdOf(message));
     });
 
     _token = await messaging.getToken();
@@ -352,6 +352,19 @@ class PushNotifications {
       print("PushNotifications: setAllowBulk failed: $e");
       allowBulk.value = previous;
     }
+  }
+
+  /// Our server's Message id, carried in the push's data payload. The key is
+  /// deliberately NOT "message_id": firebase_messaging's iOS plugin treats a
+  /// payload key by that exact name as the FCM message id -- it moves it into
+  /// RemoteMessage.messageId and drops it from `data` (see
+  /// FLTFirebaseMessagingPlugin.m remoteMessageUserInfoToDict), so on iOS
+  /// data["message_id"] is always null and tap tracking would silently never
+  /// report. The old key is still read as a fallback for pushes sent before
+  /// the backend renamed it (Android only ever sees it in `data`).
+  static String? _messageIdOf(RemoteMessage message) {
+    final id = message.data["brooksee_message_id"] ?? message.data["message_id"];
+    return id is String && id.isNotEmpty ? id : null;
   }
 
   /// Reports a tap on a push notification back to the server for open/tap
