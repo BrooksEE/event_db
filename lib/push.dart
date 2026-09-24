@@ -88,10 +88,12 @@ class PushNotifications {
   /// flutter_local_notifications needs a native Android resource id here,
   /// not a Flutter asset, so this package can't ship one of its own to
   /// fall back to. Defaults to "@mipmap/ic_launcher", which every Flutter
-  /// Android app already has -- guaranteed to resolve with zero setup, at
-  /// the cost of Android's status-bar icon masking rendering it as a plain
-  /// white silhouette of the launcher icon's shape rather than something
-  /// purpose-drawn. Pass a dedicated notification icon for a sharper look.
+  /// Android app has -- guaranteed to resolve with zero setup. But that
+  /// resource is often still the stock Flutter logo (this project's real
+  /// launcher icon is named launcher_icon), and Android's status-bar
+  /// masking renders it as a plain white silhouette of whatever it is. So
+  /// treat the default as "won't crash", not "looks right": every app that
+  /// cares about its brand should pass its own white-silhouette drawable.
   Future<void> init(String hostKey, {String? klaviyoApiKey, String? androidNotificationIcon}) async {
     _hostKey = hostKey;
     _klaviyoApiKey = klaviyoApiKey;
