@@ -211,10 +211,7 @@ class MyUserProvider with ChangeNotifier {
       await prefs.setString("email", email);
       await prefs.setString("password", passwd);
       Cart.email = email;
-      // Disabled: callers Navigator.pop() right after login() returns, which pops
-      // this unawaited dialog instead of the Login route (prompt never shows, Login
-      // screen stays up). Re-enable once the prompt is deferred past that pop.
-      // _promptForProfilePhotoIfMissing();
+      _promptForProfilePhotoIfMissing();
     } catch(e) {
       if(raise) {
         throw(e);
@@ -242,41 +239,46 @@ class MyUserProvider with ChangeNotifier {
     if (_user?.profile?.photo?.url_web != null) {
       return;
     }
-    showDialog(
-      context: gContext,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Add a Profile Photo"),
-          content: Text("Help others recognize you by adding a profile photo."),
-          actions: <Widget>[
-            TextButton(
-              child: Text("Not Now"),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            TextButton(
-              child: Text("From Gallery"),
-              onPressed: () async {
-                Navigator.of(context).pop();
-                final XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
-                if (image != null) {
-                  uploadProfilePhoto(image);
-                }
-              },
-            ),
-            TextButton(
-              child: Text("From Camera"),
-              onPressed: () async {
-                Navigator.of(context).pop();
-                final XFile? image = await ImagePicker().pickImage(source: ImageSource.camera, preferredCameraDevice: CameraDevice.front);
-                if (image != null) {
-                  uploadProfilePhoto(image);
-                }
-              },
-            ),
-          ],
-        );
-      },
-    );
+    // Defer to the next frame: callers (LoginState, PasswordReset2) Navigator.pop()
+    // their route right after login() returns, and that pop would otherwise
+    // remove this dialog instead of the Login route.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+        context: gContext,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Add a Profile Photo"),
+            content: Text("Help others recognize you by adding a profile photo."),
+            actions: <Widget>[
+              TextButton(
+                child: Text("Not Now"),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              TextButton(
+                child: Text("From Gallery"),
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  final XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
+                  if (image != null) {
+                    uploadProfilePhoto(image);
+                  }
+                },
+              ),
+              TextButton(
+                child: Text("From Camera"),
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  final XFile? image = await ImagePicker().pickImage(source: ImageSource.camera, preferredCameraDevice: CameraDevice.front);
+                  if (image != null) {
+                    uploadProfilePhoto(image);
+                  }
+                },
+              ),
+            ],
+          );
+        },
+      );
+    });
   }
 
   Future<void> logout() async {
