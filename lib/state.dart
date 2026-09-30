@@ -211,7 +211,10 @@ class MyUserProvider with ChangeNotifier {
       await prefs.setString("email", email);
       await prefs.setString("password", passwd);
       Cart.email = email;
-      _promptForProfilePhotoIfMissing();
+      // Disabled: callers Navigator.pop() right after login() returns, which pops
+      // this unawaited dialog instead of the Login route (prompt never shows, Login
+      // screen stays up). Re-enable once the prompt is deferred past that pop.
+      // _promptForProfilePhotoIfMissing();
     } catch(e) {
       if(raise) {
         throw(e);
