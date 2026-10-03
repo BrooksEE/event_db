@@ -168,10 +168,11 @@ class RPC {
       return url;
   }
 
-  Future<Map> rpc(String mod, String view, String func, Map args, String? msg, {bool retryLogin = true, bool forceLogin = true, bool useSnackBarMsg= false, bool cache= false }) async {
+  Future<Map> rpc(String mod, String view, String func, Map args, String? msg, {bool retryLogin = true, bool forceLogin = true, bool useSnackBarMsg= false, bool cache= false, Map? context }) async {
       // retryLogin: when true, will try cached login credentials behind the scenes to log back in for the user
       // forceLogin: when true, will launch a login screen for the user to login
       // cache: when true, result is saved off and can be restored with the fromCache() method
+      // context: sent as the request's rpc context (e.g. {"timer_pin": ...} for PIN-gated views)
       final String path = '/rest/$mod/$view/$func';
       final String url = '$server$path';
       String key = getCacheKey(mod, view, func, args);
@@ -192,7 +193,7 @@ class RPC {
         print("rpc: $url");
         final Map body = {
           'args': (args == null) ? {} : args,
-          'context': {},
+          'context': context ?? {},
         };
 
         print(" body:" + body.toString());
@@ -301,7 +302,7 @@ class RPC {
                     failed = true;
                   }
                   if(!failed) {
-                    return await rpc(mod, view, func, args, null, retryLogin: false, forceLogin: forceLogin, useSnackBarMsg: useSnackBarMsg);
+                    return await rpc(mod, view, func, args, null, retryLogin: false, forceLogin: forceLogin, useSnackBarMsg: useSnackBarMsg, context: context);
                   }
                 }
               }
@@ -313,7 +314,7 @@ class RPC {
                   print(e);
                 }
                 if(MyUserProvider.instance?.user != null) {
-                  return await rpc(mod, view, func, args, null, retryLogin: false, forceLogin: forceLogin, useSnackBarMsg: useSnackBarMsg);
+                  return await rpc(mod, view, func, args, null, retryLogin: false, forceLogin: forceLogin, useSnackBarMsg: useSnackBarMsg, context: context);
                 }
               }
               notLoggedInHandler?.call();
