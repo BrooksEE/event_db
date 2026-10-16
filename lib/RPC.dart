@@ -44,7 +44,7 @@ class RPC {
 //  static final server = "http://192.168.75.157:8080";
 //  static final server = "http://192.168.75.5:8080";
   static String _server = "";
-  static final defaultServer = "https://rpc.brooksee.com";
+  static final defaultServer = "https://rpc.laurelt.com";
 
 //  PersistCookieJar? cookieJar;
   Timer? retryTimer;
