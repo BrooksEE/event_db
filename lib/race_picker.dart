@@ -43,8 +43,8 @@ class RaceChoice {
   Map<String, dynamic> toJson() =>
       {"id": id, "name": name, "date": date, "status": status, "host_key": hostKey, "host_name": hostName, "mine": mine};
 
-  /// "2026 Escalante Canyons", or "Race 168202" when the name isn't known.
-  String get label => (name == null || name!.isEmpty) ? "Race $id" : name!;
+  /// "2026 Escalante Canyons", or just "168202" when the name isn't known.
+  String get label => (name == null || name!.isEmpty) ? "$id" : name!;
 
   /// "#168202 · 2026-10-10 · Escalante Canyons Marathon, Half & 5K"
   String get details => ["#$id", if (date != null) date!, if (hostName != null) hostName!, if (status != null && status != "Active") status!].join(" · ");
@@ -219,13 +219,20 @@ class _RacePickerState extends State<RacePicker> {
   // overwritten.
   String? _shownFor;
 
-  // The race whose name is in the field, so Set on it doesn't search.
+  // The race the field stands for - the one picked or set by the screen -
+  // kept while the user types over it, so leaving the field without picking
+  // puts it back, and Set on its name doesn't search.
   RaceChoice? _current;
 
-  // Debounce: each keystroke bumps this; a search only runs if no newer
-  // keystroke came in the meantime.
+  // Debounce: every change of the text (typed, or set by a pick) bumps
+  // this; a search only runs, and its results only count, if nothing newer
+  // came in the meantime.
   int _typed = 0;
   List<RaceChoice> _last = const [];
+
+  // The options for the newest text. Every optionsBuilder call resolves to
+  // this, so a slow, older search can't reopen the list with stale results.
+  Future<List<RaceChoice>> _latest = Future.value(const []);
   bool _searching = false;
   String? _error;
   bool _checking = false;
@@ -233,10 +240,47 @@ class _RacePickerState extends State<RacePicker> {
   static const _debounce = Duration(milliseconds: 300);
 
   @override
+  void initState() {
+    super.initState();
+    _focus.addListener(_onFocus);
+  }
+
+  @override
   void dispose() {
+    _focus.removeListener(_onFocus);
     _c.dispose();
     _focus.dispose();
     super.dispose();
+  }
+
+  bool get _showingCurrent => _current != null && _c.text == _current!.label;
+
+  void _selectAll() => _c.selection = TextSelection(baseOffset: 0, extentOffset: _c.text.length);
+
+  void _onFocus() {
+    if (_focus.hasFocus) {
+      // Focused while showing the race: select it all, so typing replaces it
+      // (after the frame - a tap places the cursor once focus has moved).
+      if (_showingCurrent) WidgetsBinding.instance.addPostFrameCallback((_) => _showingCurrent ? _selectAll() : null);
+      return;
+    }
+    // Left without picking: show the race again. (Shortly after, so a tap
+    // on an option - which may take focus on the way - is picked first.)
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (!mounted || _focus.hasFocus || _checking || _current == null || _showingCurrent) return;
+      _typed++;
+      setState(() {
+        _error = null;
+        _c.text = _current!.label;
+      });
+    });
+  }
+
+  void _clear() {
+    _typed++;
+    _c.clear();
+    setState(() => _error = null);
+    _focus.requestFocus(); // the empty field offers recent races
   }
 
   void _syncSelected() {
@@ -247,19 +291,32 @@ class _RacePickerState extends State<RacePicker> {
     if (id == null) {
       _current = null;
       _c.text = "";
+    } else if (id == _current?.id && widget.selectedName == null && _current?.name != null) {
+      // The screen has the race but not (yet) its name - keep the one picked.
     } else {
-      _current = RaceChoice(id, name: widget.selectedName);
+      // Keep what's known about the race (date, host) if it's the same one.
+      final c = _current;
+      _current = c != null && c.id == id
+          ? RaceChoice(id, name: widget.selectedName ?? c.name, date: c.date, status: c.status, hostKey: c.hostKey, hostName: c.hostName, mine: c.mine)
+          : RaceChoice(id, name: widget.selectedName);
+      _typed++;
       _c.text = _current!.label;
     }
   }
 
   Future<Iterable<RaceChoice>> _options(TextEditingValue value) async {
+    final mine = _latest = _resolve(value);
+    final found = await mine;
+    return identical(mine, _latest) ? found : await _latest;
+  }
+
+  Future<List<RaceChoice>> _resolve(TextEditingValue value) async {
+    final token = ++_typed;
     final text = value.text.trim();
     if (_current != null && value.text == _current!.label) return const [];
     if (text.isEmpty) return recentRaces();
-    final token = ++_typed;
     await Future.delayed(_debounce);
-    if (token != _typed) return _last;
+    if (token != _typed) return const [];
     setState(() => _searching = true);
     try {
       final found = await searchRaces(text, cardsOnly: widget.cardsOnly);
@@ -275,7 +332,7 @@ class _RacePickerState extends State<RacePicker> {
     } finally {
       if (mounted && token == _typed) setState(() => _searching = false);
     }
-    return _last;
+    return token == _typed ? _last : const [];
   }
 
   /// Set: the race whose name is showing, a whole id, or the first match.
@@ -300,6 +357,8 @@ class _RacePickerState extends State<RacePicker> {
 
   Future<void> _pick(RaceChoice race) async {
     _focus.unfocus();
+    _typed++; // whatever was being searched for is moot now
+    final before = _current; // the race the field stood for until now
     setState(() {
       _error = null;
       _current = race;
@@ -314,7 +373,19 @@ class _RacePickerState extends State<RacePicker> {
       } finally {
         if (mounted) setState(() => _checking = false);
       }
-      if (pin == null) return; // cancelled, refused, or no such race
+      if (pin == null) {
+        // Cancelled, refused, or no such race: nothing was opened, so the
+        // field goes back to the race that's still open (the error, if any,
+        // says what happened).
+        if (mounted) {
+          _typed++;
+          setState(() {
+            _current = before;
+            _c.text = before?.label ?? "";
+          });
+        }
+        return;
+      }
     }
     // A whole id typed in: fill in its name if the search knows it.
     var picked = race;
@@ -352,10 +423,10 @@ class _RacePickerState extends State<RacePicker> {
         pin = entered;
         failed = true;
       } on RacePinRefused catch (e) {
-        if (mounted) setState(() => _error = e.message);
+        if (mounted) setState(() => _error = "${race.label}: ${e.message}");
         return null;
       } catch (e) {
-        if (mounted) setState(() => _error = "Couldn't check the race: ${e.toString().split("\n").first}");
+        if (mounted) setState(() => _error = "Couldn't check ${race.label}: ${e.toString().split("\n").first}");
         return null;
       }
     }
@@ -407,16 +478,28 @@ class _RacePickerState extends State<RacePicker> {
               hintText: "Name, host, year or race id",
               errorText: _error ?? widget.errorText,
               errorMaxLines: 3,
-              suffixIcon: _searching ? const Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))) : const Icon(Icons.search),
+              suffixIcon: _searching
+                  ? const Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)))
+                  : ListenableBuilder(
+                      listenable: controller,
+                      builder: (context, _) => controller.text.isEmpty
+                          ? const Icon(Icons.search)
+                          : IconButton(tooltip: "Clear", icon: const Icon(Icons.clear), onPressed: _clear),
+                    ),
             ),
             textInputAction: TextInputAction.search,
+            onTap: () {
+              if (_showingCurrent) _selectAll();
+            },
             onChanged: (_) {
-              if (_current != null && controller.text != _current!.label) _current = null;
               if (_error != null) setState(() => _error = null);
             },
             onSubmitted: (_) => _submit(),
           ),
-          optionsViewBuilder: (context, onSelected, options) => _Options(options: options.toList(), onSelected: onSelected, recent: _c.text.trim().isEmpty),
+          // Nothing while the field shows the chosen race: the autocomplete
+          // keeps the last results open after a pick while the field has focus.
+          optionsViewBuilder: (context, onSelected, options) =>
+              _showingCurrent ? const SizedBox.shrink() : _Options(options: options.toList(), onSelected: onSelected, recent: _c.text.trim().isEmpty),
         ),
       ),
       const SizedBox(width: 8),
