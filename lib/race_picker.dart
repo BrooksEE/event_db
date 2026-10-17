@@ -541,8 +541,10 @@ class _Options extends StatelessWidget {
             for (final r in options)
               ListTile(
                 dense: true,
-                title: Text(r.label, maxLines: 1, overflow: TextOverflow.ellipsis),
-                subtitle: Text(r.details, maxLines: 1, overflow: TextOverflow.ellipsis),
+                // Wrapped, not cut off: races often differ only at the end of
+                // their names ("... | WA" and "... | UT").
+                title: Text(r.label, maxLines: 3, overflow: TextOverflow.ellipsis),
+                subtitle: Text(r.details, maxLines: 2, overflow: TextOverflow.ellipsis),
                 trailing: r.mine ? Tooltip(message: "One of your races", child: Icon(Icons.star, size: 18, color: theme.colorScheme.secondary)) : null,
                 onTap: () => onSelected(r),
               ),
