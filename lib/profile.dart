@@ -34,6 +34,35 @@ class AppDrawer {
     }
   }
 
+  /// The drawer's top: the user's photo, name and email; tapping it opens
+  /// their Profile. Apps with their own drawer put it at the top of theirs.
+  static Widget getHeader(BuildContext context, MyUserProvider myUser) {
+    return GestureDetector(
+      onTap: myUser.user == null ? null : () {
+        Navigator.pop(context); // close drawer
+        Profile.navPush(context, myUser);
+      },
+      child: UserAccountsDrawerHeader(
+        decoration: BoxDecoration(
+          color: Theme.of(context).primaryColor,
+        ),
+        accountName: Padding(
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                children: <Widget>[
+                  Expanded(child: Text(myUser.user == null ? "Not Logged In" : "${myUser.user!.name}")),
+                  myUser.user == null ? Container(width: 0) : Icon(Icons.edit, color: Colors.white,),
+                  myUser.user == null ? Container(width: 0) : Container(width: 10),
+                ],
+              ),
+              padding: EdgeInsets.only(top: 10),
+        ),
+        accountEmail: Text(myUser.user?.email ?? ""),
+        currentAccountPicture: AppDrawer.getAvatar(context, myUser.user),
+      ),
+    );
+  }
+
   static Drawer getDrawer(BuildContext context, Function builder, {bool allowLogout= true}) {
     return Drawer(
       child: Consumer<MyUserProvider>(builder: (context, myUser, child) {
@@ -41,30 +70,7 @@ class AppDrawer {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            GestureDetector(
-              onTap: myUser.user == null ? null : () {
-                Navigator.pop(context); // close drawer
-                Profile.navPush(context, myUser);
-              },
-              child: UserAccountsDrawerHeader(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                ),
-                accountName: Padding(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        children: <Widget>[
-                          Expanded(child: Text(myUser.user == null ? "Not Logged In" : "${myUser.user!.name}")),
-                          myUser.user == null ? Container(width: 0) : Icon(Icons.edit, color: Colors.white,),
-                          myUser.user == null ? Container(width: 0) : Container(width: 10),
-                        ],
-                      ),
-                      padding: EdgeInsets.only(top: 10),
-                ),
-                accountEmail: Text(myUser.user?.email ?? ""),
-                currentAccountPicture: AppDrawer.getAvatar(context, myUser.user),
-              ),
-            ),
+            getHeader(context, myUser),
             Container(height: 30),
             Expanded(child: SingleChildScrollView(child: builder(context))),
             Container(height: 30),
