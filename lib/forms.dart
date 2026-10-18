@@ -888,7 +888,7 @@ class RadioFormField extends FormField<String> {
             state.hasError ? Text("${state.errorText}", style: TextStyle(color: Colors.red)) : Container(height: 0),
           ] +
               widget.radioField.choices.map<Widget>((c) {
-                return RadioListTile(
+                return RadioListTile<String?>(
                   value: c.key,
                   title: Text("${c.label}${!c.disabled && c.amt != null && c.amt!.amt > 0 ? ' - ' + c.amt!.display() : ""}"),//Text("${e[2]} - ${e[1]}${e[3] ? " (SOLD OUT)" : ""}"),
                   groupValue: widget.radioField.value,

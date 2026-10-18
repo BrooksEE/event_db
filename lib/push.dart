@@ -191,7 +191,7 @@ class PushNotifications {
 
     if (Platform.isAndroid) {
       await _localNotifications.initialize(
-        InitializationSettings(
+        settings: InitializationSettings(
           android: AndroidInitializationSettings(_androidNotificationIcon),
         ),
         onDidReceiveNotificationResponse: (NotificationResponse response) {
@@ -233,10 +233,10 @@ class PushNotifications {
         final channel =
             message.data["channel"] == "alerts" ? _alertsChannel : _updatesChannel;
         _localNotifications.show(
-          notification.hashCode,
-          notification.title,
-          notification.body,
-          NotificationDetails(
+          id: notification.hashCode,
+          title: notification.title,
+          body: notification.body,
+          notificationDetails: NotificationDetails(
             android: AndroidNotificationDetails(
               channel.id,
               channel.name,

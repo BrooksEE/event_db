@@ -19,7 +19,7 @@ dependencies:
   just_audio: ^0.10.5
   flutter:
     sdk: flutter
-  flutter_local_notifications: ^19.0.0
+  flutter_local_notifications: ^22.3.2
   flutter_udid: ^4.1.1
   klaviyo_flutter_sdk: any
 
@@ -27,9 +27,9 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   image_picker: ^1.1.2
-  intl: ^0.19.0
+  intl: ^0.20.3
   mutex: ^3.0.1
-  package_info_plus: ^9.0.0
+  package_info_plus: ^10.2.2
   path: ^1.9.0
   path_provider: ^2.1.5
   photo_view: ^0.15.0
