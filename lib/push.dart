@@ -140,11 +140,17 @@ class PushNotifications {
     }
 
     final messaging = FirebaseMessaging.instance;
-    final settings = await messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    // App Store screenshot runs (--dart-define=SHOT_MODE=true) can't answer
+    // the OS permission prompt, which would sit over every shot: check the
+    // permission instead of asking for it. Off in every real build.
+    const shotMode = bool.fromEnvironment("SHOT_MODE");
+    final settings = shotMode
+        ? await messaging.getNotificationSettings()
+        : await messaging.requestPermission(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
     if (settings.authorizationStatus == AuthorizationStatus.denied) {
       // Denied looks identical whether a real user tapped "Don't allow" or
       // the OS silently refused because this app's AndroidManifest.xml never
