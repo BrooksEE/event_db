@@ -360,6 +360,35 @@ class LoginState extends State<Login> {
               err == null ? Container(height: 0) : Text(
                   "$err", style: TextStyle(color: Colors.red)),
               Container(height: 50),
+              for (SocialProvider provider in myUser.socialProviders) ...[
+                SizedBox(width: loginWidth, child: OutlinedButton(
+                  onPressed: () async {
+                    setState(() {
+                      err = null;
+                    });
+                    try {
+                      await myUser.loginWithProvider(provider.id);
+                      Navigator.pop(context, 'Login');
+                    } on SocialLoginCancelled {
+                    } catch (e) {
+                      print(e);
+                      setState(() {
+                        err = "$e";
+                      });
+                    }
+                  },
+                  child: Text('SIGN IN WITH ${provider.name.toUpperCase()}'),
+                )),
+                Container(height: 20),
+              ],
+              if (myUser.socialProviders.isNotEmpty) ...[
+                SizedBox(width: loginWidth, child: Row(children: [
+                  Expanded(child: Divider()),
+                  Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text("OR")),
+                  Expanded(child: Divider()),
+                ])),
+                Container(height: 10),
+              ],
               Container(width: loginWidth, child: TextFormField(
                 initialValue: myUser.tmpEmail,
                 decoration: InputDecoration(
@@ -424,27 +453,6 @@ class LoginState extends State<Login> {
                 },
                 child: const Text('LOGIN'),
               )),
-              for (SocialProvider provider in myUser.socialProviders) ...[
-                Container(height: 20),
-                SizedBox(width: loginWidth, child: OutlinedButton(
-                  onPressed: () async {
-                    setState(() {
-                      err = null;
-                    });
-                    try {
-                      await myUser.loginWithProvider(provider.id);
-                      Navigator.pop(context, 'Login');
-                    } on SocialLoginCancelled {
-                    } catch (e) {
-                      print(e);
-                      setState(() {
-                        err = "$e";
-                      });
-                    }
-                  },
-                  child: Text('CONTINUE WITH ${provider.name.toUpperCase()}'),
-                )),
-              ],
               Container(height: 20),
               SizedBox(width: loginWidth, child: OutlinedButton(
                 onPressed: () async {
