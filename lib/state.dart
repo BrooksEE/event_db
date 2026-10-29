@@ -246,8 +246,8 @@ class MyUserProvider with ChangeNotifier {
   }
 
   /// Throws SocialLoginCancelled if the user backs out of the provider's login.
-  Future<void> loginWithProvider(String providerId) async {
-    userFromJson(await socialLogin!.login(providerId));
+  Future<void> loginWithProvider(SocialProvider provider) async {
+    userFromJson(await socialLogin!.login(provider));
     // No password to log back in with: RPC's retryLogin must not replay a
     // previous user's stored one. The session lasts a year instead.
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -367,7 +367,7 @@ class LoginState extends State<Login> {
                       err = null;
                     });
                     try {
-                      await myUser.loginWithProvider(provider.id);
+                      await myUser.loginWithProvider(provider);
                       Navigator.pop(context, 'Login');
                     } on SocialLoginCancelled {
                     } catch (e) {

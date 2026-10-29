@@ -4,6 +4,12 @@
 // login and sends the browser back to the app's callback with a short-lived
 // code, which rest/User/redeem_login_code trades for the app's session.
 //
+// On Android, Google logs in with the phone's own account picker instead
+// (Credential Manager, through google_sign_in) and rest/User/login_with_token
+// checks its ID token. That needs an Android OAuth client for the app's
+// package and signing key in the same Google Cloud project as the server's
+// web client; until there is one, the picker fails and the browser is used.
+//
 // Each app that turns this on (MyUserProvider's socialLoginScheme) needs:
 //  - Android: flutter_web_auth_2's CallbackActivity in AndroidManifest.xml
 //    for its scheme.
@@ -15,16 +21,19 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'RPC.dart';
 
 class SocialProvider {
   final String id;
   final String name;
+  final String? clientId; // the server's OAuth client, which native SDKs ask for tokens for
   final List<String> flows; // "redirect", and "token" where a native SDK could log in instead
 
   SocialProvider.fromJson(Map m)
       : id = m["id"],
         name = m["name"],
+        clientId = m["client_id"],
         flows = List<String>.from(m["flows"] ?? []);
 }
 
@@ -50,9 +59,42 @@ class SocialLogin {
     return list.map((m) => SocialProvider.fromJson(m)).toList();
   }
 
-  /// Logs the app's session in with providerId. Returns the user, as
+  /// Logs the app's session in with provider. Returns the user, as
   /// rest/User/login does. Throws SocialLoginCancelled if the user backs out.
-  Future<Map> login(String providerId) async {
+  Future<Map> login(SocialProvider provider) async {
+    if (!kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.android &&
+        provider.id == "google" &&
+        provider.flows.contains("token") &&
+        provider.clientId != null) {
+      final String? idToken;
+      try {
+        idToken = await _googleIdToken(provider.clientId!);
+      } on GoogleSignInException catch (e) {
+        if (e.code == GoogleSignInExceptionCode.canceled) {
+          throw SocialLoginCancelled();
+        }
+        print("Google account picker failed, using the browser: $e");
+        return await _redirectLogin(provider.id);
+      }
+      return await RPC().rpc("rest", "User", "login_with_token", {"provider": provider.id, "token": {"id_token": idToken}},
+          "Logging In", retryLogin: false, forceLogin: false);
+    }
+    return await _redirectLogin(provider.id);
+  }
+
+  static bool _googleInitialized = false;
+
+  Future<String?> _googleIdToken(String serverClientId) async {
+    if (!_googleInitialized) {
+      await GoogleSignIn.instance.initialize(serverClientId: serverClientId);
+      _googleInitialized = true;
+    }
+    final account = await GoogleSignIn.instance.authenticate();
+    return account.authentication.idToken;
+  }
+
+  Future<Map> _redirectLogin(String providerId) async {
     final random = Random.secure();
     final verifier = base64Url.encode(List<int>.generate(32, (_) => random.nextInt(256))).replaceAll("=", "");
     final challenge = base64Url.encode(sha256.convert(utf8.encode(verifier)).bytes).replaceAll("=", "");
