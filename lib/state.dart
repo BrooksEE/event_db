@@ -16,6 +16,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:app_links/app_links.dart';
 import 'package:image_picker/image_picker.dart';
 import 'push.dart';
+import 'social_login.dart';
 
 GlobalKey<NavigatorState>? navKey;
 MyUserProvider? gMyUserProvider;
@@ -40,6 +41,9 @@ class MyUserProvider with ChangeNotifier {
   String hostKey;
   bool mounted = true;
   String version = "?.?.?";
+  // Null unless the app passes socialLoginScheme (see social_login.dart).
+  SocialLogin? socialLogin;
+  List<SocialProvider> socialProviders = [];
 
   static MyUserProvider? get instance {
     //BuildContext? context = navKey?.currentContext;
@@ -64,9 +68,12 @@ class MyUserProvider with ChangeNotifier {
   String get tmpEmail => _tmpEmail;
   String get tmpPasswd => _tmpPasswd;
 
-  MyUserProvider(GlobalKey<NavigatorState> nKey, this.hostKey, {String? klaviyoApiKey, String? androidNotificationIcon}) {
+  MyUserProvider(GlobalKey<NavigatorState> nKey, this.hostKey, {String? klaviyoApiKey, String? androidNotificationIcon, String? socialLoginScheme}) {
     print("MyUserProvider Constructor ${nKey}");
     navKey = nKey;
+    if (socialLoginScheme != null) {
+      socialLogin = SocialLogin(socialLoginScheme);
+    }
     // Fire and forget: requests OS permission and registers the device's
     // token in the background. Every app gets this for free by constructing
     // MyUserProvider (which all of them already do) -- no separate wiring
@@ -131,6 +138,7 @@ class MyUserProvider with ChangeNotifier {
       print(e);
       //dlg.showError(e.toString());
     }
+    loadSocialProviders();
 
     /* handle uni_links/app links */
     final appLinks = AppLinks();
@@ -224,6 +232,30 @@ class MyUserProvider with ChangeNotifier {
     }
   }
 
+  /// The social logins the server offers this app; none unless it passed socialLoginScheme.
+  Future<void> loadSocialProviders() async {
+    if (socialLogin == null) {
+      return;
+    }
+    try {
+      socialProviders = await socialLogin!.providers();
+      notifyListeners();
+    } catch(e) {
+      print("social_providers: $e");
+    }
+  }
+
+  /// Throws SocialLoginCancelled if the user backs out of the provider's login.
+  Future<void> loginWithProvider(String providerId) async {
+    userFromJson(await socialLogin!.login(providerId));
+    // No password to log back in with: RPC's retryLogin must not replay a
+    // previous user's stored one. The session lasts a year instead.
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove("password");
+    await prefs.setString("email", _user?.email ?? "");
+    Cart.email = _user?.email ?? "";
+  }
+
   Future<void> uploadProfilePhoto(XFile image) async {
     try {
       var bytes = await image.readAsBytes();
@@ -300,6 +332,16 @@ class LoginState extends State<Login> {
   final _loginFormKey = GlobalKey<FormState>();
   bool _passwordVisible=false;
   String? err;
+
+  @override
+  void initState() {
+    super.initState();
+    // Startup's fetch may have been offline.
+    MyUserProvider? myUser = MyUserProvider.instance;
+    if (myUser != null && myUser.socialProviders.isEmpty) {
+      myUser.loadSocialProviders();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -382,6 +424,27 @@ class LoginState extends State<Login> {
                 },
                 child: const Text('LOGIN'),
               )),
+              for (SocialProvider provider in myUser.socialProviders) ...[
+                Container(height: 20),
+                SizedBox(width: loginWidth, child: OutlinedButton(
+                  onPressed: () async {
+                    setState(() {
+                      err = null;
+                    });
+                    try {
+                      await myUser.loginWithProvider(provider.id);
+                      Navigator.pop(context, 'Login');
+                    } on SocialLoginCancelled {
+                    } catch (e) {
+                      print(e);
+                      setState(() {
+                        err = "$e";
+                      });
+                    }
+                  },
+                  child: Text('CONTINUE WITH ${provider.name.toUpperCase()}'),
+                )),
+              ],
               Container(height: 20),
               SizedBox(width: loginWidth, child: OutlinedButton(
                 onPressed: () async {
