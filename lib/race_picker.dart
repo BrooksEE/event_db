@@ -166,6 +166,8 @@ Future<void> _rememberRecent(RaceChoice race) async {
 
 /// The race field. Type to search (names, series, hosts, years, or the start
 /// of an id), pick from the list - or type a whole race id and press Set.
+/// With [onReload], the button is Reload while the field shows the race
+/// already chosen, and Set again once it's edited.
 class RacePicker extends StatefulWidget {
   /// Called once a race is picked (and its PIN, with [pinCheck], checks out).
   final ValueChanged<PickedRace> onPicked;
@@ -173,6 +175,10 @@ class RacePicker extends StatefulWidget {
   /// Called when Set is pressed with the field empty, if clearing the race
   /// means something to the screen.
   final VoidCallback? onCleared;
+
+  /// Fetches the chosen race again: the button says Reload, rather than
+  /// Set, while the field shows that race unedited.
+  final VoidCallback? onReload;
 
   /// The race currently chosen, shown in the field (by name once known).
   final int? selectedId;
@@ -197,6 +203,7 @@ class RacePicker extends StatefulWidget {
     super.key,
     required this.onPicked,
     this.onCleared,
+    this.onReload,
     this.selectedId,
     this.selectedName,
     this.pinCheck,
@@ -505,9 +512,19 @@ class _RacePickerState extends State<RacePicker> {
       const SizedBox(width: 8),
       Padding(
         padding: const EdgeInsets.only(top: 12),
-        child: FilledButton(
-          onPressed: busy ? null : _submit,
-          child: busy ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text("Set"),
+        // Rebuilt as the text changes: Reload turns into Set once it's edited.
+        child: ListenableBuilder(
+          listenable: _c,
+          builder: (context, _) {
+            final reload = widget.onReload != null && _showingCurrent;
+            return FilledButton(
+              // Wide enough for Reload either way, so the field doesn't
+              // jump as the button's label changes.
+              style: widget.onReload == null ? null : FilledButton.styleFrom(minimumSize: const Size(104, 40)),
+              onPressed: busy ? null : (reload ? widget.onReload : _submit),
+              child: busy ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : Text(reload ? "Reload" : "Set"),
+            );
+          },
         ),
       ),
     ]);
