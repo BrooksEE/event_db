@@ -10,6 +10,13 @@
 // package and signing key in the same Google Cloud project as the server's
 // web client; until there is one, the picker fails and the browser is used.
 //
+// On iOS, Apple logs in with Apple's own sheet (sign_in_with_apple) and
+// rest/User/login_with_token checks its ID token, which is issued to the app's
+// bundle ID: the server's APPLE_CLIENT_ID must list it, and the app needs the
+// "Sign In with Apple" capability (com.apple.developer.applesignin in
+// Runner.entitlements). Android, macOS and web log in with Apple through the
+// browser, as any other provider.
+//
 // Each app that turns this on (MyUserProvider's socialLoginScheme) needs:
 //  - Android: flutter_web_auth_2's CallbackActivity in AndroidManifest.xml
 //    for its scheme.
@@ -22,6 +29,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'RPC.dart';
 
 class SocialProvider {
@@ -80,7 +88,35 @@ class SocialLogin {
       return await RPC().rpc("rest", "User", "login_with_token", {"provider": provider.id, "token": {"id_token": idToken}},
           "Logging In", retryLogin: false, forceLogin: false);
     }
+    if (!kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.iOS &&
+        provider.id == "apple" &&
+        provider.flows.contains("token")) {
+      return await _appleLogin(provider);
+    }
     return await _redirectLogin(provider.id);
+  }
+
+  Future<Map> _appleLogin(SocialProvider provider) async {
+    final AuthorizationCredentialAppleID credential;
+    try {
+      credential = await SignInWithApple.getAppleIDCredential(
+          scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName]);
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled) {
+        throw SocialLoginCancelled();
+      }
+      rethrow;
+    }
+    // Apple gives the name only on the user's first login, and not in the ID
+    // token: the server uses it to name the user it makes.
+    return await RPC().rpc("rest", "User", "login_with_token", {
+          "provider": provider.id,
+          "token": {
+            "id_token": credential.identityToken,
+            "name": {"firstName": credential.givenName, "lastName": credential.familyName},
+          }
+        }, "Logging In", retryLogin: false, forceLogin: false);
   }
 
   static bool _googleInitialized = false;

@@ -17,6 +17,7 @@ import 'package:app_links/app_links.dart';
 import 'package:image_picker/image_picker.dart';
 import 'push.dart';
 import 'social_login.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart' show SignInWithAppleButton;
 
 GlobalKey<NavigatorState>? navKey;
 MyUserProvider? gMyUserProvider;
@@ -343,6 +344,33 @@ class LoginState extends State<Login> {
     }
   }
 
+  Future<void> _loginWith(MyUserProvider myUser, SocialProvider provider) async {
+    if (provider.id == "apple") {
+      // Apple asks only on the first login whether to share or hide the
+      // email; a hidden one (or another address) finds none of their races.
+      bool go = false;
+      await dlg.confirm("Sign in with Apple",
+          "Choose Share My Email and use the email you registered with, or we won't find your races.",
+          () => go = true, () {});
+      if (!go) {
+        return;
+      }
+    }
+    setState(() {
+      err = null;
+    });
+    try {
+      await myUser.loginWithProvider(provider);
+      Navigator.pop(context, 'Login');
+    } on SocialLoginCancelled {
+    } catch (e) {
+      print(e);
+      setState(() {
+        err = "$e";
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -361,24 +389,13 @@ class LoginState extends State<Login> {
                   "$err", style: TextStyle(color: Colors.red)),
               Container(height: 50),
               for (SocialProvider provider in myUser.socialProviders) ...[
-                SizedBox(width: loginWidth, child: OutlinedButton(
-                  onPressed: () async {
-                    setState(() {
-                      err = null;
-                    });
-                    try {
-                      await myUser.loginWithProvider(provider);
-                      Navigator.pop(context, 'Login');
-                    } on SocialLoginCancelled {
-                    } catch (e) {
-                      print(e);
-                      setState(() {
-                        err = "$e";
-                      });
-                    }
-                  },
-                  child: Text('SIGN IN WITH ${provider.name.toUpperCase()}'),
-                )),
+                SizedBox(width: loginWidth, child: provider.id == "apple"
+                  // Apple's review asks for Apple's own button.
+                  ? SignInWithAppleButton(onPressed: () => _loginWith(myUser, provider))
+                  : OutlinedButton(
+                      onPressed: () => _loginWith(myUser, provider),
+                      child: Text('SIGN IN WITH ${provider.name.toUpperCase()}'),
+                    )),
                 Container(height: 20),
               ],
               if (myUser.socialProviders.isNotEmpty) ...[
