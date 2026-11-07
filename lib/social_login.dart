@@ -20,7 +20,9 @@
 // Each app that turns this on (MyUserProvider's socialLoginScheme) needs:
 //  - Android: flutter_web_auth_2's CallbackActivity in AndroidManifest.xml
 //    for its scheme.
-//  - Web: web/auth.html, flutter_web_auth_2's postMessage page.
+//  - Web: nothing for the login itself, which opens its own tab and gets the
+//    result posted back from the server (web_login_popup_web.dart); keep
+//    web/auth.html for the server's fallback when the tab lost its opener.
 //  - Its callback allowed in the server's settings.APP_LOGIN_CALLBACKS.
 import 'dart:convert';
 import 'dart:math';
@@ -31,6 +33,7 @@ import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'RPC.dart';
+import 'web_login_popup.dart';
 
 class SocialProvider {
   final String id;
@@ -140,7 +143,16 @@ class SocialLogin {
         queryParameters: {"callback": callback, "challenge": challenge});
 
     final String result;
-    try {
+    if (kIsWeb) {
+      // Its own tab and a message back from the server's last page, never a
+      // visit to auth.html: an installed app's App Link for this host would
+      // take that out of the browser (web_login_popup_web.dart).
+      final posted = await webLoginPopup(url.toString(), Uri.parse(RPC().server).origin, const Duration(minutes: 5));
+      if (posted == null) {
+        throw SocialLoginCancelled();
+      }
+      result = posted;
+    } else try {
       result = await FlutterWebAuth2.authenticate(url: url.toString(), callbackUrlScheme: scheme);
     } on PlatformException catch (e) {
       if (e.code == "CANCELED") {
