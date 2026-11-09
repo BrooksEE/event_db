@@ -85,7 +85,13 @@ class SocialLogin {
       try {
         idToken = await _googleIdToken(provider.clientId!);
       } on GoogleSignInException catch (e) {
-        if (e.code == GoogleSignInExceptionCode.canceled) {
+        print("Google account picker: code=${e.code} description=${e.description} details=${e.details}");
+        // An app whose package and signing key have no Android OAuth client
+        // (a debug or sideloaded build, or a race left without one) still gets
+        // the account picker, then fails with "[16] Account reauth failed.",
+        // which google_sign_in reports as canceled: that one isn't the user.
+        final reauthFailed = (e.description ?? "").contains("reauth failed");
+        if (e.code == GoogleSignInExceptionCode.canceled && !reauthFailed) {
           throw SocialLoginCancelled();
         }
         print("Google account picker failed, using the browser: $e");
@@ -173,6 +179,7 @@ class SocialLogin {
     } else try {
       result = await FlutterWebAuth2.authenticate(url: url.toString(), callbackUrlScheme: scheme);
     } on PlatformException catch (e) {
+      print("Browser login ended: code=${e.code} message=${e.message} details=${e.details}");
       if (e.code == "CANCELED") {
         throw SocialLoginCancelled();
       }
@@ -180,6 +187,7 @@ class SocialLogin {
     }
 
     final params = Uri.parse(result).queryParameters;
+    print("Browser login returned: ${params.keys.toList()} error=${params["error"]}");
     if (params["error"] == "cancelled") {
       throw SocialLoginCancelled();
     }

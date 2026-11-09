@@ -345,16 +345,14 @@ class LoginState extends State<Login> {
   }
 
   Future<void> _loginWith(MyUserProvider myUser, SocialProvider provider) async {
-    if (provider.id == "apple") {
-      // Apple asks only on the first login whether to share or hide the
-      // email; a hidden one (or another address) finds none of their races.
-      bool go = false;
-      await dlg.confirm("Sign in with Apple",
-          "Choose Share My Email and use the email you registered with, or we won't find your races.",
-          () => go = true, () {});
-      if (!go) {
-        return;
-      }
+    // Races are found by email: an account under another address (or Apple's
+    // hidden relay address) finds none of them.
+    bool go = false;
+    await dlg.confirm("Sign in with ${provider.name}",
+        "Use the email you registered with, or we won't find your races.",
+        () => go = true, () {});
+    if (!go) {
+      return;
     }
     setState(() {
       err = null;
