@@ -30,7 +30,9 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -44,11 +46,92 @@ class SocialProvider {
   final String? clientId; // the server's OAuth client, which native SDKs ask for tokens for
   final List<String> flows; // "redirect", and "token" where a native SDK could log in instead
 
+  final SocialButton? button; // its look, from the server (accounts.app_login.button)
+
   SocialProvider.fromJson(Map m)
       : id = m["id"],
         name = m["name"],
         clientId = m["client_id"],
-        flows = List<String>.from(m["flows"] ?? []);
+        flows = List<String>.from(m["flows"] ?? []),
+        button = m["button"] == null ? null : SocialButton.fromJson(m["button"]);
+}
+
+/// A provider's login button after its branding guidelines, as the server's
+/// login page draws it: a label, an SVG logo (its currentColor is fg), and
+/// colors for light and dark backgrounds. A provider the server hasn't
+/// branded has no logo or colors.
+class SocialButton {
+  final String? label;
+  final String? logo;
+  final SocialButtonColors? light;
+  final SocialButtonColors? dark;
+
+  SocialButton.fromJson(Map m)
+      : label = m["label"],
+        logo = m["logo"],
+        light = m["light"] == null ? null : SocialButtonColors.fromJson(m["light"]),
+        dark = m["dark"] == null ? null : SocialButtonColors.fromJson(m["dark"]);
+}
+
+class SocialButtonColors {
+  final Color bg, fg, border;
+
+  SocialButtonColors.fromJson(Map m)
+      : bg = _color(m["bg"]),
+        fg = _color(m["fg"]),
+        border = _color(m["border"]);
+
+  static Color _color(String hex) => Color(0xFF000000 | int.parse(hex.substring(1), radix: 16));
+}
+
+/// A provider's login button, as the server's login page draws it. Apple's is
+/// the sign_in_with_apple package's own, which App Review looks for, in the
+/// same size and shape as the others.
+class SocialLoginButton extends StatelessWidget {
+  final SocialProvider provider;
+  final VoidCallback onPressed;
+  static const double height = 44;
+  static const radius = BorderRadius.all(Radius.circular(4));
+
+  const SocialLoginButton({Key? key, required this.provider, required this.onPressed}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final button = provider.button;
+    final label = button?.label ?? "Continue with ${provider.name}";
+    if (provider.id == "apple") {
+      return SignInWithAppleButton(
+        onPressed: onPressed,
+        text: label,
+        height: height,
+        borderRadius: radius,
+        style: dark ? SignInWithAppleButtonStyle.white : SignInWithAppleButtonStyle.whiteOutlined,
+      );
+    }
+    final colors = dark ? button?.dark : button?.light;
+    return SizedBox(
+      height: height,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: colors?.bg,
+          foregroundColor: colors?.fg,
+          side: colors == null ? null : BorderSide(color: colors.border),
+          shape: const RoundedRectangleBorder(borderRadius: radius),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          if (button?.logo != null) ...[
+            SvgPicture.string(button!.logo!, width: 20, height: 20,
+                theme: SvgTheme(currentColor: colors?.fg ?? Theme.of(context).colorScheme.primary)),
+            const SizedBox(width: 10),
+          ],
+          Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+        ]),
+      ),
+    );
+  }
 }
 
 class SocialLoginCancelled implements Exception {}

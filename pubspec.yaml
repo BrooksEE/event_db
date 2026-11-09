@@ -43,6 +43,7 @@ dependencies:
   crypto: ^3.0.8
   google_sign_in: ^7.2.0
   sign_in_with_apple: ^8.2.0
+  flutter_svg: ^2.2.0
   firebase_messaging: ^17.0.1
   flutter_html: ^3.0.0
 

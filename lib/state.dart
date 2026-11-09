@@ -17,7 +17,6 @@ import 'package:app_links/app_links.dart';
 import 'package:image_picker/image_picker.dart';
 import 'push.dart';
 import 'social_login.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart' show SignInWithAppleButton;
 
 GlobalKey<NavigatorState>? navKey;
 MyUserProvider? gMyUserProvider;
@@ -395,13 +394,8 @@ class LoginState extends State<Login> {
                   "$err", style: TextStyle(color: Colors.red)),
               Container(height: 50),
               for (SocialProvider provider in myUser.socialProviders) ...[
-                SizedBox(width: loginWidth, child: provider.id == "apple"
-                  // Apple's review asks for Apple's own button.
-                  ? SignInWithAppleButton(onPressed: () => _loginWith(myUser, provider))
-                  : OutlinedButton(
-                      onPressed: () => _loginWith(myUser, provider),
-                      child: Text('SIGN IN WITH ${provider.name.toUpperCase()}'),
-                    )),
+                SizedBox(width: loginWidth, child: SocialLoginButton(
+                    provider: provider, onPressed: () => _loginWith(myUser, provider))),
                 Container(height: 20),
               ],
               if (myUser.socialProviders.isNotEmpty) ...[
