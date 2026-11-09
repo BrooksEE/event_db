@@ -14,8 +14,10 @@
 // rest/User/login_with_token checks its ID token, which is issued to the app's
 // bundle ID: the server's APPLE_CLIENT_ID must list it, and the app needs the
 // "Sign In with Apple" capability (com.apple.developer.applesignin in
-// Runner.entitlements). Android, macOS and web log in with Apple through the
-// browser, as any other provider.
+// Runner.entitlements). An iOS app whose bundle ID the server doesn't list
+// (social_providers' client_id for apple) uses the browser instead, so a new
+// white-label app works before it's added there. Android, macOS and web log
+// in with Apple through the browser, as any other provider.
 //
 // Each app that turns this on (MyUserProvider's socialLoginScheme) needs:
 //  - Android: flutter_web_auth_2's CallbackActivity in AndroidManifest.xml
@@ -31,6 +33,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'RPC.dart';
 import 'web_login_popup.dart';
@@ -94,10 +97,25 @@ class SocialLogin {
     if (!kIsWeb &&
         defaultTargetPlatform == TargetPlatform.iOS &&
         provider.id == "apple" &&
-        provider.flows.contains("token")) {
+        provider.flows.contains("token") &&
+        await _serverAcceptsThisApp(provider)) {
       return await _appleLogin(provider);
     }
     return await _redirectLogin(provider.id);
+  }
+
+  /// Whether provider's client_id (for Apple, the server's APPLE_CLIENT_ID:
+  /// the Services ID, then every bundle ID it takes native tokens from) lists
+  /// this app's bundle ID. An app not on it logs in through the browser, which
+  /// uses the Services ID, instead of with a token the server would reject.
+  Future<bool> _serverAcceptsThisApp(SocialProvider provider) async {
+    final bundleId = (await PackageInfo.fromPlatform()).packageName;
+    final accepted = (provider.clientId ?? "").split(",").map((s) => s.trim());
+    if (!accepted.contains(bundleId)) {
+      print("$bundleId isn't in the server's APPLE_CLIENT_ID, using the browser for Apple");
+      return false;
+    }
+    return true;
   }
 
   Future<Map> _appleLogin(SocialProvider provider) async {
