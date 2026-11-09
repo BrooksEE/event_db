@@ -346,12 +346,20 @@ class LoginState extends State<Login> {
 
   Future<void> _loginWith(MyUserProvider myUser, SocialProvider provider) async {
     // Races are found by email: an account under another address (or Apple's
-    // hidden relay address) finds none of them.
-    bool go = false;
-    await dlg.confirm("Sign in with ${provider.name}",
-        "Use the email you registered with, or we won't find your races.",
-        () => go = true, () {});
-    if (!go) {
+    // hidden relay address) finds none of them. One large sentence and no
+    // title, so it gets read rather than tapped through.
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text("Use the email you registered with.",
+            style: Theme.of(context).textTheme.headlineSmall),
+        actions: [
+          TextButton(child: Text("Cancel"), onPressed: () => Navigator.of(context).pop(false)),
+          TextButton(child: Text("Continue"), onPressed: () => Navigator.of(context).pop(true)),
+        ],
+      ),
+    );
+    if (go != true) {
       return;
     }
     setState(() {
