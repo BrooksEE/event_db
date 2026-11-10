@@ -84,13 +84,22 @@ class SocialButtonColors {
   static Color _color(String hex) => Color(0xFF000000 | int.parse(hex.substring(1), radix: 16));
 }
 
-/// A provider's login button, as the server's login page draws it. Apple's is
-/// the sign_in_with_apple package's own, which App Review looks for, in the
-/// same size and shape as the others.
+/// A provider's login button, as the server's login page draws it, all in the
+/// same size, shape and type size.
+///
+/// Apple's follows its Human Interface Guidelines: white with a black outline
+/// on light backgrounds (plain white on dark), Apple's logo in black (the
+/// sign_in_with_apple package's painter) and the system font. It isn't the
+/// package's SignInWithAppleButton, whose title is 43% of the button's height
+/// (19pt here) with no way to change it, so it stood out from the others.
+///
+/// Google's label is Roboto Medium, as Google's branding guidelines ask:
+/// bundled in this package (pubspec.yaml), since iOS has no Roboto.
 class SocialLoginButton extends StatelessWidget {
   final SocialProvider provider;
   final VoidCallback onPressed;
   static const double height = 44;
+  static const double fontSize = 16;
   static const radius = BorderRadius.all(Radius.circular(4));
 
   const SocialLoginButton({Key? key, required this.provider, required this.onPressed}) : super(key: key);
@@ -101,32 +110,52 @@ class SocialLoginButton extends StatelessWidget {
     final button = provider.button;
     final label = button?.label ?? "Continue with ${provider.name}";
     if (provider.id == "apple") {
-      return SignInWithAppleButton(
-        onPressed: onPressed,
-        text: label,
-        height: height,
-        borderRadius: radius,
-        style: dark ? SignInWithAppleButtonStyle.white : SignInWithAppleButtonStyle.whiteOutlined,
-      );
+      // The logo's nudge up is the package's, so it sits on the title's
+      // baseline as on Apple's own button.
+      return _button(label,
+          bg: Colors.white,
+          fg: Colors.black,
+          border: dark ? null : Colors.black,
+          logo: Padding(
+            padding: const EdgeInsets.only(bottom: 3),
+            child: SizedBox(
+              width: 18 * (25 / 31),
+              height: 18,
+              child: CustomPaint(painter: AppleLogoPainter(color: Colors.black)),
+            ),
+          ));
     }
     final colors = dark ? button?.dark : button?.light;
+    return _button(label,
+        bg: colors?.bg,
+        fg: colors?.fg,
+        border: colors?.border,
+        fontFamily: provider.id == "google" ? "Roboto" : null,
+        logo: button?.logo == null
+            ? null
+            : SvgPicture.string(button!.logo!, width: 20, height: 20,
+                theme: SvgTheme(currentColor: colors?.fg ?? Theme.of(context).colorScheme.primary)));
+  }
+
+  /// fontFamily is one of this package's fonts; null is the theme's.
+  Widget _button(String label, {Color? bg, Color? fg, Color? border, Widget? logo, String? fontFamily}) {
     return SizedBox(
       height: height,
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          backgroundColor: colors?.bg,
-          foregroundColor: colors?.fg,
-          side: colors == null ? null : BorderSide(color: colors.border),
+          backgroundColor: bg,
+          foregroundColor: fg,
+          side: border == null ? (bg == null ? null : BorderSide.none) : BorderSide(color: border),
           shape: const RoundedRectangleBorder(borderRadius: radius),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          textStyle: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w500,
+              fontFamily: fontFamily,
+              package: fontFamily == null ? null : "db"),
         ),
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          if (button?.logo != null) ...[
-            SvgPicture.string(button!.logo!, width: 20, height: 20,
-                theme: SvgTheme(currentColor: colors?.fg ?? Theme.of(context).colorScheme.primary)),
-            const SizedBox(width: 10),
-          ],
+          if (logo != null) ...[logo, const SizedBox(width: 10)],
           Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
         ]),
       ),

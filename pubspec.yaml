@@ -79,6 +79,14 @@ flutter:
   # To add assets to your plugin package, add an assets section, like this:
   assets:
     - assets/unknown_user.jpg
+  # Roboto Medium for the Google login button's label, which Google's
+  # branding guidelines call for (social_login.dart). iOS has no Roboto, so
+  # it's bundled; Apache 2.0, see assets/fonts/Roboto_LICENSE.txt.
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Medium.ttf
+          weight: 500
   #assets:
   #  - assets/
   #   - images/a_dot_burr.jpeg
