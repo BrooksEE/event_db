@@ -44,6 +44,9 @@ class MyUserProvider with ChangeNotifier {
   // Null unless the app passes socialLoginScheme (see social_login.dart).
   SocialLogin? socialLogin;
   List<SocialProvider> socialProviders = [];
+  // Whether tapping a social login first asks for the email registered with.
+  // Apps whose data is found by registration email (oyo) want it; others don't.
+  bool socialEmailHint;
 
   static MyUserProvider? get instance {
     //BuildContext? context = navKey?.currentContext;
@@ -68,7 +71,7 @@ class MyUserProvider with ChangeNotifier {
   String get tmpEmail => _tmpEmail;
   String get tmpPasswd => _tmpPasswd;
 
-  MyUserProvider(GlobalKey<NavigatorState> nKey, this.hostKey, {String? klaviyoApiKey, String? androidNotificationIcon, String? socialLoginScheme}) {
+  MyUserProvider(GlobalKey<NavigatorState> nKey, this.hostKey, {String? klaviyoApiKey, String? androidNotificationIcon, String? socialLoginScheme, this.socialEmailHint = true}) {
     print("MyUserProvider Constructor ${nKey}");
     navKey = nKey;
     if (socialLoginScheme != null) {
@@ -347,7 +350,7 @@ class LoginState extends State<Login> {
     // Races are found by email: an account under another address (or Apple's
     // hidden relay address) finds none of them. One large sentence and no
     // title, so it gets read rather than tapped through.
-    final go = await showDialog<bool>(
+    final go = !myUser.socialEmailHint || (await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         content: Text("Use the email you registered with.",
@@ -357,8 +360,8 @@ class LoginState extends State<Login> {
           TextButton(child: Text("Continue"), onPressed: () => Navigator.of(context).pop(true)),
         ],
       ),
-    );
-    if (go != true) {
+    ) ?? false);
+    if (!go) {
       return;
     }
     setState(() {
