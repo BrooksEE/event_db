@@ -23,9 +23,13 @@ import 'package:sqflite/sqflite.dart';
 class NotLoggedInException implements Exception {
   String errMsg() => "Not Logged In";
 }
+/// The server couldn't be reached at all (no network, no route, DNS, or
+/// the connection timed out) - as opposed to the server answering with an
+/// error. Shown to people as is, so it says what to do.
 class ConnectionException implements Exception {
-  String errMsg() => "Connection failed";
-  String toString() => 'Connection failed';
+  static const message = "Internet problem: couldn't reach the Laurel server. Check this device's internet connection and try again.";
+  String errMsg() => message;
+  String toString() => message;
 }
 
 class RPC {
@@ -48,7 +52,10 @@ class RPC {
 
 //  PersistCookieJar? cookieJar;
   Timer? retryTimer;
-  final Dio dio = Dio();
+  // A dead network fails within this, rather than leaving a busy dialog up
+  // for the OS's TCP timeout (minutes). Only connecting is limited: a slow
+  // answer from the server isn't a network problem.
+  final Dio dio = Dio(BaseOptions(connectTimeout: const Duration(seconds: 20)));
   Function? notLoggedInHandler;
   String? session;
   Mutex mutex = Mutex();
@@ -267,11 +274,19 @@ class RPC {
               print("Cache miss.");
             }
           } */
-            final bool isConnectionFailure = e.message?.startsWith("SocketException: Failed host lookup") ?? false;
+            // Couldn't reach the server at all: no route, refused, DNS
+            // (the server answering with an error is a response, not this).
+            final bool timedOut = e.type == DioExceptionType.connectionTimeout;
+            final bool isConnectionFailure = timedOut ||
+                e.type == DioExceptionType.connectionError ||
+                e.error is SocketException ||
+                (e.message?.startsWith("SocketException: Failed host lookup") ?? false);
             if (!isConnectionFailure) {
               throw e;
             }
-            if (attempt == maxAttempts) {
+            // Quick failures are retried (the transient window above); a
+            // timeout already took 20s, so it isn't.
+            if (timedOut || attempt == maxAttempts) {
               throw ConnectionException();
             }
             print("RPC connection failure, retrying ($attempt/$maxAttempts)...");
