@@ -76,6 +76,8 @@ class SocialButton {
 class SocialButtonColors {
   final Color bg, fg, border;
 
+  const SocialButtonColors({required this.bg, required this.fg, required this.border});
+
   SocialButtonColors.fromJson(Map m)
       : bg = _color(m["bg"]),
         fg = _color(m["fg"]),
@@ -84,25 +86,42 @@ class SocialButtonColors {
   static Color _color(String hex) => Color(0xFF000000 | int.parse(hex.substring(1), radix: 16));
 }
 
-/// A provider's login button, as the server's login page draws it, all in the
-/// same size, shape and type size.
+/// A provider's login button. All are the same size and shape, with the logo
+/// at the same inset from the left and the label centered (the left-aligned
+/// layout both Google and Apple offer), and none takes anything from the
+/// app's button themes, so no race theme can resize or recolor them.
 ///
-/// Apple's follows its Human Interface Guidelines: white with a black outline
-/// on light backgrounds (plain white on dark), Apple's logo in black (the
-/// sign_in_with_apple package's painter) and the system font. It isn't the
-/// package's SignInWithAppleButton, whose title is 43% of the button's height
-/// (19pt here) with no way to change it, so it stood out from the others.
+/// Google's follows its branding guidelines: its light theme (the server's
+/// colors) on light and dark backgrounds alike, matching the white Apple
+/// button in visual weight, as Google asks; the full-color G and Google Sans
+/// Medium 14/20, all scaled by height / 40 (Google's button is 40 tall and
+/// may be scaled as a whole), with its iOS or Android padding.
 ///
-/// Google's label is Roboto Medium, as Google's branding guidelines ask:
-/// bundled in this package (pubspec.yaml), since iOS has no Roboto.
+/// Apple's follows its Human Interface Guidelines for a custom button: white
+/// with a black outline on light backgrounds, plain white on dark, the logo
+/// and title in black, the title in the system font at 43% of the height,
+/// and the logo (the sign_in_with_apple package's painter) the title's
+/// height, as the package's own button draws it.
+///
+/// Any other provider (RunSignup) gets Google's light colors and type, so the
+/// set matches.
 class SocialLoginButton extends StatelessWidget {
   final SocialProvider provider;
   final VoidCallback onPressed;
   static const double height = 44;
-  static const double fontSize = 16;
   static const radius = BorderRadius.all(Radius.circular(4));
+  static const double _scale = height / 40; // Google's button is 40 tall
+  static const double logoSize = 20 * _scale; // the logo's frame; Google's G is 18 in it
 
   const SocialLoginButton({Key? key, required this.provider, required this.onPressed}) : super(key: key);
+
+  static bool get _ios => !kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS);
+
+  // Google's padding before the logo and between it and the label
+  static double get _inset => (_ios ? 16 : 12) * _scale;
+  static double get _gap => (_ios ? 12 : 10) * _scale;
+
+  static const _googleLight = SocialButtonColors(bg: Color(0xFFFFFFFF), fg: Color(0xFF1F1F1F), border: Color(0xFF747775));
 
   @override
   Widget build(BuildContext context) {
@@ -110,54 +129,67 @@ class SocialLoginButton extends StatelessWidget {
     final button = provider.button;
     final label = button?.label ?? "Continue with ${provider.name}";
     if (provider.id == "apple") {
-      // The logo's nudge up is the package's, so it sits on the title's
-      // baseline as on Apple's own button.
-      return _button(label,
+      const fontSize = height * 0.43;
+      return _button(context, label,
           bg: Colors.white,
           fg: Colors.black,
           border: dark ? null : Colors.black,
+          style: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w500,
+              letterSpacing: -0.41,
+              // the system font, named, or the race theme's would be inherited
+              fontFamily: _ios ? "CupertinoSystemText" : "Roboto"),
           logo: Padding(
-            padding: const EdgeInsets.only(bottom: 3),
+            padding: const EdgeInsets.only(bottom: 4 / 44 * height),
             child: SizedBox(
-              width: 18 * (25 / 31),
-              height: 18,
+              width: fontSize * (25 / 31),
+              height: fontSize,
               child: CustomPaint(painter: AppleLogoPainter(color: Colors.black)),
             ),
           ));
     }
-    final colors = dark ? button?.dark : button?.light;
-    return _button(label,
-        bg: colors?.bg,
-        fg: colors?.fg,
-        border: colors?.border,
-        fontFamily: provider.id == "google" ? "Roboto" : null,
+    // Google's light theme on dark backgrounds too, for the visual weight of
+    // Apple's button beside it, which can only be white there.
+    final colors = button?.light ?? _googleLight;
+    return _button(context, label,
+        bg: colors.bg,
+        fg: colors.fg,
+        border: colors.border,
+        style: const TextStyle(fontSize: 14 * _scale, height: 20 / 14, fontWeight: FontWeight.w500, fontFamily: "GoogleSans", package: "db"),
         logo: button?.logo == null
             ? null
-            : SvgPicture.string(button!.logo!, width: 20, height: 20,
-                theme: SvgTheme(currentColor: colors?.fg ?? Theme.of(context).colorScheme.primary)));
+            : SvgPicture.string(button!.logo!, width: 18 * _scale, height: 18 * _scale,
+                theme: SvgTheme(currentColor: colors.fg)));
   }
 
-  /// fontFamily is one of this package's fonts; null is the theme's.
-  Widget _button(String label, {Color? bg, Color? fg, Color? border, Widget? logo, String? fontFamily}) {
+  Widget _button(BuildContext context, String label,
+      {required Color bg, required Color fg, Color? border, Widget? logo, required TextStyle style}) {
+    // Room for the logo on both sides keeps the label centered on the button.
+    final side = _inset + logoSize + _gap;
     return SizedBox(
       height: height,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: bg,
-          foregroundColor: fg,
-          side: border == null ? (bg == null ? null : BorderSide.none) : BorderSide(color: border),
-          shape: const RoundedRectangleBorder(borderRadius: radius),
-          textStyle: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.w500,
-              fontFamily: fontFamily,
-              package: fontFamily == null ? null : "db"),
+      child: Material(
+        color: bg,
+        shape: RoundedRectangleBorder(
+            borderRadius: radius, side: border == null ? BorderSide.none : BorderSide(color: border)),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onPressed,
+          child: Stack(alignment: Alignment.center, children: [
+            if (logo != null)
+              Positioned(left: _inset, width: logoSize, top: 0, bottom: 0, child: Center(child: logo)),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: side),
+              child: Text(label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.noScaling,
+                  style: style.copyWith(color: fg)),
+            ),
+          ]),
         ),
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          if (logo != null) ...[logo, const SizedBox(width: 10)],
-          Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
-        ]),
       ),
     );
   }
