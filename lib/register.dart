@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'cart.dart';
 import 'state.dart';
-import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:provider/provider.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
@@ -187,7 +187,7 @@ class TeamField extends Field<int> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text("Team Registration", style: TextStyle(fontWeight: FontWeight.bold)),
-          Html(data: info["blurp"]),
+          HtmlWidget(info["blurp"] ?? ""),
           ElevatedButton(
             child: Text("Tell Me More"),
             onPressed: () {
@@ -195,7 +195,10 @@ class TeamField extends Field<int> {
                   MaterialPageRoute(builder: (context) {
                     return Scaffold(
                       appBar: AppBar(title: Text("Team Rules")),
-                      body: Html(data: info["rules"]),
+                      body: SingleChildScrollView(
+                        padding: EdgeInsets.all(8),
+                        child: HtmlWidget(info["rules"] ?? ""),
+                      ),
                     );
                   })
               );

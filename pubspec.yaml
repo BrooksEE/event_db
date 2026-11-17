@@ -45,12 +45,7 @@ dependencies:
   sign_in_with_apple: ^8.2.0
   flutter_svg: ^2.2.0
   firebase_messaging: ^17.0.1
-  flutter_html: ^3.0.0
-
-dependency_overrides:
-  # flutter_html 3.0.0 (latest) calls html's private top-level matches(), removed in 0.15.7.
-  # Only applies when db itself is the root package; apps need the same override.
-  html: 0.15.6
+  flutter_widget_from_html_core: ^0.17.4
 
 dev_dependencies:
   #flutter_test:
