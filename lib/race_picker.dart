@@ -4,8 +4,12 @@
 // Anyone can search the public races; a logged-in user also gets their own
 // hosts' races, first, including ones not public yet. With the field empty it
 // offers the races picked recently on this device. Optionally it checks the
-// race's PIN (asking for it, and remembering it per race) before handing the
-// race over.
+// race's PIN (asking for it, and remembering it per race unless told not
+// to) before handing the race over.
+//
+// Picking is the action: choose from the list, or press Enter. The button
+// beside the field only shows when it does something else - "Use #id" for a
+// whole race id typed in, or Reload for the race already chosen.
 
 import 'dart:async';
 import 'dart:convert';
@@ -83,17 +87,29 @@ class RacePinRefused implements Exception {
   String toString() => message;
 }
 
-/// How the picker checks a race's PIN before handing the race over: [check]
-/// tries a PIN (null: none yet) and returns false if there's no such race,
-/// throws [RacePinRequired] for a missing or wrong PIN, or [RacePinRefused].
-/// PINs that work are remembered per race under [prefsKey].
+/// How a race's PIN is checked, and whether a PIN that works is remembered
+/// on this device. [check] tries a PIN (null: none yet) and returns what the
+/// server said about the race, or null if there's no such race; it throws
+/// [RacePinRequired] for a missing or wrong PIN, or [RacePinRefused].
+///
+/// Staff tools remember PINs ([prefsKey]); a kiosk's setup uses
+/// [notRemembered], so it always asks and never leaves a PIN behind - nor
+/// uses one a staff tool left.
 class RacePinCheck {
   /// What the PIN is called: "Timer PIN".
   final String title;
-  final String prefsKey;
-  final Future<bool> Function(int raceId, String? pin) check;
 
-  const RacePinCheck({required this.title, required this.prefsKey, required this.check});
+  /// Where PINs that worked are kept, per race; null: never kept.
+  final String? prefsKey;
+
+  final Future<Map?> Function(int raceId, String? pin) check;
+
+  const RacePinCheck({required this.title, this.prefsKey, required this.check});
+
+  /// The same PIN, always asked for and never remembered.
+  RacePinCheck get notRemembered => RacePinCheck(title: title, check: check);
+
+  bool get remembers => prefsKey != null;
 
   /// The race's timers PIN (result/Timer/check_pin) - the one Race Ops uses,
   /// and stored where it keeps them, so a race unlocked in one is unlocked in
@@ -105,7 +121,7 @@ class RacePinCheck {
       try {
         final r = await RPC().rpc("result", "Timer", "check_pin", {"race_id": raceId}, null,
             context: {if (pin != null) "timer_pin": pin}, forceLogin: false, retryLogin: false);
-        return r["ok"] == true;
+        return r["ok"] == true ? r : null;
       } catch (e) {
         final msg = "$e";
         if (msg.contains("PIN_REQUIRED")) throw const RacePinRequired();
@@ -115,10 +131,30 @@ class RacePinCheck {
     },
   );
 
+  /// The race's Bib Assignment PIN (event/BibAssign/get_race_info), which
+  /// whoever sets up check-in is given. Never remembered. What it hands back
+  /// is the race's Bib Assign setup: its fields, lookups and settings.
+  static final bibAssign = RacePinCheck(
+    title: "Bib Assignment PIN",
+    check: (raceId, pin) async {
+      // Every race needs one, so there's nothing to try without it.
+      if (pin == null || pin.isEmpty) throw const RacePinRequired();
+      try {
+        return await RPC().rpc("event", "BibAssign", "get_race_info", {"race_id": raceId, "pin": pin}, null, forceLogin: false, retryLogin: false);
+      } catch (e) {
+        // A wrong PIN and a race that doesn't exist look the same here.
+        if ("$e".contains("PIN or race id invalid")) throw const RacePinRequired();
+        rethrow;
+      }
+    },
+  );
+
   Future<Map<String, String>> _pins() async {
+    final key = prefsKey;
+    if (key == null) return {};
     try {
       final prefs = await SharedPreferences.getInstance();
-      return Map<String, String>.from(jsonDecode(prefs.getString(prefsKey) ?? "{}"));
+      return Map<String, String>.from(jsonDecode(prefs.getString(key) ?? "{}"));
     } catch (e) {
       return {};
     }
@@ -128,18 +164,108 @@ class RacePinCheck {
   Future<String?> pinFor(int raceId) async => (await _pins())["$raceId"];
 
   Future<void> remember(int raceId, String pin) async {
+    final key = prefsKey;
+    if (key == null) return;
     final pins = await _pins();
     pins["$raceId"] = pin;
-    await (await SharedPreferences.getInstance()).setString(prefsKey, jsonEncode(pins));
+    await (await SharedPreferences.getInstance()).setString(key, jsonEncode(pins));
   }
 }
 
-/// What [RacePicker.onPicked] gets: the race, and the PIN that opened it
-/// (null without a [RacePinCheck], or when the race needed none).
+/// What [RacePicker.onPicked] and [unlockRace] give: the race, the PIN that
+/// opened it (null without a [RacePinCheck], or when the race needed none),
+/// and what the check's server call said about it ([RacePinCheck.check]).
 class PickedRace {
   final RaceChoice race;
   final String? pin;
-  const PickedRace(this.race, this.pin);
+  final Map? data;
+  const PickedRace(this.race, this.pin, [this.data]);
+}
+
+/// Why [unlockRace] couldn't open a race (shown to people as is).
+class RaceUnlockError implements Exception {
+  final String message;
+  const RaceUnlockError(this.message);
+  @override
+  String toString() => message;
+}
+
+/// Opens [race] with [check]: tries the PIN remembered for it, if any, then
+/// asks for one until it works. Null if cancelled; throws [RaceUnlockError]
+/// when it can't be opened at all (no such race, no PIN set, no network).
+/// For a race the screen already knows, e.g. one remembered from last time;
+/// [RacePicker] does the same after a pick.
+Future<PickedRace?> unlockRace(BuildContext context, RacePinCheck check, RaceChoice race) async {
+  String? pin = await check.pinFor(race.id);
+  bool failed = false;
+  while (true) {
+    try {
+      final data = await check.check(race.id, pin);
+      if (data == null) throw RaceUnlockError("There's no race #${race.id}.");
+      if (pin != null) await check.remember(race.id, pin);
+      return PickedRace(race, pin, data);
+    } on RacePinRequired {
+      if (!context.mounted) return null;
+      final entered = await askRacePin(context, check, race, failed: failed || pin != null);
+      if (entered == null) return null;
+      pin = entered;
+      failed = true;
+    } on RacePinRefused catch (e) {
+      throw RaceUnlockError("${race.label}: ${e.message}");
+    } on RaceUnlockError {
+      rethrow;
+    } catch (e) {
+      throw RaceUnlockError("Couldn't check ${race.label}: ${e.toString().split("\n").first}");
+    }
+  }
+}
+
+/// Asks for [race]'s PIN, named for what it is ("Bib Assignment PIN for 2026
+/// Snow Canyon Half (#168734)"). Hidden as it's typed, with a button to show
+/// it. [failed]: the last one was wrong. Null if cancelled.
+Future<String?> askRacePin(BuildContext context, RacePinCheck check, RaceChoice race, {bool failed = false}) {
+  final pinC = TextEditingController();
+  var visible = false;
+  return showDialog<String>(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => StatefulBuilder(builder: (context, setDlg) {
+      void submit() {
+        if (pinC.text.trim().isNotEmpty) Navigator.pop(context, pinC.text.trim());
+      }
+
+      return AlertDialog(
+        title: Text(check.title),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text("Enter the ${check.title} for ${race.label} (#${race.id})."),
+          const SizedBox(height: 8),
+          TextField(
+            key: const Key("race_picker.pin"),
+            controller: pinC,
+            autofocus: true,
+            obscureText: !visible,
+            autocorrect: false,
+            enableSuggestions: false,
+            decoration: InputDecoration(
+              labelText: check.title,
+              errorText: failed ? "Incorrect PIN. Please try again." : null,
+              suffixIcon: IconButton(
+                tooltip: visible ? "Hide PIN" : "Show PIN",
+                icon: Icon(visible ? Icons.visibility : Icons.visibility_off),
+                onPressed: () => setDlg(() => visible = !visible),
+              ),
+            ),
+            onSubmitted: (_) => submit(),
+          ),
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          FilledButton(onPressed: submit, child: const Text("Submit")),
+        ],
+      );
+    }),
+  );
+  // pinC isn't disposed: the dialog's closing animation still draws the field.
 }
 
 const _recentKey = "race_picker.recent";
@@ -165,19 +291,20 @@ Future<void> _rememberRecent(RaceChoice race) async {
 }
 
 /// The race field. Type to search (names, series, hosts, years, or the start
-/// of an id), pick from the list - or type a whole race id and press Set.
-/// With [onReload], the button is Reload while the field shows the race
-/// already chosen, and Set again once it's edited.
+/// of an id) and pick from the list, or type a whole race id and press "Use
+/// #id" (or Enter). With [pinCheck], the race's PIN is asked for right after
+/// the pick, and [onPicked] only hears of races it opened. With [onReload], a
+/// Reload button shows while the field holds the race already chosen.
 class RacePicker extends StatefulWidget {
   /// Called once a race is picked (and its PIN, with [pinCheck], checks out).
   final ValueChanged<PickedRace> onPicked;
 
-  /// Called when Set is pressed with the field empty, if clearing the race
+  /// Called when Enter is pressed with the field empty, if clearing the race
   /// means something to the screen.
   final VoidCallback? onCleared;
 
-  /// Fetches the chosen race again: the button says Reload, rather than
-  /// Set, while the field shows that race unedited.
+  /// Fetches the chosen race again: a Reload button, shown while the field
+  /// holds that race unedited.
   final VoidCallback? onReload;
 
   /// The race currently chosen, shown in the field (by name once known).
@@ -196,7 +323,7 @@ class RacePicker extends StatefulWidget {
   /// An error the screen wants shown under the field.
   final String? errorText;
 
-  /// The screen is busy with the last pick (shows a spinner on Set).
+  /// The screen is busy with the last pick (shows a spinner by the field).
   final bool busy;
 
   const RacePicker({
@@ -228,7 +355,7 @@ class _RacePickerState extends State<RacePicker> {
 
   // The race the field stands for - the one picked or set by the screen -
   // kept while the user types over it, so leaving the field without picking
-  // puts it back, and Set on its name doesn't search.
+  // puts it back, and Enter on its name doesn't search.
   RaceChoice? _current;
 
   // Debounce: every change of the text (typed, or set by a pick) bumps
@@ -342,7 +469,8 @@ class _RacePickerState extends State<RacePicker> {
     return token == _typed ? _last : const [];
   }
 
-  /// Set: the race whose name is showing, a whole id, or the first match.
+  /// Enter (or "Use #id"): a whole id, the race whose name is showing, or the
+  /// first match.
   Future<void> _submit() async {
     final text = _c.text.trim();
     if (text.isEmpty) {
@@ -372,15 +500,19 @@ class _RacePickerState extends State<RacePicker> {
       _c.text = race.label;
     });
     String? pin;
+    Map? data;
     final check = widget.pinCheck;
     if (check != null && race.id > 0) {
       setState(() => _checking = true);
+      PickedRace? opened;
       try {
-        pin = await _checkPin(check, race);
+        opened = await unlockRace(context, check, race);
+      } on RaceUnlockError catch (e) {
+        if (mounted) setState(() => _error = e.message);
       } finally {
         if (mounted) setState(() => _checking = false);
       }
-      if (pin == null) {
+      if (opened == null) {
         // Cancelled, refused, or no such race: nothing was opened, so the
         // field goes back to the race that's still open (the error, if any,
         // says what happened).
@@ -393,6 +525,8 @@ class _RacePickerState extends State<RacePicker> {
         }
         return;
       }
+      pin = opened.pin;
+      data = opened.data;
     }
     // A whole id typed in: fill in its name if the search knows it.
     var picked = race;
@@ -406,63 +540,7 @@ class _RacePickerState extends State<RacePicker> {
       }
     }
     await _rememberRecent(picked);
-    widget.onPicked(PickedRace(picked, pin == "" ? null : pin));
-  }
-
-  /// The PIN that opens [race] ("" if it needs none), or null if it can't be
-  /// opened (the reason is shown under the field).
-  Future<String?> _checkPin(RacePinCheck check, RaceChoice race) async {
-    String? pin = await check.pinFor(race.id);
-    bool failed = false;
-    while (true) {
-      try {
-        final ok = await check.check(race.id, pin);
-        if (!ok) {
-          if (mounted) setState(() => _error = "There's no race #${race.id}.");
-          return null;
-        }
-        if (pin != null) await check.remember(race.id, pin);
-        return pin ?? "";
-      } on RacePinRequired {
-        if (!mounted) return null;
-        final entered = await _askPin(check, race, failed: failed || pin != null);
-        if (entered == null) return null;
-        pin = entered;
-        failed = true;
-      } on RacePinRefused catch (e) {
-        if (mounted) setState(() => _error = "${race.label}: ${e.message}");
-        return null;
-      } catch (e) {
-        if (mounted) setState(() => _error = "Couldn't check ${race.label}: ${e.toString().split("\n").first}");
-        return null;
-      }
-    }
-  }
-
-  Future<String?> _askPin(RacePinCheck check, RaceChoice race, {required bool failed}) {
-    final pinC = TextEditingController();
-    return showDialog<String>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        void submit() {
-          if (pinC.text.trim().isNotEmpty) Navigator.pop(context, pinC.text.trim());
-        }
-
-        return AlertDialog(
-          title: Text("${check.title} Required"),
-          content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            if (failed) Text("Incorrect PIN. Please try again.", style: TextStyle(color: Theme.of(context).colorScheme.error)),
-            Text("Enter the ${check.title.toLowerCase()} for ${race.label} (#${race.id})."),
-            TextField(controller: pinC, autofocus: true, decoration: InputDecoration(labelText: check.title), onSubmitted: (_) => submit()),
-          ]),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-            FilledButton(onPressed: submit, child: const Text("Submit")),
-          ],
-        );
-      },
-    ).whenComplete(pinC.dispose);
+    widget.onPicked(PickedRace(picked, pin, data));
   }
 
   @override
@@ -509,23 +587,23 @@ class _RacePickerState extends State<RacePicker> {
               _showingCurrent ? const SizedBox.shrink() : _Options(options: options.toList(), onSelected: onSelected, recent: _c.text.trim().isEmpty),
         ),
       ),
-      const SizedBox(width: 8),
-      Padding(
-        padding: const EdgeInsets.only(top: 12),
-        // Rebuilt as the text changes: Reload turns into Set once it's edited.
-        child: ListenableBuilder(
-          listenable: _c,
-          builder: (context, _) {
-            final reload = widget.onReload != null && _showingCurrent;
-            return FilledButton(
-              // Wide enough for Reload either way, so the field doesn't
-              // jump as the button's label changes.
-              style: widget.onReload == null ? null : FilledButton.styleFrom(minimumSize: const Size(104, 40)),
+      // Rebuilt as the text changes: "Use #id" comes and goes with a whole
+      // id in the field, Reload with the chosen race in it.
+      ListenableBuilder(
+        listenable: _c,
+        builder: (context, _) {
+          final text = _c.text.trim();
+          final wholeId = int.tryParse(text) != null && !_showingCurrent;
+          final reload = widget.onReload != null && _showingCurrent;
+          if (!busy && !wholeId && !reload) return const SizedBox.shrink();
+          return Padding(
+            padding: const EdgeInsets.only(left: 8, top: 12),
+            child: FilledButton(
               onPressed: busy ? null : (reload ? widget.onReload : _submit),
-              child: busy ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : Text(reload ? "Reload" : "Set"),
-            );
-          },
-        ),
+              child: busy ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : Text(reload ? "Reload" : "Use #$text"),
+            ),
+          );
+        },
       ),
     ]);
   }
